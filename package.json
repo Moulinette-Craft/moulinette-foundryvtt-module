@@ -1,0 +1,19 @@
+{
+  "name": "moulinette-foundryvtt",
+  "version": "1.0.0",
+  "description": "Moulinette",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "build": "tsc && vite build",
+    "watch": "tsc && vite build --watch"
+  },
+  "devDependencies": {
+    "@league-of-foundry-developers/foundry-vtt-types": "^9.280.0",
+    "rollup-plugin-copy": "^3.4.0",
+    "rollup-plugin-scss": "^3.0.0",
+    "sass": "^1.54.8",
+    "typescript": "^4.8.2",
+    "vite": "^3.2.7"
+  }
+}
