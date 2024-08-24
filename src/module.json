@@ -1,17 +1,17 @@
 {
   "$schema": "https://json.schemastore.org/foundryvtt-manifest.json",
-  "id": "foundry-module-ts",
-  "title": "Typescript Template Module",
-  "description": "A template module using Typescript. You should change name, title, and description in module.json.",
+  "id": "moulinette-foundryvtt",
+  "title": "Moulinette",
+  "description": "Some description",
   "version": "1.0.0",
   "packs": [],
   "system": [],
   "dependencies": [],
   "scripts": [],
   "compatibility": {
-    "minimum": "9",
-    "verified": "10",
-    "maximum": "10"
+    "minimum": "12",
+    "verified": "12",
+    "maximum": "12"
   },
   "languages": [
     {

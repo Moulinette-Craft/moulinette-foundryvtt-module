@@ -1,0 +1,76 @@
+<div class="browser">
+  <header class="search-bar">
+    <input type="text" placeholder="Search..." aria-label="Search">
+  </header>
+  <div class="container">
+    <div class="filters-toggle"><i class="fa-solid fa-angles-left"></i></div>
+    <aside class="filters">
+      <h2 data-id="collection">{{localize "MOU.collection"}} <i class="fa-regular fa-square-minus"></i></h2>
+      <ul data-id="collection">
+        <li><input type="checkbox" id="local"><label for="local">{{localize "MOU.collection_self_hosted"}}</label></li>
+        <li><input type="checkbox" id="owned"><label for="owned">{{localize "MOU.collection_cloud_owned"}}</label></li>
+        <li><input type="checkbox" id="cloud"><label for="cloud">{{localize "MOU.collection_cloud_all"}}</label></li>
+      </ul>
+      
+      <h2 data-id="art">{{localize "MOU.art"}} <i class="fa-regular fa-square-minus"></i></h2>
+      <ul data-id="art">
+        <li>
+          <input type="radio" name="art" id="scene" {{#if (eq art "scene")}}checked{{/if}}>
+          <label for="scene">{{localize "MOU.scene"}}</label>
+        </li>
+        <li>
+          <input type="radio" name="art" id="map" {{#if (eq art "map")}}checked{{/if}}>
+          <label for="map">{{localize "MOU.map"}}</label>
+        </li>
+        <li>
+          <input type="radio" name="art" id="img" {{#if (eq art "image")}}checked{{/if}}>
+          <label for="image">{{localize "MOU.image"}}</label>
+        </li>
+      </ul>
+      
+      <h2 data-id="creator">{{localize "MOU.creator"}} <i class="fa-regular fa-square-plus"></i></h2>
+      <ul data-id="creator" class="collapsed">
+        <select name="pets" id="pet-select">
+          <option value="">--Please choose an option--</option>
+          <option value="dog">Dog</option>
+        </select>
+      </ul>
+    </aside>
+    <main class="content">
+      {{#each assets as |a|}}
+        <div class="asset {{a.type}}">
+          {{#if (eq a.type "scene")}}
+            <div class="preview" {{#if a.main_color}}style="background-color: #{{a.main_color}}"{{/if}}>
+              <img src="{{../previewBaseURL}}{{a.pack.creator_ref}}/{{a.pack.path}}/{{a.basepath}}.webp"/>
+            </div>
+          {{/if}}
+          {{#if (eq a.type "map")}}
+            <div class="preview" {{#if a.main_color}}style="background-color: #{{a.main_color}}"{{/if}}>
+              <img src="{{../previewBaseURL}}{{a.pack.creator_ref}}/{{a.pack.path}}/{{a.basepath}}.webp"/>
+            </div>
+          {{/if}}
+          {{#if (eq a.type "img")}}
+            <div class="preview" >
+              <img src="{{../previewBaseURL}}{{a.pack.creator_ref}}/{{a.pack.path}}/{{a.basepath}}.webp"/>
+            </div>
+          {{/if}}
+          <div class="info">
+            <div class="source" title="{{a.pack.creator}} - {{a.pack.name}}">{{a.pack.creator}} - {{a.pack.name}}</div>
+            <div class="title">{{a.name}}</div>
+          </div>
+          <div class="meta">
+            {{#if (eq a.type "scene")}}
+              {{a.scene.width}} x {{a.scene.height}}
+            {{/if}}
+            {{#if (eq a.type "map")}}
+              {{a.size.width}} x {{a.size.height}}
+            {{/if}}
+            {{#if (eq a.type "img")}}
+              {{a.size.width}} x {{a.size.height}}
+            {{/if}}
+          </div>
+        </div>
+      {{/each}}
+    </main>
+  </div>
+</div>

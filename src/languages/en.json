@@ -1,6 +1,12 @@
 {
-  "MYMODULE.dog-browser": "Dog browser",
-  "MYMODULE.dogs": "Dogs",
-  "MYMODULE.fetch-random-dog": "Fetch random dog photo",
-  "MYMODULE.random-dog-alt": "Image of a random dog"
+  "MOU.browser": "Moulinette Browser",
+  "MOU.collection": "Collections",
+  "MOU.collection_self_hosted": "Self-hosted (local)",
+  "MOU.collection_cloud_owned": "Moulinette Cloud (accessible)",
+  "MOU.collection_cloud_all": "Moulinette Cloud (all available)",
+  "MOU.art": "Art",
+  "MOU.scene": "Scene",
+  "MOU.map": "Map",
+  "MOU.image": "Image",
+  "MOU.creator": "Creator"
 }

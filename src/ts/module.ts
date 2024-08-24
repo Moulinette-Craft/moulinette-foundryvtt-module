@@ -1,17 +1,19 @@
 // Do not remove this import. If you do Vite will think your styles are dead
 // code and not include them in the build output.
 import "../styles/style.scss";
-import DogBrowser from "./apps/dogBrowser";
-import { moduleId } from "./constants";
-import { MyModule } from "./types";
+//import "../templates/browser.hbs";
 
-let module: MyModule;
+import MouBrowser from "./apps/browser";
+import { moduleId } from "./constants";
+import { MouModule } from "./types";
+
+let module: MouModule;
 
 Hooks.once("init", () => {
   console.log(`Initializing ${moduleId}`);
 
-  module = (game as Game).modules.get(moduleId) as MyModule;
-  module.dogBrowser = new DogBrowser();
+  module = (game as Game).modules.get(moduleId) as MouModule;
+  module.browser = new MouBrowser();
 });
 
 Hooks.on("renderActorDirectory", (_: Application, html: JQuery) => {
@@ -19,7 +21,7 @@ Hooks.on("renderActorDirectory", (_: Application, html: JQuery) => {
     `<button class="cc-sidebar-button" type="button">🐶</button>`
   );
   button.on("click", () => {
-    module.dogBrowser.render(true);
+    module.browser.render(true);
   });
   html.find(".directory-header .action-buttons").append(button);
 });

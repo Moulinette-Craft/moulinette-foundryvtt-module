@@ -15,5 +15,8 @@
     "sass": "^1.54.8",
     "typescript": "^4.8.2",
     "vite": "^3.2.7"
+  },
+  "dependencies": {
+    "@types/jquery": "^3.5.30"
   }
 }
