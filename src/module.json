@@ -1,12 +1,11 @@
 {
-  "$schema": "https://json.schemastore.org/foundryvtt-manifest.json",
-  "id": "moulinette-foundryvtt",
+  "$schema": "https://json.schemastore.org/foundryvtt-module-manifest.json",
+  "id": "moulinette",
   "title": "Moulinette",
   "description": "Some description",
   "version": "1.0.0",
   "packs": [],
-  "system": [],
-  "dependencies": [],
+  "relationships": {},
   "scripts": [],
   "compatibility": {
     "minimum": "12",

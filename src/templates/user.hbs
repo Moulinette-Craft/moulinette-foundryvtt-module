@@ -1,0 +1,101 @@
+<form autocomplete="off" onsubmit="event.preventDefault();">
+  
+  {{#if disabled}}
+    {{{localize "mtte.moulinetteCloudDisabled"}}}
+  {{/if}}<!-- disabled -->
+
+  {{#unless disabled}}
+    
+    <div class="description">{{localize "MOU.description_user"}}</div>
+    
+    {{#unless user.fullName}}
+    <div>
+      <div class="mou-alert mou-alert-warning mou-alert-white rounded">
+        <div class="icon"><i class="fa fa-warning"></i></div>
+        {{localize "MOU.user_not_authenticated"}}
+      </div>
+      <div class="mou-alert mou-alert-info mou-alert-white rounded mou-hidden">
+        <div class="icon"><i class="fa fa-info-circle"></i></div>
+        <div class="auth-message">{{localize "MOU.user_authenticating"}} (<span class="timer">120</span> {{localize "MOU.seconds_left"}})</div>
+      </div>
+      <div class="progress"></div>
+    </div>
+    {{/unless}}<!-- END user.fullName (1) -->
+    
+    <footer>
+      {{#if user.fullName}}
+        <div class="login">
+          {{#unless user.discord_user_id}}
+            <p><button class="loginDiscord"><i class="fab fa-discord"></i> {{localize "MOU.link_discord"}}</button></p>
+          {{/unless}}
+          {{#unless user.user_id}}
+            <p><button class="loginPatreon"><i class="fab fa-patreon"></i> {{localize "MOU.link_patreon"}}</button></p>
+          {{/unless}}
+          <p><button class="gift"><i class="fa-solid fa-gift"></i> {{localize "MOU.claim_gift"}}</button></p>
+          <p><a href="https://assets.moulinette.cloud/marketplace/creators"><button class="creators"><i class="fa-solid fa-users"></i> {{localize "MOU.available_creators"}}</button></a></p>
+          {{#unless user.patron}}
+            <p><a href="https://www.patreon.com/moulinette" target="_blank"><button><i class="fab fa-patreon"></i> {{localize "MOU.support_moulinette"}}</button></a></p>
+          {{/unless}}
+          {{#if refreshed}}
+            <p><button class="refreshed" disabled><i class="fa-solid fa-circle-check"></i> {{localize "MOU.user_data_refreshed"}}</button></p>
+          {{/if}}
+          {{#unless refreshed}}
+            <p><button class="refresh"><i class="fa-solid fa-sync-alt"></i> {{localize "MOU.refresh_links"}}</button></p>
+          {{/unless}}
+          <p><button class="logout"><i class="fa-solid fa-sign-out-alt"></i> {{localize "MOU.disconnect"}}</button></p>
+        </div>
+      {{/if}}
+      {{#unless user.fullName}}
+        <div class="actions">
+          <button class="loginPatreon" style="width: 250px"><i class="fab fa-patreon"></i> {{localize "MOU.authenticate_with_patreon"}}</button> 
+          <button class="loginDiscord" style="width: 250px"><i class="fab fa-discord"></i> {{localize "MOU.authenticate_with_discord"}}</button>
+        </div>
+      {{/unless}}
+    
+      {{#if user.fullName}}
+        <div class="user-details">
+          <h3>{{localize "MOU.your_account"}}</h3>
+          <ul>
+            <li>{{user.fullName}} {{#if user.vanity}}({{user.vanity}}){{/if}}</li>
+            {{#if user.patron}}
+            <li>{{localize "MOU.is_patron"}} <i class="fa-solid fa-heart"></i> ({{user.patron}})</li>
+            {{/if}}
+            {{#unless user.patron}}
+              {{#if user.platinum}}
+                <li>{{localize "MOU.is_platinumpatron"}} <i class="fa-solid fa-heart"></i></li>
+              {{/if}}
+              {{#unless user.platinum}}
+                <li class="error">{{localize "MOU.isnot_patron"}}</li>
+              {{/unless}}
+            {{/unless}}
+          </ul>
+          {{#if user.pledges}}
+            <h3>{{localize "MOU.your_subs_patreon"}}</h3>
+            <ul>
+              {{#each user.pledges as |p|}}
+                <li>{{p.vanity}}: {{p.pledge}} <i class="fa-solid fa-dollar-sign" title="{{p.paid}} $USD ({{p.days}} {{localize "MOU.days"}})"></i></li>
+              {{/each}}
+            </ul>
+          {{/if}}
+          {{#if user.discordRoles}}
+            <h3>{{localize "MOU.your_subs_discord"}}</h3>
+            <ul>
+              {{#each user.discordRoles as |r|}}
+                <li>{{r.guild}}: {{r.name}}</li>
+              {{/each}}
+            </ul>
+          {{/if}}
+          {{#if user.gifts}}
+            {{localize "MOU.your_gifts"}}
+            <ul>
+              {{#each user.gifts as |g|}}
+                <li>{{g.vanity}}: {{g.tier}}</li>
+              {{/each}}
+            </ul>
+          {{/if}}
+        </div>
+      {{/if}} <!-- if user.fullName -->
+    </footer>
+{{/unless}}
+  
+</form>

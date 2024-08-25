@@ -1,9 +1,10 @@
-import MouCloudClient from "../clients/moulinette-cloud";
-import { moduleId, MOU_STORAGE_PUB } from "../constants";
+import { MODULE_ID, MOU_STORAGE_PUB } from "../constants";
 import MouMediaUtils from "../utils/media-utils";
+import MouApplication from "./application";
 
-export default class MouBrowser extends Application {
+export default class MouBrowser extends MouApplication {
   
+  override APP_NAME = "MouBrowser"
   private assetType = "scene";
   private html?: JQuery<HTMLElement>;
 
@@ -15,7 +16,7 @@ export default class MouBrowser extends Application {
     return foundry.utils.mergeObject(super.defaultOptions, {
       id: "mou-browser",
       classes: ["mou"],
-      template: `modules/${moduleId}/templates/browser.hbs`,
+      template: `modules/${MODULE_ID}/templates/browser.hbs`,
       width: 1250,
       height: 1000,
       resizable: true
@@ -23,9 +24,7 @@ export default class MouBrowser extends Application {
   }
 
   override async getData() {
-    const client = new MouCloudClient()
-    
-    const assets = await client.randomAssets(this.assetType)
+    const assets = await this.getModule().cloudclient.randomAssets(this.assetType)
     MouMediaUtils.prettyMediaNames(assets)
     MouMediaUtils.prettyFilesizes(assets)
 

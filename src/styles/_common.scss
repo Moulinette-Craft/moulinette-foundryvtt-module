@@ -1,0 +1,21 @@
+.mou {
+
+  .fa-heart {
+    color: red;
+  }
+
+  .description {
+    padding: 5px 5px 15px 5px;
+    text-align: justify;
+  }
+  
+  .actions {
+    width: 100%;
+    display: flex;
+    justify-content: space-evenly;
+  }
+
+  .mou-hidden {
+    display: none;
+  }
+}

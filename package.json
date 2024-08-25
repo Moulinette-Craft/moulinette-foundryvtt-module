@@ -1,12 +1,12 @@
 {
-  "name": "moulinette-foundryvtt",
+  "name": "moulinette",
   "version": "1.0.0",
-  "description": "Moulinette",
+  "description": "Moulinette Media Search & Toolbox",
   "license": "MIT",
   "private": true,
   "scripts": {
-    "build": "tsc && vite build",
-    "watch": "tsc && vite build --watch"
+    "build": "scripts/sort-translations.py && tsc && vite build",
+    "watch": "scripts/sort-translations.py && tsc && vite build --watch"
   },
   "devDependencies": {
     "@league-of-foundry-developers/foundry-vtt-types": "^9.280.0",

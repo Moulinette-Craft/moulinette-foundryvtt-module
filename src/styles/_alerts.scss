@@ -1,0 +1,221 @@
+/**
+Copyright (c) 2024 by Arlina Code (https://codepen.io/arlinacode/pen/pvXQwK)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Note : .alert was replaced by .mou-alert, and some tweaking
+**/
+
+.mou-alert {
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+}
+
+.mou-alert h4 {
+    margin-top: 0;
+    color: inherit;
+}
+
+.mou-alert .mou-alert-link {
+    font-weight: bold;
+}
+
+.mou-alert>p,.mou-alert>ul {
+    margin-bottom: 0;
+}
+
+.mou-alert>p+p {
+    margin-top: 5px;
+}
+
+.mou-alert-dismissable {
+    padding-right: 35px;
+}
+
+.mou-alert-dismissable .close {
+    position: relative;
+    top: -2px;
+    right: -21px;
+    color: inherit;
+}
+
+.mou-alert-success {
+    background-color: #dff0d8;
+    border-color: #d6e9c6;
+    color: #3c763d;
+}
+
+.mou-alert-success hr {
+    border-top-color: #c9e2b3;
+}
+
+.mou-alert-success .mou-alert-link {
+    color: #2b542c;
+}
+
+.mou-alert-info {
+    background-color: #d9edf7;
+    border-color: #bce8f1;
+    color: #31708f;
+}
+
+.mou-alert-info hr {
+    border-top-color: #a6e1ec;
+}
+
+.mou-alert-info .mou-alert-link {
+    color: #245269;
+}
+
+.mou-alert-warning {
+    background-color: #fcf8e3;
+    border-color: #faebcc;
+    color: #8a6d3b;
+}
+
+.mou-alert-warning hr {
+    border-top-color: #f7e1b5;
+}
+
+.mou-alert-warning .mou-alert-link {
+    color: #66512c;
+}
+
+.mou-alert-danger {
+    background-color: #f2dede;
+    border-color: #ebccd1;
+    color: #a94442;
+}
+
+.mou-alert-danger hr {
+    border-top-color: #e4b9c0;
+}
+
+.mou-alert-danger .mou-alert-link {
+    color: #843534;
+}
+
+.mou-alert {
+    border-radius: 0;
+    -webkit-border-radius: 0;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.11);
+}
+
+.mou-alert .sign {
+    font-size: 20px;
+    vertical-align: middle;
+    margin-right: 5px;
+    text-align: center;
+    width: 25px;
+    display: inline-block;
+}
+
+.mou-alert-success {
+    background-color: #dbf6d3;
+    border-color: #aed4a5;
+    color: #569745;
+}
+
+.mou-alert-info {
+    background-color: #d9edf7;
+    border-color: #98cce6;
+    color: #3a87ad;
+}
+
+.mou-alert-warning {
+    background-color: #fcf8e3;
+    border-color: #f1daab;
+    color: #c09853;
+}
+
+.mou-alert-danger {
+    background-color: #f2dede;
+    border-color: #e0b1b8;
+    color: #b94a48;
+}
+
+.mou-alert-white {
+    background-image: linear-gradient(to bottom,#FFFFFF,#F9F9F9);
+    border-top-color: #d8d8d8;
+    border-bottom-color: #bdbdbd;
+    border-left-color: #cacaca;
+    border-right-color: #cacaca;
+    color: #404040;
+    padding-left: 61px;
+    position: relative;
+}
+
+.mou-alert-white .icon {
+    text-align: center;
+    width: 45px;
+    height: 100%;
+    position: absolute;
+    top: 0px;
+    left: -1px;
+    border: 1px solid #bdbdbd;
+}
+
+.mou-alert-white .icon:after {
+    -webkit-transform: rotate(45deg);
+    -moz-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    -o-transform: rotate(45deg);
+    -webkit-transform: rotate(45deg);
+    display: block;
+    content: '';
+    width: 10px;
+    height: 10px;
+    border: 1px solid #bdbdbd;
+    position: absolute;
+    border-left: 0;
+    border-bottom: 0;
+    top: 50%;
+    right: -6px;
+    margin-top: -5px;
+    background: #fff;
+}
+
+.mou-alert-white.rounded {
+    border-radius: 3px;
+    -webkit-border-radius: 3px;
+}
+
+.mou-alert-white.rounded .icon {
+    border-radius: 3px 0 0 3px;
+    -webkit-border-radius: 3px 0 0 3px;
+}
+
+.mou-alert-white .icon i {
+    font-size: 20px;
+    color: #FFF;
+    left: 12px;
+    margin-top: -10px;
+    position: absolute;
+    top: 50%;
+}
+
+.mou-alert-white.mou-alert-danger .icon,.mou-alert-white.mou-alert-danger .icon:after {
+    border-color: #ca452e;
+    background: #da4932;
+}
+
+.mou-alert-white.mou-alert-info .icon,.mou-alert-white.mou-alert-info .icon:after {
+    border-color: #3a8ace;
+    background: #4d90fd;
+}
+
+.mou-alert-white.mou-alert-warning .icon,.mou-alert-white.mou-alert-warning .icon:after {
+    border-color: #d68000;
+    background: #fc9700;
+}
+
+.mou-alert-white.mou-alert-success .icon,.mou-alert-white.mou-alert-success .icon:after {
+    border-color: #54a754;
+    background: #60c060;
+}

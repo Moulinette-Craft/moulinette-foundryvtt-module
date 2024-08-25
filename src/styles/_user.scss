@@ -1,0 +1,17 @@
+#mou-user {
+  
+  footer {
+    display: flex;
+    flex-direction: row;
+    padding: 5px;
+    column-gap: 20px;
+
+    .login {
+      min-width: 220px;
+    }
+  }
+
+  .user-details {
+    flex-grow: 1;
+  }
+}
