@@ -3,9 +3,10 @@ export interface IMediaAsset {
   filepath: string;
   basepath: string;
   filesize: number;
+  filesizeHuman: string;
   main_color: string;
   tags: Array<string>;
-  size: JSONObject;
+  size: Object;
   type: string;
   pack_ref: number;
   name: string;
@@ -26,7 +27,15 @@ export default class MouMediaUtils {
   /** Generates human readable filesizes **/
   static prettyFilesizes(assets: Array<IMediaAsset>) {
     assets.forEach(a => {
-      
+      if(a.filesize < 1024) {
+        a.filesizeHuman = `${a.filesize.toLocaleString()} B`
+      } else if(a.filesize < 1024*1024) {
+        const size = a.filesize / 1024
+        a.filesizeHuman = `${size.toFixed(1).toLocaleString()} KB`
+      } else {
+        const size = a.filesize / (1024*1024)
+        a.filesizeHuman = `${size.toFixed(1).toLocaleString()} MB`
+      }
     });
   }
   

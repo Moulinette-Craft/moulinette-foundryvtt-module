@@ -1,40 +1,52 @@
 <div class="browser">
   <header class="search-bar">
-    <input type="text" placeholder="Search..." aria-label="Search">
+    <input type="text" placeholder="{{localize "MOU.search"}}" aria-label="Search">
   </header>
   <div class="container">
     <div class="filters-toggle"><i class="fa-solid fa-angles-left"></i></div>
     <aside class="filters">
       <h2 data-id="collection">{{localize "MOU.collection"}} <i class="fa-regular fa-square-minus"></i></h2>
-      <ul data-id="collection">
-        <li><input type="checkbox" id="local"><label for="local">{{localize "MOU.collection_self_hosted"}}</label></li>
-        <li><input type="checkbox" id="owned"><label for="owned">{{localize "MOU.collection_cloud_owned"}}</label></li>
-        <li><input type="checkbox" id="cloud"><label for="cloud">{{localize "MOU.collection_cloud_all"}}</label></li>
-      </ul>
+      <div data-id="collection">
+        <ul>
+          <li><input type="checkbox" id="local"><label for="local">{{localize "MOU.collection_self_hosted"}}</label></li>
+          <li><input type="checkbox" id="owned"><label for="owned">{{localize "MOU.collection_cloud_owned"}}</label></li>
+          <li><input type="checkbox" id="cloud"><label for="cloud">{{localize "MOU.collection_cloud_all"}}</label></li>
+        </ul>
+      </div>
       
-      <h2 data-id="art">{{localize "MOU.art"}} <i class="fa-regular fa-square-minus"></i></h2>
-      <ul data-id="art">
-        <li>
-          <input type="radio" name="art" id="scene" {{#if (eq art "scene")}}checked{{/if}}>
-          <label for="scene">{{localize "MOU.scene"}}</label>
-        </li>
-        <li>
-          <input type="radio" name="art" id="map" {{#if (eq art "map")}}checked{{/if}}>
-          <label for="map">{{localize "MOU.map"}}</label>
-        </li>
-        <li>
-          <input type="radio" name="art" id="img" {{#if (eq art "image")}}checked{{/if}}>
-          <label for="image">{{localize "MOU.image"}}</label>
-        </li>
-      </ul>
+      <h2 data-id="asset_type">{{localize "MOU.asset_type"}} <i class="fa-regular fa-square-minus"></i></h2>
+      <div class="options" data-id="asset_type">
+        <ul>
+          <li>
+            <input type="radio" name="asset_type" id="scene" {{#if (eq type "scene")}}checked{{/if}}>
+            <label for="scene">{{localize "MOU.scene"}}</label>
+          </li>
+          <li>
+            <input type="radio" name="asset_type" id="map" {{#if (eq type "map")}}checked{{/if}}>
+            <label for="map">{{localize "MOU.map"}}</label>
+          </li>
+          <li>
+            <input type="radio" name="asset_type" id="img" {{#if (eq type "img")}}checked{{/if}}>
+            <label for="image">{{localize "MOU.image"}}</label>
+          </li>
+        </ul>
+        <ul>
+          <li>
+            <input type="radio" name="asset_type" id="pdf" {{#if (eq type "pdf")}}checked{{/if}}>
+            <label for="pdf">{{localize "MOU.pdf"}}</label>
+          </li>
+        </ul>
+      </div>
       
       <h2 data-id="creator">{{localize "MOU.creator"}} <i class="fa-regular fa-square-plus"></i></h2>
-      <ul data-id="creator" class="collapsed">
-        <select name="pets" id="pet-select">
-          <option value="">--Please choose an option--</option>
-          <option value="dog">Dog</option>
-        </select>
-      </ul>
+      <div data-id="creator" class="collapsed">
+        <ul>
+          <select name="pets" id="pet-select">
+            <option value="">--Please choose an option--</option>
+            <option value="dog">Dog</option>
+          </select>
+        </ul>
+      </div>
     </aside>
     <main class="content">
       {{#each assets as |a|}}
@@ -42,6 +54,15 @@
           {{#if (eq a.type "scene")}}
             <div class="preview" {{#if a.main_color}}style="background-color: #{{a.main_color}}"{{/if}}>
               <img src="{{../previewBaseURL}}{{a.pack.creator_ref}}/{{a.pack.path}}/{{a.basepath}}.webp"/>
+              <ul class="icons">
+                {{#if a.scene.hasWalls}}<li title="{{localize "MOU.scene_has_walls"}}"><i class="fa-solid fa-block-brick"></i></li>{{/if}}
+                {{#if a.scene.hasLights}}<li title="{{localize "MOU.scene_has_lights"}}"><i class="fa-regular fa-lightbulb"></i></li>{{/if}}
+                {{#if a.scene.hasSounds}}<li title="{{localize "MOU.scene_has_sounds"}}"><i class="fa-solid fa-music"></i></li>{{/if}}
+                {{#if a.scene.hasTokens}}<li title="{{localize "MOU.scene_has_tokens"}}"><i class="fa-solid fa-user-alt"></i></li>{{/if}}
+                {{#if a.scene.hasTiles}}<li title="{{localize "MOU.scene_has_tiles"}}"><i class="fa-solid fa-cubes"></i></li>{{/if}}
+                {{#if a.scene.hasDrawings}}<li title="{{localize "MOU.scene_has_drawings"}}"><i class="fa-solid fa-pencil-alt"></i></li>{{/if}}
+                {{#if a.scene.hasNotes}}<li title="{{localize "MOU.scene_has_notes"}}"><i class="fa-solid fa-bookmark"></i></li>{{/if}}
+              </ul>
             </div>
           {{/if}}
           {{#if (eq a.type "map")}}
@@ -50,7 +71,12 @@
             </div>
           {{/if}}
           {{#if (eq a.type "img")}}
-            <div class="preview" >
+            <div class="preview">
+              <img src="{{../previewBaseURL}}{{a.pack.creator_ref}}/{{a.pack.path}}/{{a.basepath}}.webp"/>
+            </div>
+          {{/if}}
+          {{#if (eq a.type "pdf")}}
+            <div class="preview">
               <img src="{{../previewBaseURL}}{{a.pack.creator_ref}}/{{a.pack.path}}/{{a.basepath}}.webp"/>
             </div>
           {{/if}}
@@ -60,13 +86,18 @@
           </div>
           <div class="meta">
             {{#if (eq a.type "scene")}}
-              {{a.scene.width}} x {{a.scene.height}}
+              {{a.scene.width}} x {{a.scene.height}}, {{a.filesizeHuman}}+
             {{/if}}
             {{#if (eq a.type "map")}}
-              {{a.size.width}} x {{a.size.height}}
+              {{a.size.width}} x {{a.size.height}}, {{a.filesizeHuman}}
             {{/if}}
             {{#if (eq a.type "img")}}
-              {{a.size.width}} x {{a.size.height}}
+              {{a.size.width}} x {{a.size.height}}, {{a.filesizeHuman}}
+            {{/if}}
+            {{#if (eq a.type "pdf")}}
+              {{a.pdf.pages}}
+              {{#if (gt a.pdf.pages 1)}}{{localize "MOU.pages"}}{{/if}}{{#unless (gt a.pdf.pages 1)}}{{localize "MOU.page"}}{{/unless}},
+              {{a.filesizeHuman}}
             {{/if}}
           </div>
         </div>

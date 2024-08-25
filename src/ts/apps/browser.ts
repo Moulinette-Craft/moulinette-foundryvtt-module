@@ -27,11 +27,12 @@ export default class MouBrowser extends Application {
     
     const assets = await client.randomAssets(this.assetType)
     MouMediaUtils.prettyMediaNames(assets)
+    MouMediaUtils.prettyFilesizes(assets)
 
     return {
       previewBaseURL: MOU_STORAGE_PUB,
       assets: assets,
-      art: this.assetType
+      type: this.assetType
     };
   }
 
@@ -56,7 +57,8 @@ export default class MouBrowser extends Application {
       const section = $(event.currentTarget)
       const id = section.data("id")
       if(id) {
-        const filter = this.html?.find(`ul[data-id='${id}']`)
+        const filter = this.html?.find(`div[data-id='${id}']`)
+        console.log(filter)
         const icon = section.find('i')
         if(filter && icon) {
           filter.toggleClass("collapsed")
@@ -74,13 +76,8 @@ export default class MouBrowser extends Application {
       const filters = this.html?.find(`.filters`)
       if(filters) {
         filters.toggle()
-        if(filters.is(":visible")) {
-          toggle.css({'left': "295px"})
-          toggle.find("i")?.attr('class', "fa-solid fa-angles-left")
-        } else {
-          toggle.css({'left': "0"})
-          toggle.find("i")?.attr('class', "fa-solid fa-angles-right")
-        }
+        toggle.toggleClass("collapsed")
+        toggle.find("i")?.attr('class', filters.is(":visible") ? "fa-solid fa-angles-left" : "fa-solid fa-angles-right")
       }
     }
   }
@@ -88,11 +85,12 @@ export default class MouBrowser extends Application {
   /** filters interaction */
   async _onClickFilters(event: Event): Promise<void> {
     this._refreshAssets()
+    console.log(event)
   }
 
   async _refreshAssets() {
-    const type = this.html?.find('.filters input[name=art]:checked').attr('id')
-    this.assetType = type ? type : "scene"
+    const assetType = this.html?.find('.filters input[name=asset_type]:checked').attr('id')
+    this.assetType = assetType ? assetType : "scene"
     this.render(true)
     
   }

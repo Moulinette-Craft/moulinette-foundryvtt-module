@@ -1,12 +1,23 @@
 {
+  "MOU.search": "Search ... (press ENTER)",
   "MOU.browser": "Moulinette Browser",
   "MOU.collection": "Collections",
   "MOU.collection_self_hosted": "Self-hosted (local)",
   "MOU.collection_cloud_owned": "Moulinette Cloud (accessible)",
   "MOU.collection_cloud_all": "Moulinette Cloud (all available)",
-  "MOU.art": "Art",
+  "MOU.asset_type": "Asset Type",
   "MOU.scene": "Scene",
   "MOU.map": "Map",
   "MOU.image": "Image",
-  "MOU.creator": "Creator"
+  "MOU.creator": "Creator",
+  "MOU.pdf": "PDF",
+  "MOU.page": "page",
+  "MOU.pages": "pages",
+  "MOU.scene_has_walls": "Scene has walls",
+  "MOU.scene_has_tiles": "Scene has tiles",
+  "MOU.scene_has_lights": "Scene has lights",
+  "MOU.scene_has_sounds": "Scene has sounds",
+  "MOU.scene_has_notes": "Scene has notes",
+  "MOU.scene_has_drawings": "Scene has drawings",
+  "MOU.scene_has_tokens": "Scene has tokens"
 }
