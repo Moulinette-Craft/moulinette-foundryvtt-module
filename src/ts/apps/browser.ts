@@ -1,12 +1,22 @@
 import { MODULE_ID, MOU_STORAGE_PUB } from "../constants";
+import { AnyDict } from "../types";
 import MouMediaUtils from "../utils/media-utils";
 import MouApplication from "./application";
+
 
 export default class MouBrowser extends MouApplication {
   
   override APP_NAME = "MouBrowser"
-  private assetType = "scene";
+  
   private html?: JQuery<HTMLElement>;
+  private filters:AnyDict = {
+    visible: true,
+    opensections: { collection: true, asset_type: true, creator: false },
+    collection: "cloud",
+    type: "scene",
+    creator: null,
+    pack: 0
+  }
 
   override get title(): string {
     return (game as Game).i18n.localize("MOU.browser");
@@ -24,29 +34,35 @@ export default class MouBrowser extends MouApplication {
   }
 
   override async getData() {
-    const assets = await this.getModule().cloudclient.randomAssets(this.assetType)
+    console.log(this.filters)
+    const assets = await this.getModule().cloudclient.randomAssets(this.filters.type)
     MouMediaUtils.prettyMediaNames(assets)
-    MouMediaUtils.prettyFilesizes(assets)
+
+    const creators = await this.getModule().cloudclient.getCreators()
+    const packs = this.filters.creator ? await this.getModule().cloudclient.getPacks(this.filters.creator) : null
 
     return {
       previewBaseURL: MOU_STORAGE_PUB,
       assets: assets,
-      type: this.assetType
+      filters: {
+        prefs: this.filters,
+        creators: creators,
+        packs: packs
+      }
     };
   }
 
   override activateListeners(html: JQuery<HTMLElement>): void {
     super.activateListeners(html);
     this.html = html
-    html
-      .find(".filters h2")
+    html.find(".filters h2")
       .on("click", this._onClickFilterSection.bind(this));
-    html
-      .find(".filters-toggle")
+    html.find(".filters-toggle")
       .on("click", this._onClickFiltersToggle.bind(this));
-    html
-      .find(".filters input")
+    html.find(".filters input")
       .on("click", this._onClickFilters.bind(this));
+    html.find(".filters select")
+      .on("change", this._onSelectFilters.bind(this));
   }
 
   /** Extend/collapse filter section */
@@ -57,13 +73,29 @@ export default class MouBrowser extends MouApplication {
       const id = section.data("id")
       if(id) {
         const filter = this.html?.find(`div[data-id='${id}']`)
-        console.log(filter)
         const icon = section.find('i')
         if(filter && icon) {
           filter.toggleClass("collapsed")
           icon.attr('class', icon.hasClass("fa-square-minus") ? "fa-regular fa-square-plus" : "fa-regular fa-square-minus")
+          this.filters.opensections[id] = icon.hasClass("fa-square-minus")
         }
       }
+    }
+  }
+
+  /** Drop-down list selection (creator/packs) */
+  async _onSelectFilters(event: Event): Promise<void> {
+    event.preventDefault();
+    if(event.currentTarget) {
+      const combo = $(event.currentTarget)
+      if(combo.attr('id') == "creator-select") {
+        this.filters.creator = combo.val();
+        this.filters.pack = 0
+      } else if(combo.attr('id') == "pack-select") {
+        this.filters.pack = Number(combo.val());
+      }
+      
+      this.render()
     }
   }
 
@@ -74,24 +106,18 @@ export default class MouBrowser extends MouApplication {
       const toggle = $(event.currentTarget)
       const filters = this.html?.find(`.filters`)
       if(filters) {
-        filters.toggle()
+        filters.toggleClass("collapsed")
         toggle.toggleClass("collapsed")
         toggle.find("i")?.attr('class', filters.is(":visible") ? "fa-solid fa-angles-left" : "fa-solid fa-angles-right")
+        this.filters.visible = filters.is(":visible")
       }
     }
   }
 
-  /** filters interaction */
-  async _onClickFilters(event: Event): Promise<void> {
-    this._refreshAssets()
-    console.log(event)
-  }
-
-  async _refreshAssets() {
-    const assetType = this.html?.find('.filters input[name=asset_type]:checked').attr('id')
-    this.assetType = assetType ? assetType : "scene"
-    this.render(true)
-    
+  /** Filter interactions */
+  async _onClickFilters(): Promise<void> {
+    this.filters.collection = this.html?.find('.filters input[name=collection]:checked').attr('id')
+    this.filters.type = this.html?.find('.filters input[name=asset_type]:checked').attr('id')
   }
 }
   

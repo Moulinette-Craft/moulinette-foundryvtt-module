@@ -57,6 +57,10 @@
       overflow: hidden;
       height: calc(100% - var(--mou-browser-header-height));
 
+      &.collapsed {
+        display: none;
+      }
+
       input[type="radio"] {
         margin: 3px 5px;
         width: 20px;
@@ -67,6 +71,10 @@
         display: flex;
         cursor: pointer;
         i { margin-left: auto; }
+
+        &:not(:first-child) {
+          margin-top: 15px;
+        }
       }
   
       .options {
@@ -84,6 +92,12 @@
       li {
         display: flex;
         align-items: center;
+      }
+
+      select {
+        width: 100%;
+        max-width: 100%;
+        margin: 5px 0px;
       }
     }
   

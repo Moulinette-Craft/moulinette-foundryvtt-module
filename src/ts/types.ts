@@ -10,3 +10,7 @@ export interface MouModule extends Game.ModuleData<ModuleData> {
   cloudclient: MouCloudClient;
   cache: MouCache;
 }
+
+export interface AnyDict {
+  [key: string]: any;
+}

@@ -39,7 +39,7 @@ export default class MouCloudClient {
   }
 
   /**
-   * 
+   * Returns user data from session (store in settings)
    */
   async getUser(force = false, forceRefresh = false) {
     const module = (game as Game).modules.get(MODULE_ID) as MouModule;
@@ -86,4 +86,11 @@ export default class MouCloudClient {
     return await MouCloudClient.apiGET(`/assets/random/${type}`)
   }
   
+  async getCreators() {
+    return await MouCloudClient.apiGET("/creators")
+  }
+
+  async getPacks(creator: string) {
+    return await MouCloudClient.apiGET(`/packs?creator=${encodeURIComponent(creator)}`)
+  }
 }

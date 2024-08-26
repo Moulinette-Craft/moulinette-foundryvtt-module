@@ -10,6 +10,7 @@ import { MODULE_ID, SETTINGS_SESSION_ID } from "./constants";
 import MouLayer from "./layers/mou-layer";
 import { MouModule } from "./types";
 import MouCache from "./utils/cache";
+import MouMediaUtils from "./utils/media-utils";
 
 let module: MouModule;
 
@@ -26,6 +27,14 @@ Hooks.once("init", () => {
 
   const layers = { moulayer: { layerClass: MouLayer, group: "primary" } }
   CONFIG.Canvas.layers = foundry.utils.mergeObject(Canvas.layers, layers);
+
+  Handlebars.registerHelper('prettyNumber', function(value) {
+    return MouMediaUtils.prettyFilesize(value)
+  });
+
+  Handlebars.registerHelper('mouIf', function(cond, value1, value2) {
+    return cond ? value1 : value2
+  });
 });
 
 Hooks.once("ready", () => {

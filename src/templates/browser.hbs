@@ -3,49 +3,68 @@
     <input type="text" placeholder="{{localize "MOU.search"}}" aria-label="Search">
   </header>
   <div class="container">
-    <div class="filters-toggle"><i class="fa-solid fa-angles-left"></i></div>
-    <aside class="filters">
-      <h2 data-id="collection">{{localize "MOU.collection"}} <i class="fa-regular fa-square-minus"></i></h2>
-      <div data-id="collection">
+    <div class="filters-toggle {{#unless filters.prefs.visible}}collapsed{{/unless}}"><i class="fa-solid fa-angles-{{mouIf filters.prefs.visible "left" "right"}}"></i></div>
+    <aside class="filters {{#unless filters.prefs.visible}}collapsed{{/unless}}">
+      <h2 data-id="collection">{{localize "MOU.collection"}} <i class="fa-regular fa-square-{{mouIf filters.prefs.opensections.collection "minus" "plus"}}"></i></h2>
+      <div data-id="collection" class="{{#unless filters.prefs.opensections.collection}}collapsed{{/unless}}">
         <ul>
-          <li><input type="checkbox" id="local"><label for="local">{{localize "MOU.collection_self_hosted"}}</label></li>
-          <li><input type="checkbox" id="owned"><label for="owned">{{localize "MOU.collection_cloud_owned"}}</label></li>
-          <li><input type="checkbox" id="cloud"><label for="cloud">{{localize "MOU.collection_cloud_all"}}</label></li>
+          <li>
+            <input type="radio" name="collection" id="local" {{#if (eq filters.prefs.collection "local")}}checked{{/if}}>
+            <label for="local">{{localize "MOU.collection_self_hosted"}}</label>
+          </li>
+          <li>
+            <input type="radio" name="collection" id="owned" {{#if (eq filters.prefs.collection "owned")}}checked{{/if}}>
+            <label for="owned">{{localize "MOU.collection_cloud_owned"}}</label>
+          </li>
+          <li>
+            <input type="radio" name="collection" id="cloud" {{#if (eq filters.prefs.collection "cloud")}}checked{{/if}}>
+            <label for="cloud">{{localize "MOU.collection_cloud_all"}}</label>
+            </li>
         </ul>
       </div>
       
-      <h2 data-id="asset_type">{{localize "MOU.asset_type"}} <i class="fa-regular fa-square-minus"></i></h2>
-      <div class="options" data-id="asset_type">
+      <h2 data-id="asset_type">{{localize "MOU.asset_type"}} <i class="fa-regular fa-square-{{mouIf filters.prefs.opensections.asset_type "minus" "plus"}}"></i></h2>
+      <div class="options {{#unless filters.prefs.opensections.asset_type}}collapsed{{/unless}}" data-id="asset_type">
         <ul>
           <li>
-            <input type="radio" name="asset_type" id="scene" {{#if (eq type "scene")}}checked{{/if}}>
+            <input type="radio" name="asset_type" id="scene" {{#if (eq filters.prefs.type "scene")}}checked{{/if}}>
             <label for="scene">{{localize "MOU.scene"}}</label>
           </li>
           <li>
-            <input type="radio" name="asset_type" id="map" {{#if (eq type "map")}}checked{{/if}}>
+            <input type="radio" name="asset_type" id="map" {{#if (eq filters.prefs.type "map")}}checked{{/if}}>
             <label for="map">{{localize "MOU.map"}}</label>
           </li>
           <li>
-            <input type="radio" name="asset_type" id="img" {{#if (eq type "img")}}checked{{/if}}>
+            <input type="radio" name="asset_type" id="img" {{#if (eq filters.prefs.type "img")}}checked{{/if}}>
             <label for="image">{{localize "MOU.image"}}</label>
           </li>
         </ul>
         <ul>
           <li>
-            <input type="radio" name="asset_type" id="pdf" {{#if (eq type "pdf")}}checked{{/if}}>
+            <input type="radio" name="asset_type" id="pdf" {{#if (eq filters.prefs.type "pdf")}}checked{{/if}}>
             <label for="pdf">{{localize "MOU.pdf"}}</label>
           </li>
         </ul>
       </div>
       
-      <h2 data-id="creator">{{localize "MOU.creator"}} <i class="fa-regular fa-square-plus"></i></h2>
-      <div data-id="creator" class="collapsed">
-        <ul>
-          <select name="pets" id="pet-select">
-            <option value="">--Please choose an option--</option>
-            <option value="dog">Dog</option>
+      <h2 data-id="creator">{{localize "MOU.creator"}} <i class="fa-regular fa-square-{{mouIf filters.prefs.opensections.creator "minus" "plus"}}"></i></h2>
+      <div data-id="creator" class="{{#unless filters.prefs.opensections.creator}}collapsed{{/unless}}">
+        <div>
+          <select name="creators" id="creator-select">
+            <option value="">--Please choose a creator--</option>
+            {{#each filters.creators as |c|}}
+              <option value="{{c.creator}}" {{#if (eq ../filters.prefs.creator c.creator)}}selected{{/if}}>{{c.creator}}</option>
+            {{/each}}
           </select>
-        </ul>
+          {{#if filters.packs}}
+          <select name="packs" id="pack-select">
+            <option value="">--Please choose a pack--</option>
+            {{#each filters.packs as |p|}}
+              <option value="{{p.pack_ref}}" {{#if (eq ../filters.prefs.pack p.pack_ref)}}selected{{/if}}>{{p.name}} {{p.pack_ref}} {{../filters.prefs.pack}}</option>
+            {{/each}}
+          </select>
+          {{/if}}
+        </div>
       </div>
     </aside>
     <main class="content">
@@ -86,18 +105,18 @@
           </div>
           <div class="meta">
             {{#if (eq a.type "scene")}}
-              {{a.scene.width}} x {{a.scene.height}}, {{a.filesizeHuman}}+
+              {{a.scene.width}} x {{a.scene.height}}, {{prettyNumber a.filesize}}+
             {{/if}}
             {{#if (eq a.type "map")}}
-              {{a.size.width}} x {{a.size.height}}, {{a.filesizeHuman}}
+              {{a.size.width}} x {{a.size.height}}, {{prettyNumber a.filesize}}
             {{/if}}
             {{#if (eq a.type "img")}}
-              {{a.size.width}} x {{a.size.height}}, {{a.filesizeHuman}}
+              {{a.size.width}} x {{a.size.height}}, {{prettyNumber a.filesize}}
             {{/if}}
             {{#if (eq a.type "pdf")}}
               {{a.pdf.pages}}
               {{#if (gt a.pdf.pages 1)}}{{localize "MOU.pages"}}{{/if}}{{#unless (gt a.pdf.pages 1)}}{{localize "MOU.page"}}{{/unless}},
-              {{a.filesizeHuman}}
+              {{prettyNumber a.filesize}}
             {{/if}}
           </div>
         </div>
