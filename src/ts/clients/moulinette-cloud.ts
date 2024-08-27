@@ -1,23 +1,39 @@
 import MouApplication from "../apps/application";
 import { MODULE_ID, MOU_API, SETTINGS_SESSION_ID } from "../constants";
-import { MouModule } from "../types";
+import { AnyDict, MouModule } from "../types";
 
 export default class MouCloudClient {
 
   static APP_NAME = "MouCloudClient"
+  static HEADERS = { 'Accept': 'application/json', 'Content-Type': 'application/json' }
 
-  private static async apiGET(uri: string, parameters?: {}) {
+  private static async _fetch(uri: string, method: string, parameters?: {}, data?:AnyDict) {
+    let init:AnyDict = {
+      method: method,
+      headers: MouCloudClient.HEADERS
+    }
+    if( data ) { init.body = JSON.stringify(data) }
+
     let params = ""
     if(parameters) {
       Object.entries(parameters).forEach((entry) => {
         params += `${entry[0]}=${entry[1]}&`
       })
     }
-    const response = await fetch(`${MOU_API}${uri}` + (params.length > 0 ? `?${params}` : ""));    
+
+    const response = await fetch(`${MOU_API}${uri}` + (params.length > 0 ? `?${params}` : ""), init)
     if (!response.ok) {
-        throw new Error(`HTTP error! Status : ${response.status}`);
+      throw new Error(`HTTP error! Status : ${response.status}`);
     }
     return await response.json()
+  }
+
+  private static async apiGET(uri: string, parameters?: {}) {
+    return MouCloudClient._fetch(uri, "GET", parameters)
+  }
+
+  private static async apiPOST(uri: string, data: AnyDict, parameters?: {}) {
+    return MouCloudClient._fetch(uri, "POST", parameters, data)
   }
 
   /**
@@ -82,8 +98,8 @@ export default class MouCloudClient {
     return module.cache.user
   }
 
-  async randomAssets(type: string) {
-    return await MouCloudClient.apiGET(`/assets/random/${type}`)
+  async randomAssets(filters: AnyDict) {
+    return await MouCloudClient.apiPOST(`/assets/random`, filters)
   }
   
   async getCreators() {

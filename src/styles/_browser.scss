@@ -116,7 +116,7 @@
         width: 200px;
         margin: 8px;
         
-        &.img .preview {
+        &.img .preview, &.actor .preview, &.item .preview {
           img {
             width: 150px;
           }

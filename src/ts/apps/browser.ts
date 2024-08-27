@@ -9,12 +9,15 @@ export default class MouBrowser extends MouApplication {
   override APP_NAME = "MouBrowser"
   
   private html?: JQuery<HTMLElement>;
-  private filters:AnyDict = {
+  private filters_prefs:AnyDict = {
     visible: true,
     opensections: { collection: true, asset_type: true, creator: false },
     collection: "cloud",
-    type: "scene",
-    creator: null,
+    focus: "search"
+  }
+  private filters = {
+    type: "map",
+    creator: "",
     pack: 0
   }
 
@@ -34,8 +37,7 @@ export default class MouBrowser extends MouApplication {
   }
 
   override async getData() {
-    console.log(this.filters)
-    const assets = await this.getModule().cloudclient.randomAssets(this.filters.type)
+    const assets = await this.getModule().cloudclient.randomAssets(this.filters)
     MouMediaUtils.prettyMediaNames(assets)
 
     const creators = await this.getModule().cloudclient.getCreators()
@@ -45,7 +47,8 @@ export default class MouBrowser extends MouApplication {
       previewBaseURL: MOU_STORAGE_PUB,
       assets: assets,
       filters: {
-        prefs: this.filters,
+        prefs: this.filters_prefs,
+        values: this.filters,
         creators: creators,
         packs: packs
       }
@@ -63,6 +66,13 @@ export default class MouBrowser extends MouApplication {
       .on("click", this._onClickFilters.bind(this));
     html.find(".filters select")
       .on("change", this._onSelectFilters.bind(this));
+
+    switch(this.filters_prefs.focus) {
+      case "search": this.html.find(".searchbar input").trigger("focus"); break
+      case "creator": this.html.find("#creator-select").trigger("focus"); break
+      case "pack": this.html.find("#pack-select").trigger("focus"); break
+      default:
+    }
   }
 
   /** Extend/collapse filter section */
@@ -77,7 +87,7 @@ export default class MouBrowser extends MouApplication {
         if(filter && icon) {
           filter.toggleClass("collapsed")
           icon.attr('class', icon.hasClass("fa-square-minus") ? "fa-regular fa-square-plus" : "fa-regular fa-square-minus")
-          this.filters.opensections[id] = icon.hasClass("fa-square-minus")
+          this.filters_prefs.opensections[id] = icon.hasClass("fa-square-minus")
         }
       }
     }
@@ -89,10 +99,12 @@ export default class MouBrowser extends MouApplication {
     if(event.currentTarget) {
       const combo = $(event.currentTarget)
       if(combo.attr('id') == "creator-select") {
-        this.filters.creator = combo.val();
+        this.filters.creator = String(combo.val());
         this.filters.pack = 0
+        this.filters_prefs.focus = "creator"
       } else if(combo.attr('id') == "pack-select") {
         this.filters.pack = Number(combo.val());
+        this.filters_prefs.focus = "pack"
       }
       
       this.render()
@@ -109,15 +121,17 @@ export default class MouBrowser extends MouApplication {
         filters.toggleClass("collapsed")
         toggle.toggleClass("collapsed")
         toggle.find("i")?.attr('class', filters.is(":visible") ? "fa-solid fa-angles-left" : "fa-solid fa-angles-right")
-        this.filters.visible = filters.is(":visible")
+        this.filters_prefs.visible = filters.is(":visible")
       }
     }
   }
 
   /** Filter interactions */
   async _onClickFilters(): Promise<void> {
-    this.filters.collection = this.html?.find('.filters input[name=collection]:checked').attr('id')
-    this.filters.type = this.html?.find('.filters input[name=asset_type]:checked').attr('id')
+    this.filters_prefs.collection = this.html?.find('.filters input[name=collection]:checked').attr('id')
+    const type = this.html?.find('.filters input[name=asset_type]:checked').attr('id')
+    this.filters.type = type ? type : "scene"
+    this.render()
   }
 }
   

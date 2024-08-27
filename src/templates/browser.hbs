@@ -27,22 +27,26 @@
       <div class="options {{#unless filters.prefs.opensections.asset_type}}collapsed{{/unless}}" data-id="asset_type">
         <ul>
           <li>
-            <input type="radio" name="asset_type" id="scene" {{#if (eq filters.prefs.type "scene")}}checked{{/if}}>
-            <label for="scene">{{localize "MOU.scene"}}</label>
-          </li>
-          <li>
-            <input type="radio" name="asset_type" id="map" {{#if (eq filters.prefs.type "map")}}checked{{/if}}>
+            <input type="radio" name="asset_type" id="map" {{#if (eq filters.values.type "map")}}checked{{/if}}>
             <label for="map">{{localize "MOU.map"}}</label>
           </li>
           <li>
-            <input type="radio" name="asset_type" id="img" {{#if (eq filters.prefs.type "img")}}checked{{/if}}>
+            <input type="radio" name="asset_type" id="img" {{#if (eq filters.values.type "img")}}checked{{/if}}>
             <label for="image">{{localize "MOU.image"}}</label>
           </li>
         </ul>
         <ul>
           <li>
-            <input type="radio" name="asset_type" id="pdf" {{#if (eq filters.prefs.type "pdf")}}checked{{/if}}>
+            <input type="radio" name="asset_type" id="pdf" {{#if (eq filters.values.type "pdf")}}checked{{/if}}>
             <label for="pdf">{{localize "MOU.pdf"}}</label>
+          </li>
+          <li>
+            <input type="radio" name="asset_type" id="actor" {{#if (eq filters.values.type "actor")}}checked{{/if}}>
+            <label for="pdf">{{localize "MOU.actor"}}</label>
+          </li>
+          <li>
+            <input type="radio" name="asset_type" id="item" {{#if (eq filters.values.type "item")}}checked{{/if}}>
+            <label for="pdf">{{localize "MOU.item"}}</label>
           </li>
         </ul>
       </div>
@@ -53,14 +57,14 @@
           <select name="creators" id="creator-select">
             <option value="">--Please choose a creator--</option>
             {{#each filters.creators as |c|}}
-              <option value="{{c.creator}}" {{#if (eq ../filters.prefs.creator c.creator)}}selected{{/if}}>{{c.creator}}</option>
+              <option value="{{c.creator}}" {{#if (eq ../filters.values.creator c.creator)}}selected{{/if}}>{{c.creator}}</option>
             {{/each}}
           </select>
           {{#if filters.packs}}
           <select name="packs" id="pack-select">
             <option value="">--Please choose a pack--</option>
             {{#each filters.packs as |p|}}
-              <option value="{{p.pack_ref}}" {{#if (eq ../filters.prefs.pack p.pack_ref)}}selected{{/if}}>{{p.name}} {{p.pack_ref}} {{../filters.prefs.pack}}</option>
+              <option value="{{p.pack_ref}}" {{#if (eq ../filters.values.pack p.pack_ref)}}selected{{/if}}>{{p.name}}</option>
             {{/each}}
           </select>
           {{/if}}
@@ -99,6 +103,16 @@
               <img src="{{../previewBaseURL}}{{a.pack.creator_ref}}/{{a.pack.path}}/{{a.basepath}}.webp"/>
             </div>
           {{/if}}
+          {{#if (eq a.type "actor")}}
+            <div class="preview">
+              <img src="{{../previewBaseURL}}{{a.pack.creator_ref}}/{{a.pack.path}}/{{a.basepath}}.webp"/>
+            </div>
+          {{/if}}
+          {{#if (eq a.type "item")}}
+            <div class="preview">
+              <img src="{{../previewBaseURL}}{{a.pack.creator_ref}}/{{a.pack.path}}/{{a.basepath}}.webp"/>
+            </div>
+          {{/if}}
           <div class="info">
             <div class="source" title="{{a.pack.creator}} - {{a.pack.name}}">{{a.pack.creator}} - {{a.pack.name}}</div>
             <div class="title">{{a.name}}</div>
@@ -117,6 +131,12 @@
               {{a.pdf.pages}}
               {{#if (gt a.pdf.pages 1)}}{{localize "MOU.pages"}}{{/if}}{{#unless (gt a.pdf.pages 1)}}{{localize "MOU.page"}}{{/unless}},
               {{prettyNumber a.filesize}}
+            {{/if}}
+            {{#if (eq a.type "actor")}}
+              {{prettyNumber a.filesize}}+
+            {{/if}}
+            {{#if (eq a.type "item")}}
+              {{prettyNumber a.filesize}}+
             {{/if}}
           </div>
         </div>
