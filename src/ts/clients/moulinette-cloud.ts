@@ -28,11 +28,11 @@ export default class MouCloudClient {
     return await response.json()
   }
 
-  private static async apiGET(uri: string, parameters?: {}) {
+  static async apiGET(uri: string, parameters?: {}) {
     return MouCloudClient._fetch(uri, "GET", parameters)
   }
 
-  private static async apiPOST(uri: string, data: AnyDict, parameters?: {}) {
+  static async apiPOST(uri: string, data: AnyDict, parameters?: {}) {
     return MouCloudClient._fetch(uri, "POST", parameters, data)
   }
 
@@ -102,11 +102,15 @@ export default class MouCloudClient {
     return await MouCloudClient.apiPOST(`/assets/random`, filters)
   }
   
-  async getCreators() {
-    return await MouCloudClient.apiGET("/creators")
+  async getCreators(type: string) {
+    return await MouCloudClient.apiPOST("/creators", { type: type })
   }
 
-  async getPacks(creator: string) {
-    return await MouCloudClient.apiGET(`/packs?creator=${encodeURIComponent(creator)}`)
+  async getPacks(type: string, creator: string) {
+    return await MouCloudClient.apiPOST("/packs", { type: type, creator: creator })
+  }
+
+  async getTypes(filters: AnyDict) {
+    return await MouCloudClient.apiPOST("/assets/types", filters)
   }
 }

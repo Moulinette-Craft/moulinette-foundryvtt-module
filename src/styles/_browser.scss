@@ -109,6 +109,7 @@
       max-height: calc(100% - var(--mou-browser-header-height));
       overflow-y: auto;
       box-sizing: border-box;
+      scrollbar-width: auto;
 
       .asset {
         display: flex;
@@ -116,7 +117,7 @@
         width: 200px;
         margin: 8px;
         
-        &.img .preview, &.actor .preview, &.item .preview {
+        &.small {
           img {
             width: 150px;
           }

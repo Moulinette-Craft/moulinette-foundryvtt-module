@@ -1,26 +1,18 @@
-export interface IMediaAsset {
-  _id: string;
-  filepath: string;
-  basepath: string;
-  filesize: number;
-  main_color: string;
-  tags: Array<string>;
-  size: Object;
-  type: string;
-  pack_ref: number;
-  name: string;
-}
 
 export default class MouMediaUtils {
 
-  /** Generates pretty names based of filepaths and generates basepaths **/
-  static prettyMediaNames(assets: Array<IMediaAsset>) {
-    assets.forEach(a => {
-      a.basepath = a.filepath.replace(/\.[^/.]+$/, "") // remove extension
-      let name = a.basepath.split("/").pop()           // keep filename only (not entire path)
-      name = name?.replace(/[-_]/g, " ")                // replace _ and - by spaces
-      a.name = name ? name : a.filepath
-    });
+  /** Returns the base path (URL without extension) of an asset (path) */
+  static getBasePath(filepath: string) {
+    return filepath.replace(/\.[^/.]+$/, "")
+  }
+
+  /** Generates pretty name based of filepath **/
+  static prettyMediaNames(filepath: string) {
+    const basepath = MouMediaUtils.getBasePath(filepath)
+    let name = basepath.split("/").pop()                  // keep filename only (not entire path)
+    name = name?.replace(/[-_]/g, " ")                    // replace _ and - by spaces
+    name = name ? name : filepath
+    return name
   }
 
   /** Generates a human readable filesize **/
@@ -33,6 +25,22 @@ export default class MouMediaUtils {
     } else {
       const size = filesize / (1024*1024)
       return `${size.toFixed(1).toLocaleString()} MB`
+    }
+  }
+
+  /** Generates a human readable number **/
+  static prettyNumber(number : number, full: boolean) {
+    if(full) {
+      return number.toLocaleString()
+    }
+    // short version (K,M)
+    if(number < 1000) {
+      return number 
+    }
+    else if(number < 1000000) {
+      return `${(number / 1000).toFixed(1)}K`
+    } else {
+      return `${(number / 1000000).toFixed(1)}M`
     }
   }
   
