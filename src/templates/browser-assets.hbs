@@ -1,16 +1,14 @@
 {{#each assets as |a|}}
-  <div class="asset {{a.format}}">
+  <div class="asset {{a.format}}" data-id="{{a.id}}" data-type="{{a.type}}">
+    <div class="overlay"></div>
+    <div class="menu"></div>
     <div class="preview" {{#if a.background_color}}style="background-color: #{{a.background_color}}"{{/if}}>
       <img src="{{a.image}}"/>
+      {{#if a.icons}}
       <ul class="icons">
-        {{#if a.scene.hasWalls}}<li title="{{localize "MOU.scene_has_walls"}}"><i class="fa-solid fa-block-brick"></i></li>{{/if}}
-        {{#if a.scene.hasLights}}<li title="{{localize "MOU.scene_has_lights"}}"><i class="fa-regular fa-lightbulb"></i></li>{{/if}}
-        {{#if a.scene.hasSounds}}<li title="{{localize "MOU.scene_has_sounds"}}"><i class="fa-solid fa-music"></i></li>{{/if}}
-        {{#if a.scene.hasTokens}}<li title="{{localize "MOU.scene_has_tokens"}}"><i class="fa-solid fa-user-alt"></i></li>{{/if}}
-        {{#if a.scene.hasTiles}}<li title="{{localize "MOU.scene_has_tiles"}}"><i class="fa-solid fa-cubes"></i></li>{{/if}}
-        {{#if a.scene.hasDrawings}}<li title="{{localize "MOU.scene_has_drawings"}}"><i class="fa-solid fa-pencil-alt"></i></li>{{/if}}
-        {{#if a.scene.hasNotes}}<li title="{{localize "MOU.scene_has_notes"}}"><i class="fa-solid fa-bookmark"></i></li>{{/if}}
+        {{#each a.icons as |i|}}<li title="{{i.descr}}"><i class="{{i.icon}}"></i></li>{{/each}}
       </ul>
+      {{/if}}
     </div>
     <div class="info">
       <div class="source" title="{{a.creator}} - {{a.pack}}">{{a.creator}} - {{a.pack}}</div>

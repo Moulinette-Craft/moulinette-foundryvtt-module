@@ -17,12 +17,14 @@ export interface MouCollectionAssetType {
 
 export interface MouCollectionAsset {
   id: string
+  type: number
   format: string
   image: string
   creator: string
   pack: string
   name: string
   meta: string[]
+  icons?: {descr: string, icon: string}[]
   background_color: string
 }
 
@@ -42,6 +44,11 @@ export interface MouCollectionFilters {
   creator?: string,
   pack?: number,
   type?: number
+}
+
+export interface MouCollectionAction {
+  id: string,
+  name: string
 }
 
 
@@ -67,6 +74,12 @@ export interface MouCollection {
 
   /** Returns random assets from the collection based on filters */
   getRandomAssets(filters: MouCollectionFilters): Promise<MouCollectionAsset[]>
+
+  /** Returns the list of available action  */
+  getActions(type: number): MouCollectionAction[]
+
+  /** Execute the action */
+  executeAction(actionId: string, assetId: string): Promise<void>
 }
 
 

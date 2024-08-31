@@ -1,8 +1,7 @@
-import MouCollectionCloud, { CloudMode } from "../collections/collection-cloud";
 import { MODULE_ID } from "../constants";
-import { AnyDict } from "../types";
+import { AnyDict, MouModule } from "../types";
 import MouApplication from "./application";
-import { MouCollectionAssetTypeEnum, MouCollectionFilters, MouCollectionUtils } from "./collection";
+import { MouCollection, MouCollectionAssetTypeEnum, MouCollectionFilters, MouCollectionUtils } from "./collection";
 
 
 export default class MouBrowser extends MouApplication {
@@ -12,7 +11,7 @@ export default class MouBrowser extends MouApplication {
   private html?: JQuery<HTMLElement>;
   private ignoreScroll: boolean = false;
   private page: number = 0; // -1 means = ignore. Otherwise, increments the page and loads more data
-  private collection = new MouCollectionCloud(CloudMode.ALL)
+  private collection?: MouCollection;
   
   /* Filter preferences */
   private filters_prefs:AnyDict = {
@@ -45,6 +44,16 @@ export default class MouBrowser extends MouApplication {
   }
 
   override async getData() {
+    // check that module and collections are properly loaded
+    const module = (game as Game).modules.get(MODULE_ID) as MouModule
+    if(!module || !module.collections || module.collections.length == 0) 
+      throw new Error(`${this.APP_NAME} | Module ${MODULE_ID} not found or no collection loaded`);
+    // check that selected collection exists
+    this.collection = module.collections.find( c => c.getId() == this.filters_prefs.collection)
+    if(!this.collection) {
+      throw new Error(`${this.APP_NAME} | Collection ${this.filters_prefs.collection} couldn't be found!`);
+    }
+
     this.page = 0
     const creators = this.filters.type ? await this.collection.getCreators(this.filters.type) : null
     const packs = this.filters.creator && this.filters.type ? await this.collection.getPacks(this.filters.type, this.filters.creator) : null
@@ -59,7 +68,7 @@ export default class MouBrowser extends MouApplication {
 
     return {
       filters: {
-        collections: [{id: this.collection.getId(), name: this.collection.getName()}],
+        collections: module.collections.map( col => ( {id: col.getId(), name: col.getName() } )),
         prefs: this.filters_prefs,
         values: this.filters,
         creators,
@@ -95,7 +104,7 @@ export default class MouBrowser extends MouApplication {
   }
 
   async loadMoreAssets() {
-    if(this.page < 0) return
+    if(this.page < 0 || !this.collection) return
     const assets = await this.collection.getAssets(this.filters, this.page)
     if(assets.length == 0) {
       this.page = -1
@@ -106,6 +115,10 @@ export default class MouBrowser extends MouApplication {
       const html = await renderTemplate(`modules/${MODULE_ID}/templates/browser-assets.hbs`, { assets })
       this.html?.find(".content").append(html)
     }
+    // activate listeners
+    this.html?.find(".asset").off()
+    this.html?.find(".asset").on("mouseenter", this._onAssetMouseEnter.bind(this));
+    this.html?.find(".asset").on("mouseleave", this._onAssetMouseLeave.bind(this));
   }
 
   /** Extend/collapse filter section */
@@ -163,7 +176,7 @@ export default class MouBrowser extends MouApplication {
   async _onClickFilters(): Promise<void> {
     this.filters_prefs.collection = this.html?.find('.filters input[name=collection]:checked').attr('id')
     const type = Number(this.html?.find('.filters input[name=asset_type]:checked').attr('id'))
-    this.filters.type = type ? (type as MouCollectionAssetTypeEnum) : MouCollectionAssetTypeEnum.Scene
+    this.filters.type = type ? (type as MouCollectionAssetTypeEnum) : MouCollectionAssetTypeEnum.Map
     this.render()
   }
 
@@ -180,6 +193,43 @@ export default class MouBrowser extends MouApplication {
         await this.loadMoreAssets()
         this.ignoreScroll = false
       }
+    }
+  }
+
+  /** Mouse over an item : render menu */
+  _onAssetMouseEnter(event: Event) {
+    if(event.currentTarget) {
+      const target = $(event.currentTarget)
+      target.find(".menu").show(); 
+      target.find(".overlay").show(); 
+      const type = Number(target.data("type"))
+      const actions = this.collection?.getActions(type)
+      if(actions) {
+        renderTemplate(`modules/${MODULE_ID}/templates/browser-assets-actions.hbs`, { actions }).then( (html) => {
+          target.find(".menu").html(html)
+          target.find(".menu button").on("click", this._onAction.bind(this))
+        })
+      }
+    }
+  }
+
+  /** Mouse out an item : hide menu */
+  _onAssetMouseLeave(event: Event) {
+    if(event.currentTarget) {
+      const target = $(event.currentTarget)
+      target.find(".menu").html("")
+      target.find(".menu").hide(); 
+      target.find(".overlay").hide();
+    }
+  }
+
+  /** User clicked on menu item */
+  _onAction(event: Event) {
+    if(event.currentTarget) {
+      const target = $(event.currentTarget)
+      const actionId = target.data("id")
+      const assetId = target.closest(".asset").data("id")
+      this.collection?.executeAction(actionId, assetId)
     }
   }
 }

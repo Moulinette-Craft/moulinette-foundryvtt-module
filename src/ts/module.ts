@@ -11,6 +11,8 @@ import MouLayer from "./layers/mou-layer";
 import { MouModule } from "./types";
 import MouCache from "./utils/cache";
 import MouMediaUtils from "./utils/media-utils";
+import { MouCollection } from "./apps/collection";
+import MouCollectionCloud, { CloudMode } from "./collections/collection-cloud";
 
 let module: MouModule;
 
@@ -22,7 +24,8 @@ Hooks.once("init", () => {
   module.user = new MouUser();
   module.cloudclient = new MouCloudClient();
   module.cache = new MouCache();
-
+  module.collections = [] as MouCollection[]
+  
   (game as Game).settings.register(MODULE_ID, SETTINGS_SESSION_ID, { scope: "world", config: false, type: String, default: "anonymous" });
 
   const layers = { moulayer: { layerClass: MouLayer, group: "primary" } }
@@ -44,6 +47,10 @@ Hooks.once("init", () => {
 Hooks.once("ready", () => {
   // force retrieving Moulinette user
   module.cloudclient.getUser()
+  // load default collections
+  module.collections.push(new MouCollectionCloud(CloudMode.ONLY_SUPPORTED_CREATORS))
+  module.collections.push(new MouCollectionCloud(CloudMode.ALL_ACCESSIBLE))
+  module.collections.push(new MouCollectionCloud(CloudMode.ALL))
 });
 
 /**
