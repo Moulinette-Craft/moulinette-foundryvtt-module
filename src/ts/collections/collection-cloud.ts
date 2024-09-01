@@ -1,14 +1,28 @@
 import MouApplication from "../apps/application";
-import { MouCollection, MouCollectionAction, MouCollectionAsset, MouCollectionAssetType, MouCollectionAssetTypeEnum, MouCollectionCreator, MouCollectionFilters, MouCollectionPack } from "../apps/collection";
 import MouCloudClient from "../clients/moulinette-cloud";
+import MouDownloadManager from "../utils/download-manager";
+import MouMediaUtils from "../utils/media-utils";
+
+import { MouCollection, MouCollectionAction, MouCollectionAsset, MouCollectionAssetType, MouCollectionAssetTypeEnum, MouCollectionCreator, MouCollectionFilters, MouCollectionPack } from "../apps/collection";
 import { MOU_STORAGE_PUB, SETTINGS_SESSION_ID } from "../constants";
 import { AnyDict } from "../types";
-import MouMediaUtils from "../utils/media-utils";
 
 export enum CloudMode {
   ALL,                      // all assets including non-accessible
   ALL_ACCESSIBLE,           // all assets the user can access
   ONLY_SUPPORTED_CREATORS   // only assets from creators the user actively supports
+}
+
+enum CloudAssetType {
+  PREVIEW,                  // asset a preview (no access, requires membership)
+  FREE,                     // asset is a freebe from creator
+  AVAILABLE,                // asset is available (but not free)
+}
+
+enum CloudAssetAction {
+  DOWNLOAD,                 // download asset and copy path to clipboard
+  IMPORT,                   // import asset (scenes/...)
+  MEMBERSHIP                // creator support page
 }
 
 class MouCollectionCloudAsset implements MouCollectionAsset {
@@ -20,9 +34,13 @@ class MouCollectionCloudAsset implements MouCollectionAsset {
   background_color: string;
   creator: string;
   pack: string;
+  pack_id: string;
   name: string;
   meta: string[];
   icons?: {descr: string, icon: string}[];
+
+  // specific to MouCollectionCloud
+  cloud_type: number; 
   
   constructor(data: AnyDict) {
     this.id = data._id;
@@ -32,14 +50,24 @@ class MouCollectionCloudAsset implements MouCollectionAsset {
     this.background_color = [MouCollectionAssetTypeEnum.Scene, MouCollectionAssetTypeEnum.Map].includes(data.type) ? data.main_color : null
     this.creator = data.pack.creator
     this.pack = data.pack.name
+    this.pack_id = data.pack_ref
     this.name = MouMediaUtils.prettyMediaNames(data.filepath)
     this.type = data.type;
     this.meta = []
+    this.icons = []
 
+    if(data.perms == 0) {
+      this.icons.push({descr: (game as Game).i18n.localize("MOU.pack_is_free"), icon: "fa-solid fa-gift"})
+      this.cloud_type = CloudAssetType.FREE
+    } else if (data.perms < 0) {
+      this.cloud_type = CloudAssetType.PREVIEW
+    } else {
+      this.cloud_type = CloudAssetType.AVAILABLE
+    }
+    
     switch(data.type) {
       case MouCollectionAssetTypeEnum.Scene:
         this.meta = [`${data.scene.width} x ${data.scene.height}`]
-        this.icons = []
         if(data.scene.hasWalls) this.icons.push({descr: (game as Game).i18n.localize("MOU.scene_has_walls"), icon: "fa-solid fa-block-brick"})
         if(data.scene.hasLights) this.icons.push({descr: (game as Game).i18n.localize("MOU.scene_has_lights"), icon: "fa-regular fa-lightbulb"})
         if(data.scene.hasSounds) this.icons.push({descr: (game as Game).i18n.localize("MOU.scene_has_sounds"), icon: "fa-solid fa-music"})
@@ -148,21 +176,37 @@ export default class MouCollectionCloud implements MouCollection {
     return results
   }
 
-  getActions(type: Number): MouCollectionAction[] {
+  getActions(asset: MouCollectionAsset): MouCollectionAction[] {
     const actions = [] as MouCollectionAction[]
-    switch(type) {
-      case MouCollectionAssetTypeEnum.Scene:
-      default:
-        actions.push({
-          id: "download",
-          name: "Download"
-        })
+    const cAsset = (asset as MouCollectionCloudAsset)
+    if(cAsset.cloud_type == CloudAssetType.PREVIEW) {
+      actions.push({ id: CloudAssetAction.MEMBERSHIP, name: (game as Game).i18n.localize("MOU.action_support"), icon: "fa-solid fa-hands-praying" })
+      return actions
     }
+    
+    switch(cAsset.type) {
+      case MouCollectionAssetTypeEnum.Scene:
+      case MouCollectionAssetTypeEnum.Map:
+        actions.push({ id: CloudAssetAction.IMPORT, name: (game as Game).i18n.localize("MOU.action_import"), icon: "fa-solid fa-file-import" })
+        break;    
+    }
+    actions.push({ id: CloudAssetAction.DOWNLOAD, name: (game as Game).i18n.localize("MOU.action_download"), icon: "fa-solid fa-cloud-arrow-down" })
+    
     return actions
   }
 
-  executeAction(actionId: string, assetId: string): Promise<void> {
-    console.log(actionId, assetId)
-    throw new Error("Method not implemented.");
+  async executeAction(actionId: number, assetId: string): Promise<void> {
+    switch(actionId) {
+      case CloudAssetAction.DOWNLOAD:
+        const asset = await MouCloudClient.apiGET(`/asset/${assetId}`, { session: MouApplication.getSettings(SETTINGS_SESSION_ID) })
+        const assetType = MouCollectionAssetTypeEnum[asset.type]
+        if(!asset.base_url.startsWith(MouCloudClient.AZURE_BASEURL)) {
+          throw new Error("Invalid BaseURL?")
+        }
+        const folderPath = asset.base_url.substring(MouCloudClient.AZURE_BASEURL.length)
+        const fileUrl = `${asset.base_url}/${asset.file_url}`
+        MouDownloadManager.downloadFile(fileUrl, `moulinette-v2/${assetType.toLowerCase()}s/${folderPath}`)
+        break
+    }
   }
 }

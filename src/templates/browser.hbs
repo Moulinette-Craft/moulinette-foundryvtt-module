@@ -5,13 +5,14 @@
   <div class="container">
     <div class="filters-toggle {{#unless filters.prefs.visible}}collapsed{{/unless}}"><i class="fa-solid fa-angles-{{mouIf filters.prefs.visible "left" "right"}}"></i></div>
     <aside class="filters {{#unless filters.prefs.visible}}collapsed{{/unless}}">
+      <div class="clear"><a href>{{localize "MOU.clear_filters"}}</a></div>
       <h2 data-id="collection">{{localize "MOU.collection"}} <i class="fa-regular fa-square-{{mouIf filters.prefs.opensections.collection "minus" "plus"}}"></i></h2>
       <div data-id="collection" class="{{#unless filters.prefs.opensections.collection}}collapsed{{/unless}}">
         <ul>
           {{#each filters.collections as |c|}}
           <li>
             <input type="radio" name="collection" id="{{c.id}}" {{#if (eq ../filters.prefs.collection c.id)}}checked{{/if}}>
-            <label for="local">{{c.name}}</label>
+            <label for="{{c.id}}">{{c.name}}</label>
           </li>
           {{/each}}
         </ul>

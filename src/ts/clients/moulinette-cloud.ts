@@ -6,6 +6,7 @@ export default class MouCloudClient {
 
   static APP_NAME = "MouCloudClient"
   static HEADERS = { 'Accept': 'application/json', 'Content-Type': 'application/json' }
+  static AZURE_BASEURL = "https://mttestorage.blob.core.windows.net/"
 
   private static async _fetch(uri: string, method: string, parameters?: {}, data?:AnyDict) {
     let init:AnyDict = {
@@ -96,21 +97,5 @@ export default class MouCloudClient {
     $("#controls .control-tool[data-tool='authenticated'] i").attr('class', isValidUser ? "fa-solid fa-user-check" : "fa-solid fa-user-xmark")
 
     return module.cache.user
-  }
-
-  async randomAssets(filters: AnyDict) {
-    return await MouCloudClient.apiPOST(`/assets/random`, filters)
-  }
-  
-  async getCreators(type: string) {
-    return await MouCloudClient.apiPOST("/creators", { type: type })
-  }
-
-  async getPacks(type: string, creator: string) {
-    return await MouCloudClient.apiPOST("/packs", { type: type, creator: creator })
-  }
-
-  async getTypes(filters: AnyDict) {
-    return await MouCloudClient.apiPOST("/assets/types", filters)
   }
 }

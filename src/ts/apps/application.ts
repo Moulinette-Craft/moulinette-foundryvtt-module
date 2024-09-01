@@ -18,7 +18,7 @@ export default class MouApplication extends Application {
     console.warn(`${source} | ${message}`); 
   }
 
-  static logError(source: string, message: string, error?: Error) {
+  static logError(source: string, message: string, error?: any) {
     console.error(`${source} | ${message}`); 
     if(error) {
       console.error(error)

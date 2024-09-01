@@ -1,5 +1,5 @@
 {{#each assets as |a|}}
-  <div class="asset {{a.format}}" data-id="{{a.id}}" data-type="{{a.type}}">
+  <div class="asset {{a.format}}" data-id="{{a.id}}">
     <div class="overlay"></div>
     <div class="menu"></div>
     <div class="preview" {{#if a.background_color}}style="background-color: #{{a.background_color}}"{{/if}}>
@@ -11,7 +11,9 @@
       {{/if}}
     </div>
     <div class="info">
-      <div class="source" title="{{a.creator}} - {{a.pack}}">{{a.creator}} - {{a.pack}}</div>
+      <div class="source" title="{{a.creator}} - {{a.pack}}" data-creator="{{a.creator}}" data-pack="{{a.pack_id}}">
+        <a class="creator" href>{{a.creator}}</a> - <a class="pack" href>{{a.pack}}</a>
+      </div>
       <div class="title">{{a.name}}</div>
     </div>
     <div class="meta">

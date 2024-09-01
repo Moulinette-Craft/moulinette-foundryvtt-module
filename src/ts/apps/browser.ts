@@ -1,7 +1,7 @@
 import { MODULE_ID } from "../constants";
 import { AnyDict, MouModule } from "../types";
 import MouApplication from "./application";
-import { MouCollection, MouCollectionAssetTypeEnum, MouCollectionFilters, MouCollectionUtils } from "./collection";
+import { MouCollection, MouCollectionAsset, MouCollectionAssetTypeEnum, MouCollectionFilters, MouCollectionUtils } from "./collection";
 
 
 export default class MouBrowser extends MouApplication {
@@ -12,11 +12,12 @@ export default class MouBrowser extends MouApplication {
   private ignoreScroll: boolean = false;
   private page: number = 0; // -1 means = ignore. Otherwise, increments the page and loads more data
   private collection?: MouCollection;
+  private currentAssets = [] as MouCollectionAsset[];
   
   /* Filter preferences */
   private filters_prefs:AnyDict = {
     visible: true,
-    opensections: { collection: true, asset_type: true, creator: false },
+    opensections: { collection: true, asset_type: true, creator: true },
     collection: "cloud-all",
     focus: "search"
   }
@@ -55,6 +56,7 @@ export default class MouBrowser extends MouApplication {
     }
 
     this.page = 0
+    this.currentAssets = []
     const creators = this.filters.type ? await this.collection.getCreators(this.filters.type) : null
     const packs = this.filters.creator && this.filters.type ? await this.collection.getPacks(this.filters.type, this.filters.creator) : null
     const types = await this.collection.getTypes(this.filters)
@@ -84,6 +86,8 @@ export default class MouBrowser extends MouApplication {
     this.html = html
     html.find(".filters h2")
       .on("click", this._onClickFilterSection.bind(this));
+    html.find(".filters .clear a")
+      .on("click", this._onClearFilters.bind(this));
     html.find(".filters-toggle")
       .on("click", this._onClickFiltersToggle.bind(this));
     html.find(".filters input")
@@ -103,6 +107,7 @@ export default class MouBrowser extends MouApplication {
     this.loadMoreAssets()
   }
 
+  /** Load more assets and activate events */
   async loadMoreAssets() {
     if(this.page < 0 || !this.collection) return
     const assets = await this.collection.getAssets(this.filters, this.page)
@@ -114,11 +119,15 @@ export default class MouBrowser extends MouApplication {
       this.page++
       const html = await renderTemplate(`modules/${MODULE_ID}/templates/browser-assets.hbs`, { assets })
       this.html?.find(".content").append(html)
+      Array.prototype.push.apply(this.currentAssets, assets);
     }
     // activate listeners
     this.html?.find(".asset").off()
-    this.html?.find(".asset").on("mouseenter", this._onAssetMouseEnter.bind(this));
-    this.html?.find(".asset").on("mouseleave", this._onAssetMouseLeave.bind(this));
+    this.html?.find(".asset .preview").on("click", this._onShowMenu.bind(this));
+    this.html?.find(".asset .menu").on("click", this._onHideMenu.bind(this));
+    this.html?.find(".asset").on("mouseleave", this._onHideMenu.bind(this));
+    this.html?.find(".asset a.creator").on("click", this._onClickAssetCreator.bind(this));
+    this.html?.find(".asset a.pack").on("click", this._onClickAssetPack.bind(this));
   }
 
   /** Extend/collapse filter section */
@@ -197,39 +206,90 @@ export default class MouBrowser extends MouApplication {
   }
 
   /** Mouse over an item : render menu */
-  _onAssetMouseEnter(event: Event) {
+  _onShowMenu(event: Event) {
     if(event.currentTarget) {
       const target = $(event.currentTarget)
-      target.find(".menu").show(); 
-      target.find(".overlay").show(); 
-      const type = Number(target.data("type"))
-      const actions = this.collection?.getActions(type)
-      if(actions) {
-        renderTemplate(`modules/${MODULE_ID}/templates/browser-assets-actions.hbs`, { actions }).then( (html) => {
-          target.find(".menu").html(html)
-          target.find(".menu button").on("click", this._onAction.bind(this))
-        })
+      const asset = target.closest(".asset")
+      const selAsset = this.currentAssets.find((a) => a.id == asset.data("id"))
+      if(selAsset) {
+        const actions = this.collection?.getActions(selAsset)
+        if(actions && actions.length > 0) {
+          asset.find(".menu").show(); 
+          asset.find(".overlay").show();       
+          renderTemplate(`modules/${MODULE_ID}/templates/browser-assets-actions.hbs`, { actions }).then( (html) => {
+            asset.find(".menu").html(html)
+            asset.find(".menu button").on("click", this._onAction.bind(this))
+          })
+        } else {
+          this.logWarn(`No action for asset ${selAsset.name} (${selAsset.id})`)
+        }
+      } 
+      else {
+        this.logError(`Asset '${asset.data("id")}' not found. This must be a bug in Moulinette.`)
       }
+      
     }
   }
 
   /** Mouse out an item : hide menu */
-  _onAssetMouseLeave(event: Event) {
+  _onHideMenu(event: Event) {
     if(event.currentTarget) {
       const target = $(event.currentTarget)
-      target.find(".menu").html("")
-      target.find(".menu").hide(); 
-      target.find(".overlay").hide();
+      const asset = target.closest(".asset")
+      asset.find(".menu").html("")
+      asset.find(".menu").hide(); 
+      asset.find(".overlay").hide();
     }
   }
 
   /** User clicked on menu item */
   _onAction(event: Event) {
+    event.preventDefault();
+    event.stopPropagation();
     if(event.currentTarget) {
       const target = $(event.currentTarget)
       const actionId = target.data("id")
       const assetId = target.closest(".asset").data("id")
       this.collection?.executeAction(actionId, assetId)
     }
+  }
+
+  /** User clicked on asset creator */
+  _onClickAssetCreator(event: Event) {
+    event.preventDefault();
+    event.stopPropagation();
+    if(event.currentTarget) {
+      const target = $(event.currentTarget)
+      const creator = target.closest(".source").data("creator")
+      if(creator) {
+        this.filters.creator = creator
+        this.filters.pack = 0
+        this.render()
+      }
+    }
+  }
+
+  _onClickAssetPack(event: Event) {
+    event.preventDefault();
+    event.stopPropagation();
+    if(event.currentTarget) {
+      const target = $(event.currentTarget)
+      const creator = target.closest(".source").data("creator")
+      const pack = target.closest(".source").data("pack")
+      if(creator && pack) {
+        this.filters.creator = creator
+        this.filters.pack = Number(pack)
+        this.render()
+      }
+    }
+  }
+
+  _onClearFilters(event: Event) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.filters.creator = ""
+    this.filters.pack = 0
+    this.filters.type = MouCollectionAssetTypeEnum.Map
+    this.render()
   }
 }

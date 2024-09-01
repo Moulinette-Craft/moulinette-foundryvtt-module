@@ -57,6 +57,11 @@
       overflow: hidden;
       height: calc(100% - var(--mou-browser-header-height));
 
+      .clear {
+        display: flex;
+        flex-direction: row-reverse;
+      }
+
       &.collapsed {
         display: none;
       }
@@ -219,6 +224,10 @@
           width: 100%;
           height: 100%;
           padding: 15px;
+
+          button {
+            margin-bottom: 5px;
+          }
         }  
 
       } // END .asset
