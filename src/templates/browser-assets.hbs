@@ -17,7 +17,7 @@
       <div class="title">{{a.name}}</div>
     </div>
     <div class="meta">
-      {{#each a.meta as |m|}}{{#unless @first}}, {{/unless}}{{m}}{{/each}}
+      {{#each a.meta as |m|}}<span title="{{m.hint}}"><i class="{{m.icon}}"></i> {{m.text}}</span>{{/each}}
     </div>
   </div>
 {{/each}}

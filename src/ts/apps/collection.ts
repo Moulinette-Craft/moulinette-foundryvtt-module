@@ -15,6 +15,12 @@ export interface MouCollectionAssetType {
   assetsCount: number
 }
 
+export interface MouCollectionAssetMeta {
+  icon: string,
+  text: string,
+  hint: string
+}
+
 export interface MouCollectionAsset {
   id: string
   type: number
@@ -24,7 +30,7 @@ export interface MouCollectionAsset {
   pack: string
   pack_id: string
   name: string
-  meta: string[]
+  meta: MouCollectionAssetMeta[]
   icons?: {descr: string, icon: string}[]
   background_color: string
 }

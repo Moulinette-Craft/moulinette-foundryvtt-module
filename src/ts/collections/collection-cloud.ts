@@ -3,9 +3,10 @@ import MouCloudClient from "../clients/moulinette-cloud";
 import MouDownloadManager from "../utils/download-manager";
 import MouMediaUtils from "../utils/media-utils";
 
-import { MouCollection, MouCollectionAction, MouCollectionAsset, MouCollectionAssetType, MouCollectionAssetTypeEnum, MouCollectionCreator, MouCollectionFilters, MouCollectionPack } from "../apps/collection";
+import { MouCollection, MouCollectionAction, MouCollectionAsset, MouCollectionAssetMeta, MouCollectionAssetType, MouCollectionAssetTypeEnum, MouCollectionCreator, MouCollectionFilters, MouCollectionPack } from "../apps/collection";
 import { MOU_STORAGE_PUB, SETTINGS_SESSION_ID } from "../constants";
 import { AnyDict } from "../types";
+import MouFoundryUtils from "../utils/foundry-utils";
 
 export enum CloudMode {
   ALL,                      // all assets including non-accessible
@@ -36,7 +37,7 @@ class MouCollectionCloudAsset implements MouCollectionAsset {
   pack: string;
   pack_id: string;
   name: string;
-  meta: string[];
+  meta: MouCollectionAssetMeta[];
   icons?: {descr: string, icon: string}[];
 
   // specific to MouCollectionCloud
@@ -51,7 +52,7 @@ class MouCollectionCloudAsset implements MouCollectionAsset {
     this.creator = data.pack.creator
     this.pack = data.pack.name
     this.pack_id = data.pack_ref
-    this.name = MouMediaUtils.prettyMediaNames(data.filepath)
+    this.name = MouMediaUtils.prettyMediaName(data.filepath)
     this.type = data.type;
     this.meta = []
     this.icons = []
@@ -67,7 +68,20 @@ class MouCollectionCloudAsset implements MouCollectionAsset {
     
     switch(data.type) {
       case MouCollectionAssetTypeEnum.Scene:
-        this.meta = [`${data.scene.width} x ${data.scene.height}`]
+        this.meta = []
+        if(data.scene.width) {
+          this.meta.push({ 
+            icon: "fa-regular fa-border-all", 
+            text: `${data.scene.width} x ${data.scene.height}`,
+            hint: (game as Game).i18n.localize("MOU.meta_scene_dims")
+          })
+        } else {
+          this.meta.push({ 
+            icon: "fa-regular fa-expand-wide", 
+            text: `${MouMediaUtils.prettyNumber(data.size.width, true)} x ${MouMediaUtils.prettyNumber(data.size.height, true)}`,
+            hint: (game as Game).i18n.localize("MOU.meta_media_size")
+          })
+        }
         if(data.scene.hasWalls) this.icons.push({descr: (game as Game).i18n.localize("MOU.scene_has_walls"), icon: "fa-solid fa-block-brick"})
         if(data.scene.hasLights) this.icons.push({descr: (game as Game).i18n.localize("MOU.scene_has_lights"), icon: "fa-regular fa-lightbulb"})
         if(data.scene.hasSounds) this.icons.push({descr: (game as Game).i18n.localize("MOU.scene_has_sounds"), icon: "fa-solid fa-music"})
@@ -78,13 +92,24 @@ class MouCollectionCloudAsset implements MouCollectionAsset {
         break
       case MouCollectionAssetTypeEnum.Map:
       case MouCollectionAssetTypeEnum.Image:
-        this.meta = [`${MouMediaUtils.prettyNumber(data.size.width, true)} x ${MouMediaUtils.prettyNumber(data.size.height, true)}`]
+        this.meta.push({ 
+          icon: "fa-regular fa-expand-wide", 
+          text: `${MouMediaUtils.prettyNumber(data.size.width, true)} x ${MouMediaUtils.prettyNumber(data.size.height, true)}`,
+          hint: (game as Game).i18n.localize("MOU.meta_media_size")
+        })
         break
       case MouCollectionAssetTypeEnum.PDF:
-        this.meta = [`${data.pdf.pages} ` + (game as Game).i18n.localize(data.pdf.pages > 1 ? "MOU.pages" : "MOU.page")]
+        this.meta.push({ 
+          icon: "fa-regular fa-file-pdf", 
+          text: `${data.pdf.pages} ` + (game as Game).i18n.localize(data.pdf.pages > 1 ? "MOU.pages" : "MOU.page"),
+          hint: (game as Game).i18n.localize("MOU.meta_pdf_pages")
+        })
         break
     }
-    this.meta.push(MouMediaUtils.prettyFilesize(data.filesize))
+    this.meta.push({ 
+      icon: "fa-regular fa-weight-hanging",
+      text: MouMediaUtils.prettyFilesize(data.filesize),
+      hint: (game as Game).i18n.localize("MOU.meta_filesize")})
   }
 }
 
@@ -195,17 +220,36 @@ export default class MouCollectionCloud implements MouCollection {
     return actions
   }
 
+  /**
+   * Download (and upload) specified asset
+   * Throws an exception or returns False if download/upload failed
+   */
+  private static async downloadAsset(asset: any): Promise<FilePicker.UploadResult | false> {
+    const assetType = MouCollectionAssetTypeEnum[asset.type]
+    if(!asset.base_url.startsWith(MouCloudClient.AZURE_BASEURL)) {
+      throw new Error("Invalid BaseURL?")
+    }
+    const folderPath = asset.base_url.substring(MouCloudClient.AZURE_BASEURL.length)
+    const fileUrl = `${asset.base_url}/${asset.file_url}`
+    return MouDownloadManager.downloadFile(fileUrl, `moulinette-v2/${assetType.toLowerCase()}s/${folderPath}`)
+  }
+
   async executeAction(actionId: number, assetId: string): Promise<void> {
+    const asset = await MouCloudClient.apiGET(`/asset/${assetId}`, { session: MouApplication.getSettings(SETTINGS_SESSION_ID) })
+    const folderPath = `Moulinette/${asset.creator}/${asset.pack}`
     switch(actionId) {
-      case CloudAssetAction.DOWNLOAD:
-        const asset = await MouCloudClient.apiGET(`/asset/${assetId}`, { session: MouApplication.getSettings(SETTINGS_SESSION_ID) })
-        const assetType = MouCollectionAssetTypeEnum[asset.type]
-        if(!asset.base_url.startsWith(MouCloudClient.AZURE_BASEURL)) {
-          throw new Error("Invalid BaseURL?")
+      case CloudAssetAction.IMPORT:
+        const uploadResult = await MouCollectionCloud.downloadAsset(asset)
+        if(uploadResult) {
+          switch(asset.type) {
+            case MouCollectionAssetTypeEnum.Map:
+              MouFoundryUtils.createJournalImage(uploadResult.path, folderPath)
+              break
+          }
         }
-        const folderPath = asset.base_url.substring(MouCloudClient.AZURE_BASEURL.length)
-        const fileUrl = `${asset.base_url}/${asset.file_url}`
-        MouDownloadManager.downloadFile(fileUrl, `moulinette-v2/${assetType.toLowerCase()}s/${folderPath}`)
+        break
+      case CloudAssetAction.DOWNLOAD:
+        console.log(await MouCollectionCloud.downloadAsset(asset))
         break
     }
   }

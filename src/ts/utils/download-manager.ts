@@ -52,8 +52,8 @@ export default class MouDownloadManager {
   }
 
   /**
-     * Creates folders recursively (much better than previous)
-     */
+   * Creates folders recursively (much better than previous)
+   */
   static async createFolderRecursive(path: string) {
     const source = MouDownloadManager.getSource()
     // folder don't have to be created on S3 (automatically handled by S3 provider)
@@ -80,7 +80,7 @@ export default class MouDownloadManager {
   /**
    * Uploads a file into the right folder (improved version)
    */
-  static async uploadFile(file: File, filename: string, folderPath: string, overwrite = false) {
+  static async uploadFile(file: File, filename: string, folderPath: string, overwrite = false): Promise<FilePicker.UploadResult | false> {
     const source = MouDownloadManager.getSource()
     await MouDownloadManager.createFolderRecursive(folderPath)
     
@@ -89,7 +89,7 @@ export default class MouDownloadManager {
     let base = await FilePicker.browse(source, folderPath, MouDownloadManager.getOptions());
     let exist = base.files.filter(f => decodeURIComponent(f) == `${folderPath}/${filename}`)
     //if(exist.length > 0 && !overwrite) return { path: `${baseURL}${folderPath}/${filename}` };
-    if(exist.length > 0 && !overwrite) return { path: `${folderPath}/${filename}` };
+    if(exist.length > 0 && !overwrite) return { status: "success", path: `${folderPath}/${filename}`, message: "File already exists" };
     
     try {
       if (typeof ForgeVTT != "undefined" && ForgeVTT.usingTheForge) {
@@ -101,18 +101,20 @@ export default class MouDownloadManager {
       }
     } catch (e) {
       MouApplication.logError(MouDownloadManager.APP_NAME, `Not able to upload file ${filename}`, e)
+      return false
     }
   }
 
   /**
    * This function downloads a file and uploads it to FVTT server
    */
-  static async downloadFile(url: string, folder: string, force=false) {
+  static async downloadFile(url: string, folder: string, force=false): Promise<FilePicker.UploadResult | false> {
 
     folder = decodeURIComponent(folder)
     const filename = MouDownloadManager.extractFilename(url)
     if(!filename) {
-      return MouApplication.logError(MouDownloadManager.APP_NAME, `Couldn't extract filename from URL: ${url}`)
+      MouApplication.logError(MouDownloadManager.APP_NAME, `Couldn't extract filename from URL: ${url}`)
+      return false
     }
     
     // check if file already downloaded
@@ -120,7 +122,7 @@ export default class MouDownloadManager {
     const browse = await FilePicker.browse(MouDownloadManager.getSource(), folder);
     const files = browse.files.map(f => decodeURIComponent(f))
     const path = folder + (folder.endsWith("/") ? "" : "/") + filename
-    if(!force && files.includes(path)) return true;
+    if(!force && files.includes(path)) return { status: "success", path: path, message: "File already exists" };
 
     let triesCount = 0
     const infoURL = ("" + url).split("?")[0]

@@ -6,7 +6,7 @@ import "../styles/style.scss";
 import MouBrowser from "./apps/browser";
 import MouUser from "./apps/user";
 import MouCloudClient from "./clients/moulinette-cloud";
-import { MODULE_ID, SETTINGS_S3_BUCKET, SETTINGS_SESSION_ID } from "./constants";
+import { MODULE_ID, SETTINGS_S3_BUCKET, SETTINGS_SESSION_ID, SETTINGS_USE_FOLDERS } from "./constants";
 import MouLayer from "./layers/mou-layer";
 import { MouModule } from "./types";
 import MouCache from "./utils/cache";
@@ -27,6 +27,15 @@ Hooks.once("init", () => {
   module.collections = [] as MouCollection[]
   
   (game as Game).settings.register(MODULE_ID, SETTINGS_SESSION_ID, { scope: "world", config: false, type: String, default: "anonymous" });
+
+  (game as Game).settings.register(MODULE_ID, SETTINGS_USE_FOLDERS, {
+    name: (game as Game).i18n.localize("MOU.settings_use_folders"),
+    hint: (game as Game).i18n.localize("MOU.settings_use_folders_hint"),
+    scope: "world",
+    config: true,
+    default: true,
+    type: Boolean
+  });
 
   (game as Game).settings.register(MODULE_ID, SETTINGS_S3_BUCKET, {
     name: (game as Game).i18n.localize("MOU.settings_s3bucket"),

@@ -12,4 +12,5 @@ export const PATREON_CLIENT_ID = "K3ofcL8XyaObRrO_5VPuzXEPnOVCIW3fbLIt6Vygt_YIM6
 export const DISCORD_CLIENT_ID = "1104472072853405706"
 
 export const SETTINGS_SESSION_ID = "session_ID"
+export const SETTINGS_USE_FOLDERS = "use_folders"
 export const SETTINGS_S3_BUCKET = "s3_bucket"
