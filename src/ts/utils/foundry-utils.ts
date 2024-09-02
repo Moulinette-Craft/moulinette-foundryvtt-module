@@ -1,5 +1,6 @@
 import MouApplication from "../apps/application";
 import { MODULE_ID, SETTINGS_USE_FOLDERS } from "../constants";
+import { AnyDict } from "../types";
 import MouMediaUtils from "./media-utils";
 
 export default class MouFoundryUtils {
@@ -39,6 +40,32 @@ export default class MouFoundryUtils {
     const json_text = await renderTemplate(`modules/${MODULE_ID}/templates/json/note-image.hbs`, { path: path, folder: folderObj ? `"${folderObj.id}"` : "null", name: articleName })
     const entry = await JournalEntry.create(JSON.parse(json_text))
     entry?.sheet?.render(true)
+  }
+
+  /**
+   * Create a new scene from the given data
+   */
+  static async createScene(sceneData: AnyDict, folder:string) {
+    let needsDims = !("width" in sceneData)
+    delete sceneData._stats // causes sometimes incompatibilites
+    // @ts-ignore: https://foundryvtt.com/api/classes/client.Scene.html#fromSource
+    const doc = await Scene.fromSource(sceneData)
+    const newScene = await Scene.create(doc)
+    if(newScene) {
+      const folderObj = await MouFoundryUtils.getOrCreateFolder("Scene", folder)
+      // @ts-ignore
+      let tData = await newScene.createThumbnail({img: newScene["background.src"] ?? newScene.background.src});
+      // reset width/height
+      let tUpdate = { thumb: tData.thumb, folder: folderObj ? folderObj.id : null } as AnyDict
+      if ( needsDims && tData.width && tData.height ) {
+        tUpdate.width = tData.width;
+        tUpdate.height = tData.height;
+      }  
+      await newScene.update(tUpdate); // force generating the thumbnail and width/height (if needsDims)
+      // @ts-ignore how to access FVTT ui object??
+      ui.scenes.activate()
+    }
+              
   }
 
 }

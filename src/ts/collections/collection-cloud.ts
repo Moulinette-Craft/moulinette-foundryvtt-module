@@ -221,18 +221,39 @@ export default class MouCollectionCloud implements MouCollection {
   }
 
   /**
-   * Download (and upload) specified asset
-   * Throws an exception or returns False if download/upload failed
+   * Downloads (and upload) specified asset
+   * Returns :
+   *  * false if something went wrong. (when not throwing an exception)
+   *  * UploadResult (with path) for a single file
+   *  * AnyDict (JSON) for entities
    */
-  private static async downloadAsset(asset: any): Promise<FilePicker.UploadResult | false> {
+  private static async downloadAsset(asset: any): Promise<FilePicker.UploadResult | false | AnyDict> {
     const assetType = MouCollectionAssetTypeEnum[asset.type]
     if(!asset.base_url.startsWith(MouCloudClient.AZURE_BASEURL)) {
       throw new Error("Invalid BaseURL?")
     }
     const folderPath = asset.base_url.substring(MouCloudClient.AZURE_BASEURL.length)
-    const fileUrl = `${asset.base_url}/${asset.file_url}`
-    return MouDownloadManager.downloadFile(fileUrl, `moulinette-v2/${assetType.toLowerCase()}s/${folderPath}`)
+    const targetPath = `moulinette-v2/${assetType.toLowerCase()}s/${folderPath}`
+
+    // FVTT entity
+    if(asset.filepath.endsWith(".json")) {
+      if(await MouDownloadManager.downloadAllFiles(asset.deps, asset.base_url, targetPath)) {
+        const entityString = await MouDownloadManager.downloadFileAsString(`${asset.base_url}/${asset.file_url}`)
+        if(entityString.length > 0) {
+          // replace all #DEPS#
+          return JSON.parse(entityString.replace(new RegExp("#DEP#", "g"), targetPath + "/"))
+        }
+        return false
+      } else {
+        return false
+      }
+    }
+    // single file 
+    else {
+      return MouDownloadManager.downloadFile(asset.file_url, asset.base_url, targetPath)
+    }
   }
+
 
   async executeAction(actionId: number, assetId: string): Promise<void> {
     const asset = await MouCloudClient.apiGET(`/asset/${assetId}`, { session: MouApplication.getSettings(SETTINGS_SESSION_ID) })
@@ -242,6 +263,9 @@ export default class MouCollectionCloud implements MouCollection {
         const uploadResult = await MouCollectionCloud.downloadAsset(asset)
         if(uploadResult) {
           switch(asset.type) {
+            case MouCollectionAssetTypeEnum.Scene:
+              MouFoundryUtils.createScene(uploadResult, folderPath)
+              break
             case MouCollectionAssetTypeEnum.Map:
               MouFoundryUtils.createJournalImage(uploadResult.path, folderPath)
               break

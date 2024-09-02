@@ -18,7 +18,7 @@ export default class MouBrowser extends MouApplication {
   private filters_prefs:AnyDict = {
     visible: true,
     opensections: { collection: true, asset_type: true, creator: true },
-    collection: "cloud-all",
+    collection: "cloud-accessible",
     focus: "search"
   }
 

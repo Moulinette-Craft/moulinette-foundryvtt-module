@@ -39,19 +39,6 @@ export default class MouDownloadManager {
   }
 
   /**
-   * Tries to extract the filename from the given url
-   */
-  private static extractFilename(url: string): string | null {
-    const parsedUrl = new URL(url);
-    const pathname = parsedUrl.pathname;
-    const filenameWithExt = pathname.split('/').pop();
-    if (!filenameWithExt) {
-      return null;
-    }
-    return filenameWithExt;
-  }
-
-  /**
    * Creates folders recursively (much better than previous)
    */
   static async createFolderRecursive(path: string) {
@@ -89,7 +76,10 @@ export default class MouDownloadManager {
     let base = await FilePicker.browse(source, folderPath, MouDownloadManager.getOptions());
     let exist = base.files.filter(f => decodeURIComponent(f) == `${folderPath}/${filename}`)
     //if(exist.length > 0 && !overwrite) return { path: `${baseURL}${folderPath}/${filename}` };
-    if(exist.length > 0 && !overwrite) return { status: "success", path: `${folderPath}/${filename}`, message: "File already exists" };
+    if(exist.length > 0 && !overwrite) {
+      MouApplication.logInfo(MouDownloadManager.APP_NAME, `File ${folderPath}/${filename} already exists. Upoad skipped!`)
+      return { status: "success", path: `${folderPath}/${filename}`, message: "File already exists" };
+    }
     
     try {
       if (typeof ForgeVTT != "undefined" && ForgeVTT.usingTheForge) {
@@ -108,24 +98,55 @@ export default class MouDownloadManager {
   /**
    * This function downloads a file and uploads it to FVTT server
    */
-  static async downloadFile(url: string, folder: string, force=false): Promise<FilePicker.UploadResult | false> {
+  static async downloadAllFiles(urls: string[], packPath: string, folder: string, force=false): Promise<boolean> {
+    for(const url of urls) {
+      const result = await MouDownloadManager.downloadFile(url, packPath, folder, force)
+      if(!result) {
+        return false
+      }
+    }
+    return true
+  }
+
+  /**
+   * This function downloads a file and uploads it to FVTT server
+   */
+  static async downloadFileAsString(url: string): Promise<string> {
+    const res = await fetch(url)
+    if(res && res.status == 200) {
+      return res.text()
+    }
+    return ""
+  }
+
+  /**
+   * This function downloads a file and uploads it to FVTT server
+   * Example : 
+   *    uri: animated/Broken Tower_2.webm?se=...
+   *    pack_path: https://mttestorage.blob.core.windows.net/creator/packname
+   *    folder: moulinette-v2/scenes/creator/packname
+   */
+  static async downloadFile(uri: string, packPath: string, folder: string, force=false): Promise<FilePicker.UploadResult | false> {
 
     folder = decodeURIComponent(folder)
-    const filename = MouDownloadManager.extractFilename(url)
-    if(!filename) {
-      MouApplication.logError(MouDownloadManager.APP_NAME, `Couldn't extract filename from URL: ${url}`)
-      return false
-    }
-    
+    const filepath = decodeURI(uri.split("?")[0])
+    const filename  = filepath.substring(filepath.lastIndexOf("/")+1)  // Broken Tower_2.webm (from above example)
+    const relFolder = filepath.substring(0, filepath.lastIndexOf("/")) // animated (from above example)
+    const targetFolder = folder + (folder.endsWith("/") ? "" : "/") + relFolder 
+    const url = `${packPath}/${uri}`
+
     // check if file already downloaded
-    await MouDownloadManager.createFolderRecursive(folder)
-    const browse = await FilePicker.browse(MouDownloadManager.getSource(), folder);
+    await MouDownloadManager.createFolderRecursive(targetFolder)
+    const browse = await FilePicker.browse(MouDownloadManager.getSource(), targetFolder);
     const files = browse.files.map(f => decodeURIComponent(f))
-    const path = folder + (folder.endsWith("/") ? "" : "/") + filename
-    if(!force && files.includes(path)) return { status: "success", path: path, message: "File already exists" };
+    const path = `${targetFolder}/${filename}`
+    if(!force && files.includes(path)) {
+      MouApplication.logInfo(MouDownloadManager.APP_NAME, `File ${path} already exists. Download skipped!`)
+      return { status: "success", path: path, message: "File already exists" };
+    }
 
     let triesCount = 0
-    const infoURL = ("" + url).split("?")[0]
+    const infoURL = url.split("?")[0]
     while(triesCount <= MouDownloadManager.RETRIES) {
       if(triesCount > 0) {
         MouApplication.logInfo(MouDownloadManager.APP_NAME, `${triesCount}# retry of downloading ${infoURL}`)
@@ -134,7 +155,7 @@ export default class MouDownloadManager {
         let res = await fetch(url)
         if(res && res.status == 200) {
           const blob = await res.blob()
-          const success = await MouDownloadManager.uploadFile(new File([blob], filename, { type: blob.type, lastModified: new Date().getTime() }), filename, folder, force)
+          const success = await MouDownloadManager.uploadFile(new File([blob], filename, { type: blob.type, lastModified: new Date().getTime() }), filename, targetFolder, force)
           if(success && success.status == "success") {
             return success
           }
