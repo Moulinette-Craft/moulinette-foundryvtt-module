@@ -59,6 +59,11 @@ export interface MouCollectionAction {
   icon: string
 }
 
+export interface MouCollectionActionHint {
+  name: string,
+  description: string
+}
+
 
 export interface MouCollection {
   
@@ -85,6 +90,9 @@ export interface MouCollection {
 
   /** Returns the list of available action  */
   getActions(asset: MouCollectionAsset): MouCollectionAction[]
+
+  /** Returns the hint associated to specified action  */
+  getActionHint(asset: MouCollectionAsset, actionId: number) : MouCollectionActionHint | null
 
   /** Execute the action */
   executeAction(actionId: number, assetId: string): Promise<void>

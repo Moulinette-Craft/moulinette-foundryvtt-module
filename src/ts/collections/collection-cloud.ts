@@ -1,9 +1,9 @@
 import MouApplication from "../apps/application";
 import MouCloudClient from "../clients/moulinette-cloud";
-import MouDownloadManager from "../utils/download-manager";
+import MouFileManager from "../utils/file-manager";
 import MouMediaUtils from "../utils/media-utils";
 
-import { MouCollection, MouCollectionAction, MouCollectionAsset, MouCollectionAssetMeta, MouCollectionAssetType, MouCollectionAssetTypeEnum, MouCollectionCreator, MouCollectionFilters, MouCollectionPack } from "../apps/collection";
+import { MouCollection, MouCollectionAction, MouCollectionActionHint, MouCollectionAsset, MouCollectionAssetMeta, MouCollectionAssetType, MouCollectionAssetTypeEnum, MouCollectionCreator, MouCollectionFilters, MouCollectionPack } from "../apps/collection";
 import { MOU_STORAGE_PUB, SETTINGS_SESSION_ID } from "../constants";
 import { AnyDict } from "../types";
 import MouFoundryUtils from "../utils/foundry-utils";
@@ -116,6 +116,8 @@ class MouCollectionCloudAsset implements MouCollectionAsset {
 
 export default class MouCollectionCloud implements MouCollection {
 
+  APP_NAME = "MouCollectionCloud"
+
   private mode: CloudMode
 
   constructor(mode: CloudMode) {
@@ -214,13 +216,44 @@ export default class MouCollectionCloud implements MouCollection {
     switch(cAsset.type) {
       case MouCollectionAssetTypeEnum.Scene:
       case MouCollectionAssetTypeEnum.Map:
+      case MouCollectionAssetTypeEnum.Item:
+      case MouCollectionAssetTypeEnum.Actor:
         actions.push({ id: CloudAssetAction.IMPORT, name: (game as Game).i18n.format("MOU.action_import", { type: assetName}), icon: "fa-solid fa-file-import" })
+        actions.push({ id: CloudAssetAction.CREATE_ARTICLE, name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
+        break;    
+      case MouCollectionAssetTypeEnum.Image:
         actions.push({ id: CloudAssetAction.CREATE_ARTICLE, name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
         break;    
     }
     actions.push({ id: CloudAssetAction.DOWNLOAD, name: (game as Game).i18n.localize("MOU.action_download"), icon: "fa-solid fa-cloud-arrow-down" })
     
     return actions
+  }
+
+  getActionHint(asset: MouCollectionAsset, actionId: number) : MouCollectionActionHint | null {
+    const action = this.getActions(asset).find(a => a.id == actionId)
+    if(!action) return null
+    switch(actionId) {
+      case CloudAssetAction.IMPORT:
+        switch(asset.type) {
+          case MouCollectionAssetTypeEnum.Map: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_import_image") }
+          case MouCollectionAssetTypeEnum.Scene: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_import_scene") }
+          case MouCollectionAssetTypeEnum.Item: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_import_asset") }
+          case MouCollectionAssetTypeEnum.Actor: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_import_asset") }
+          case MouCollectionAssetTypeEnum.Image: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_import_image") }
+        }
+      case CloudAssetAction.DOWNLOAD:
+        switch(asset.type) {
+          case MouCollectionAssetTypeEnum.Scene: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_download_scene") }
+          default: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_download_asset") }
+        }
+      case CloudAssetAction.CREATE_ARTICLE:
+        switch(asset.type) {
+          case MouCollectionAssetTypeEnum.Scene: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_create_article_scene") }
+          default: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_create_article_asset") }
+        }
+    }
+    return null
   }
 
   /**
@@ -231,23 +264,22 @@ export default class MouCollectionCloud implements MouCollection {
    *  * AnyDict (JSON) for entities
    */
   private static async downloadAsset(asset: any): Promise<FilePicker.UploadResult | false> {
-    const assetType = MouCollectionAssetTypeEnum[asset.type]
     if(!asset.base_url.startsWith(MouCloudClient.AZURE_BASEURL)) {
       throw new Error("Invalid BaseURL?")
     }
     const folderPath = asset.base_url.substring(MouCloudClient.AZURE_BASEURL.length)
-    const targetPath = `moulinette-v2/${assetType.toLowerCase()}s/${folderPath}`
+    const targetPath = `moulinette-v2/assets/${folderPath}`
 
     // FVTT entity
     if(asset.filepath.endsWith(".json")) {
-      if(await MouDownloadManager.downloadAllFiles(asset.deps, asset.base_url, targetPath)) {
-        const entityString = await MouDownloadManager.downloadFileAsString(`${asset.base_url}/${asset.file_url}`)
+      if(await MouFileManager.downloadAllFiles(asset.deps, asset.base_url, targetPath)) {
+        const entityString = await MouFileManager.downloadFileAsString(`${asset.base_url}/${asset.file_url}`)
         if(entityString.length > 0) {
           // replace all #DEPS#
           return {
             path: targetPath,
             message: entityString.replace(new RegExp("#DEP#", "g"), targetPath + "/"),
-            status: "success"
+            status: "success",
           }
         }
         return false
@@ -257,7 +289,7 @@ export default class MouCollectionCloud implements MouCollection {
     }
     // single file 
     else {
-      return MouDownloadManager.downloadFile(asset.file_url, asset.base_url, targetPath)
+      return MouFileManager.downloadFile(asset.file_url, asset.base_url, targetPath)
     }
   }
 
@@ -270,18 +302,46 @@ export default class MouCollectionCloud implements MouCollection {
         const resultImport = await MouCollectionCloud.downloadAsset(asset)
         if(resultImport) {
           switch(asset.type) {
-            case MouCollectionAssetTypeEnum.Map: MouFoundryUtils.createSceneFromMap(resultImport.path, folderPath); break
-            case MouCollectionAssetTypeEnum.Scene: MouFoundryUtils.createScene(JSON.parse(resultImport.message), folderPath); break
-            //case MouCollectionAssetTypeEnum.Map:
-            //  MouFoundryUtils.createJournalImage(uploadResult.path, folderPath)
-            //  break
+            case MouCollectionAssetTypeEnum.Map: MouFoundryUtils.importSceneFromMap(resultImport.path, folderPath); break
+            case MouCollectionAssetTypeEnum.Scene: MouFoundryUtils.importScene(JSON.parse(resultImport.message), folderPath); break
+            case MouCollectionAssetTypeEnum.Item: MouFoundryUtils.importItem(JSON.parse(resultImport.message), folderPath); break
+            case MouCollectionAssetTypeEnum.Actor: MouFoundryUtils.importActor(JSON.parse(resultImport.message), folderPath); break
           }
         }
         break
+      case CloudAssetAction.CREATE_ARTICLE:
+        const resultArticle = await MouCollectionCloud.downloadAsset(asset)
+        if(resultArticle) {
+          switch(asset.type) {
+            case MouCollectionAssetTypeEnum.Scene: 
+            case MouCollectionAssetTypeEnum.Item: 
+            case MouCollectionAssetTypeEnum.Actor: 
+              MouFoundryUtils.createJournalImageFromEntity(JSON.parse(resultArticle.message), folderPath); 
+              break
+            case MouCollectionAssetTypeEnum.Map: 
+            case MouCollectionAssetTypeEnum.Image: 
+              MouFoundryUtils.createJournalImage(resultArticle.path, folderPath);
+              break
+          }
+        }
+        break
+        
       case CloudAssetAction.DOWNLOAD:
         const resultDownload = await MouCollectionCloud.downloadAsset(asset)
         if(resultDownload) {
           let textToCopy = resultDownload.path
+          switch(asset.type) {
+            case MouCollectionAssetTypeEnum.Scene: 
+            case MouCollectionAssetTypeEnum.Actor: 
+            case MouCollectionAssetTypeEnum.Item: 
+              const path = MouFoundryUtils.getImagePathFromEntity(JSON.parse(resultDownload.message))
+              if(path) {
+                textToCopy = path
+              }
+              else {
+                MouApplication.logWarn(this.APP_NAME, `Not able to retrieve image path from asset ${asset.filepath}!`)
+              }
+          }
           navigator.clipboard.writeText(textToCopy).then(() => {
             ui.notifications?.info((game as Game).i18n.localize("MOU.clipboard_copy_success"))
           })
@@ -290,6 +350,7 @@ export default class MouCollectionCloud implements MouCollection {
           });
           break
         }
+        break
         
     }
   }

@@ -123,8 +123,7 @@ export default class MouBrowser extends MouApplication {
     }
     // activate listeners
     this.html?.find(".asset").off()
-    this.html?.find(".asset .preview").on("click", this._onShowMenu.bind(this));
-    this.html?.find(".asset .menu").on("click", this._onHideMenu.bind(this));
+    this.html?.find(".asset").on("mouseenter", this._onShowMenu.bind(this));
     this.html?.find(".asset").on("mouseleave", this._onHideMenu.bind(this));
     this.html?.find(".asset a.creator").on("click", this._onClickAssetCreator.bind(this));
     this.html?.find(".asset a.pack").on("click", this._onClickAssetPack.bind(this));
@@ -298,10 +297,18 @@ export default class MouBrowser extends MouApplication {
   _onActionShowHint(event: Event) {
     event.preventDefault();
     if(event.currentTarget) {
+      const button = $(event.currentTarget)           // asset's button
+      const asset = button.closest(".asset")          // asset inside the content
+      const content = asset.closest(".content")       // entire content
+      const actionHint = content.find(".actionhint")  // hint box
+      // Replace hint title & description
+      const selAsset = this.currentAssets.find((a) => a.id == asset.data("id"))
+      if(!selAsset) return;
+      const hint = this.collection?.getActionHint(selAsset, button.data("id"))
+      if(!hint) return;
+      actionHint.find("h3").html(hint.name)
+      actionHint.find(".description").html(hint.description)
       // Show hint (to the right if enough space, otherwise to the left)
-      const button = $(event.currentTarget)     // asset's button
-      const asset = button.closest(".asset")    // asset inside the content
-      const content = asset.closest(".content") // entire content
       const buttonPos = button.position()
       const assetPos = asset.position()
       const assetWidth = asset.outerWidth()
@@ -310,9 +317,9 @@ export default class MouBrowser extends MouApplication {
       if(assetPos !== undefined && assetWidth !== undefined && contentWidth !== undefined && buttonPos !== undefined && contentScrollY !== undefined) {
         const remainingSpace = contentWidth - (assetPos.left + assetWidth)
         if(remainingSpace > 220) {
-          content.find(".actionhint").css({ top: assetPos.top + buttonPos.top + contentScrollY, left: assetPos.left + assetWidth, 'visibility': 'visible', 'opacity': 1})
+          actionHint.css({ top: assetPos.top + buttonPos.top + contentScrollY, left: assetPos.left + assetWidth, 'visibility': 'visible', 'opacity': 1})
         } else {
-          content.find(".actionhint").css({ top: assetPos.top + buttonPos.top + contentScrollY, left: assetPos.left - 200 + 16, 'visibility': 'visible', 'opacity': 1})
+          actionHint.css({ top: assetPos.top + buttonPos.top + contentScrollY, left: assetPos.left - 200 + 16, 'visibility': 'visible', 'opacity': 1})
         }
       }
     }

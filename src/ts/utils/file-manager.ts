@@ -4,9 +4,9 @@ import { SETTINGS_S3_BUCKET } from "../constants";
 declare var ForgeVTT: any;
 declare var ForgeVTT_FilePicker: any;
 
-export default class MouDownloadManager {
+export default class MouFileManager {
 
-  static APP_NAME = "MouDownloadManager"
+  static APP_NAME = "MouFileManager"
   static RETRIES = 2
 
   /**
@@ -42,7 +42,7 @@ export default class MouDownloadManager {
    * Creates folders recursively (much better than previous)
    */
   static async createFolderRecursive(path: string) {
-    const source = MouDownloadManager.getSource()
+    const source = MouFileManager.getSource()
     // folder don't have to be created on S3 (automatically handled by S3 provider)
     if(source == "s3") return
     
@@ -50,15 +50,15 @@ export default class MouDownloadManager {
     let curFolder = ""
     for( const f of folders ) {
       if(f.length == 0) continue
-      const parentFolder = await FilePicker.browse(source, curFolder, MouDownloadManager.getOptions());
+      const parentFolder = await FilePicker.browse(source, curFolder, MouFileManager.getOptions());
       curFolder += (curFolder.length > 0 ? "/" : "" ) + f
       const dirs = parentFolder.dirs.map(d => decodeURIComponent(d))
       if (!dirs.includes(decodeURIComponent(curFolder))) {
         try {
-          MouApplication.logInfo(MouDownloadManager.APP_NAME, `Create folder ${curFolder}`)
-          await FilePicker.createDirectory(source, curFolder, MouDownloadManager.getOptions());
+          MouApplication.logInfo(MouFileManager.APP_NAME, `Create folder ${curFolder}`)
+          await FilePicker.createDirectory(source, curFolder, MouFileManager.getOptions());
         } catch(exc) {
-          MouApplication.logError(MouDownloadManager.APP_NAME, `Not able to create ${curFolder}`, exc)
+          MouApplication.logError(MouFileManager.APP_NAME, `Not able to create ${curFolder}`, exc)
         }
       }
     }
@@ -68,29 +68,29 @@ export default class MouDownloadManager {
    * Uploads a file into the right folder (improved version)
    */
   static async uploadFile(file: File, filename: string, folderPath: string, overwrite = false): Promise<FilePicker.UploadResult | false> {
-    const source = MouDownloadManager.getSource()
-    await MouDownloadManager.createFolderRecursive(folderPath)
+    const source = MouFileManager.getSource()
+    await MouFileManager.createFolderRecursive(folderPath)
     
     // check if file already exist
     //const baseURL = await MoulinetteFileUtil.getBaseURL();
-    let base = await FilePicker.browse(source, folderPath, MouDownloadManager.getOptions());
+    let base = await FilePicker.browse(source, folderPath, MouFileManager.getOptions());
     let exist = base.files.filter(f => decodeURIComponent(f) == `${folderPath}/${filename}`)
     //if(exist.length > 0 && !overwrite) return { path: `${baseURL}${folderPath}/${filename}` };
     if(exist.length > 0 && !overwrite) {
-      MouApplication.logInfo(MouDownloadManager.APP_NAME, `File ${folderPath}/${filename} already exists. Upoad skipped!`)
+      MouApplication.logInfo(MouFileManager.APP_NAME, `File ${folderPath}/${filename} already exists. Upoad skipped!`)
       return { status: "success", path: `${folderPath}/${filename}`, message: "File already exists" };
     }
     
     try {
       if (typeof ForgeVTT != "undefined" && ForgeVTT.usingTheForge) {
-        MouApplication.logInfo(MouDownloadManager.APP_NAME, "Uploading with The Forge")
-        return await ForgeVTT_FilePicker.upload(source, folderPath, file, MouDownloadManager.getOptions(), {notify: false});
+        MouApplication.logInfo(MouFileManager.APP_NAME, "Uploading with The Forge")
+        return await ForgeVTT_FilePicker.upload(source, folderPath, file, MouFileManager.getOptions(), {notify: false});
       } else {
         // @ts-ignore: ignore notify being a string (error in TLD)
-        return await FilePicker.upload(source, folderPath, file, MouDownloadManager.getOptions(), {notify: false});
+        return await FilePicker.upload(source, folderPath, file, MouFileManager.getOptions(), {notify: false});
       }
     } catch (e) {
-      MouApplication.logError(MouDownloadManager.APP_NAME, `Not able to upload file ${filename}`, e)
+      MouApplication.logError(MouFileManager.APP_NAME, `Not able to upload file ${filename}`, e)
       return false
     }
   }
@@ -100,7 +100,7 @@ export default class MouDownloadManager {
    */
   static async downloadAllFiles(urls: string[], packPath: string, folder: string, force=false): Promise<boolean> {
     for(const url of urls) {
-      const result = await MouDownloadManager.downloadFile(url, packPath, folder, force)
+      const result = await MouFileManager.downloadFile(url, packPath, folder, force)
       if(!result) {
         return false
       }
@@ -136,38 +136,38 @@ export default class MouDownloadManager {
     const url = `${packPath}/${uri}`
 
     // check if file already downloaded
-    await MouDownloadManager.createFolderRecursive(targetFolder)
-    const browse = await FilePicker.browse(MouDownloadManager.getSource(), targetFolder);
+    await MouFileManager.createFolderRecursive(targetFolder)
+    const browse = await FilePicker.browse(MouFileManager.getSource(), targetFolder);
     const files = browse.files.map(f => decodeURIComponent(f))
     const path = `${targetFolder}/${filename}`
     if(!force && files.includes(path)) {
-      MouApplication.logInfo(MouDownloadManager.APP_NAME, `File ${path} already exists. Download skipped!`)
+      MouApplication.logInfo(MouFileManager.APP_NAME, `File ${path} already exists. Download skipped!`)
       return { status: "success", path: path, message: "File already exists" };
     }
 
     let triesCount = 0
     const infoURL = url.split("?")[0]
-    while(triesCount <= MouDownloadManager.RETRIES) {
+    while(triesCount <= MouFileManager.RETRIES) {
       if(triesCount > 0) {
-        MouApplication.logInfo(MouDownloadManager.APP_NAME, `${triesCount}# retry of downloading ${infoURL}`)
+        MouApplication.logInfo(MouFileManager.APP_NAME, `${triesCount}# retry of downloading ${infoURL}`)
       }
       try {
         let res = await fetch(url)
         if(res && res.status == 200) {
           const blob = await res.blob()
-          const success = await MouDownloadManager.uploadFile(new File([blob], filename, { type: blob.type, lastModified: new Date().getTime() }), filename, targetFolder, force)
+          const success = await MouFileManager.uploadFile(new File([blob], filename, { type: blob.type, lastModified: new Date().getTime() }), filename, targetFolder, force)
           if(success && success.status == "success") {
             return success
           }
           else {
-            MouApplication.logWarn(MouDownloadManager.APP_NAME, `MTTERR003 Download succeeded but upload failed for ${infoURL}: ${success}`)
+            MouApplication.logWarn(MouFileManager.APP_NAME, `MTTERR003 Download succeeded but upload failed for ${infoURL}: ${success}`)
           }
         }
         else {
-          MouApplication.logWarn(MouDownloadManager.APP_NAME, `MTTERR001 Download failed for ${infoURL}: ${res}`)
+          MouApplication.logWarn(MouFileManager.APP_NAME, `MTTERR001 Download failed for ${infoURL}: ${res}`)
         }
       } catch(e) {
-        MouApplication.logError(MouDownloadManager.APP_NAME, `MTTERR001 Download failed for ${infoURL}`, e)
+        MouApplication.logError(MouFileManager.APP_NAME, `MTTERR001 Download failed for ${infoURL}`, e)
       }
       triesCount++
     }
