@@ -45,6 +45,12 @@ export default class MouFoundryUtils {
   /**
    * Create a new scene from the given data
    */
+  static async createSceneFromMap(path: string, folder: string) {
+    const sceneName = MouMediaUtils.prettyMediaName(path)
+    const json_text = await renderTemplate(`modules/${MODULE_ID}/templates/json/scene.hbs`, { path: path, name: sceneName })
+    await MouFoundryUtils.createScene(JSON.parse(json_text), folder)
+  }
+
   static async createScene(sceneData: AnyDict, folder:string) {
     let needsDims = !("width" in sceneData)
     delete sceneData._stats // causes sometimes incompatibilites

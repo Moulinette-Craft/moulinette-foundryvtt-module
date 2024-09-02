@@ -219,6 +219,8 @@ export default class MouBrowser extends MouApplication {
           renderTemplate(`modules/${MODULE_ID}/templates/browser-assets-actions.hbs`, { actions }).then( (html) => {
             asset.find(".menu").html(html)
             asset.find(".menu button").on("click", this._onAction.bind(this))
+            asset.find(".menu button").on("mouseenter", this._onActionShowHint.bind(this))
+            asset.find(".menu button").on("mouseleave", this._onActionHideHint.bind(this))
           })
         } else {
           this.logWarn(`No action for asset ${selAsset.name} (${selAsset.id})`)
@@ -291,5 +293,35 @@ export default class MouBrowser extends MouApplication {
     this.filters.pack = 0
     this.filters.type = MouCollectionAssetTypeEnum.Map
     this.render()
+  }
+
+  _onActionShowHint(event: Event) {
+    event.preventDefault();
+    if(event.currentTarget) {
+      // Show hint (to the right if enough space, otherwise to the left)
+      const button = $(event.currentTarget)     // asset's button
+      const asset = button.closest(".asset")    // asset inside the content
+      const content = asset.closest(".content") // entire content
+      const buttonPos = button.position()
+      const assetPos = asset.position()
+      const assetWidth = asset.outerWidth()
+      const contentWidth = content.outerWidth(true)
+      const contentScrollY = content.scrollTop()
+      if(assetPos !== undefined && assetWidth !== undefined && contentWidth !== undefined && buttonPos !== undefined && contentScrollY !== undefined) {
+        const remainingSpace = contentWidth - (assetPos.left + assetWidth)
+        if(remainingSpace > 220) {
+          content.find(".actionhint").css({ top: assetPos.top + buttonPos.top + contentScrollY, left: assetPos.left + assetWidth, 'visibility': 'visible', 'opacity': 1})
+        } else {
+          content.find(".actionhint").css({ top: assetPos.top + buttonPos.top + contentScrollY, left: assetPos.left - 200 + 16, 'visibility': 'visible', 'opacity': 1})
+        }
+      }
+    }
+    
+    //.css({ top: div.offset().top, left: div.offset().left + div.width() + 20, 'visibility': 'visible', 'opacity': 1})
+  }
+
+  _onActionHideHint(event: Event) {
+    event.preventDefault();
+    this.html?.find(".actionhint").css({'visibility': 'hidden', 'opacity': 0})
   }
 }

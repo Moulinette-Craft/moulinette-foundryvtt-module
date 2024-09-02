@@ -23,6 +23,7 @@ enum CloudAssetType {
 enum CloudAssetAction {
   DOWNLOAD,                 // download asset and copy path to clipboard
   IMPORT,                   // import asset (scenes/...)
+  CREATE_ARTICLE,           // create article from asset
   MEMBERSHIP                // creator support page
 }
 
@@ -209,10 +210,12 @@ export default class MouCollectionCloud implements MouCollection {
       return actions
     }
     
+    const assetName = MouCollectionAssetTypeEnum[asset.type]
     switch(cAsset.type) {
       case MouCollectionAssetTypeEnum.Scene:
       case MouCollectionAssetTypeEnum.Map:
-        actions.push({ id: CloudAssetAction.IMPORT, name: (game as Game).i18n.localize("MOU.action_import"), icon: "fa-solid fa-file-import" })
+        actions.push({ id: CloudAssetAction.IMPORT, name: (game as Game).i18n.format("MOU.action_import", { type: assetName}), icon: "fa-solid fa-file-import" })
+        actions.push({ id: CloudAssetAction.CREATE_ARTICLE, name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
         break;    
     }
     actions.push({ id: CloudAssetAction.DOWNLOAD, name: (game as Game).i18n.localize("MOU.action_download"), icon: "fa-solid fa-cloud-arrow-down" })
@@ -227,7 +230,7 @@ export default class MouCollectionCloud implements MouCollection {
    *  * UploadResult (with path) for a single file
    *  * AnyDict (JSON) for entities
    */
-  private static async downloadAsset(asset: any): Promise<FilePicker.UploadResult | false | AnyDict> {
+  private static async downloadAsset(asset: any): Promise<FilePicker.UploadResult | false> {
     const assetType = MouCollectionAssetTypeEnum[asset.type]
     if(!asset.base_url.startsWith(MouCloudClient.AZURE_BASEURL)) {
       throw new Error("Invalid BaseURL?")
@@ -241,7 +244,11 @@ export default class MouCollectionCloud implements MouCollection {
         const entityString = await MouDownloadManager.downloadFileAsString(`${asset.base_url}/${asset.file_url}`)
         if(entityString.length > 0) {
           // replace all #DEPS#
-          return JSON.parse(entityString.replace(new RegExp("#DEP#", "g"), targetPath + "/"))
+          return {
+            path: targetPath,
+            message: entityString.replace(new RegExp("#DEP#", "g"), targetPath + "/"),
+            status: "success"
+          }
         }
         return false
       } else {
@@ -260,21 +267,30 @@ export default class MouCollectionCloud implements MouCollection {
     const folderPath = `Moulinette/${asset.creator}/${asset.pack}`
     switch(actionId) {
       case CloudAssetAction.IMPORT:
-        const uploadResult = await MouCollectionCloud.downloadAsset(asset)
-        if(uploadResult) {
+        const resultImport = await MouCollectionCloud.downloadAsset(asset)
+        if(resultImport) {
           switch(asset.type) {
-            case MouCollectionAssetTypeEnum.Scene:
-              MouFoundryUtils.createScene(uploadResult, folderPath)
-              break
-            case MouCollectionAssetTypeEnum.Map:
-              MouFoundryUtils.createJournalImage(uploadResult.path, folderPath)
-              break
+            case MouCollectionAssetTypeEnum.Map: MouFoundryUtils.createSceneFromMap(resultImport.path, folderPath); break
+            case MouCollectionAssetTypeEnum.Scene: MouFoundryUtils.createScene(JSON.parse(resultImport.message), folderPath); break
+            //case MouCollectionAssetTypeEnum.Map:
+            //  MouFoundryUtils.createJournalImage(uploadResult.path, folderPath)
+            //  break
           }
         }
         break
       case CloudAssetAction.DOWNLOAD:
-        console.log(await MouCollectionCloud.downloadAsset(asset))
-        break
+        const resultDownload = await MouCollectionCloud.downloadAsset(asset)
+        if(resultDownload) {
+          let textToCopy = resultDownload.path
+          navigator.clipboard.writeText(textToCopy).then(() => {
+            ui.notifications?.info((game as Game).i18n.localize("MOU.clipboard_copy_success"))
+          })
+          .catch(() => {
+            ui.notifications?.warn((game as Game).i18n.localize("MOU.clipboard_copy_failed"))
+          });
+          break
+        }
+        
     }
   }
 }

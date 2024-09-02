@@ -6,7 +6,7 @@ export enum MouCollectionAssetTypeEnum {
   Actor = 5,
   Item = 6,
   Audio = 7,
-  Journal = 8,
+  JournalEntry = 8,
   Playlist = 9
 }
 
