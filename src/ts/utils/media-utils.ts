@@ -8,13 +8,13 @@ export default class MouMediaUtils {
 
   /** Generates pretty name based of filepath **/
   static prettyMediaName(filepath: string) {
-    const basepath = MouMediaUtils.getBasePath(filepath)
+    const basepath = MouMediaUtils.getBasePath(decodeURI(filepath))
     let name = basepath.split("/").pop()                  // keep filename only (not entire path)
     name = name?.replace(/[-_]/g, " ")                    // replace _ and - by spaces
     name = name?.split(' ')                               // capitalize the first letter of each word
       .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(' ');
-    return name ? name : filepath
+    return name ? name : decodeURI(filepath)
   }
 
   /** Generates a human readable filesize **/

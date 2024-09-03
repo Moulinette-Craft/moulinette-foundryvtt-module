@@ -52,6 +52,7 @@ export default class MouFoundryUtils {
     const json_text = await renderTemplate(`modules/${MODULE_ID}/templates/json/note-image.hbs`, { path: path, folder: folderObj ? `"${folderObj.id}"` : "null", name: articleName })
     const entry = await JournalEntry.create(JSON.parse(json_text))
     entry?.sheet?.render(true)
+    ui.journal?.activate()
   }
 
   /**
@@ -73,9 +74,22 @@ export default class MouFoundryUtils {
       }
       const entry = await JournalEntry.create(JSON.parse(json_text))
       entry?.sheet?.render(true)
+      ui.journal?.activate()
     } else {
       ui.notifications?.error((game as Game).i18n.localize("MOU.error_create_journal_path"))
     }
+  }
+
+  /**
+   * Create a journal article with a single page for a PDF
+   */
+  static async createJournalPDF(path: string, folder: string) {
+    const articleName = MouMediaUtils.prettyMediaName(path)
+    const folderObj = await MouFoundryUtils.getOrCreateFolder("JournalEntry", folder)
+    const json_text = await renderTemplate(`modules/${MODULE_ID}/templates/json/note-pdf.hbs`, { path: path, folder: folderObj ? `"${folderObj.id}"` : "null", name: articleName })
+    const entry = await JournalEntry.create(JSON.parse(json_text))
+    entry?.sheet?.render(true)
+    ui.journal?.activate()
   }
 
   /**

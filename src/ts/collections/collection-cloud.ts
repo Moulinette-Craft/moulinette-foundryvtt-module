@@ -238,6 +238,9 @@ export default class MouCollectionCloud implements MouCollection {
       case MouCollectionAssetTypeEnum.Image:
         actions.push({ id: CloudAssetAction.CREATE_ARTICLE, name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
         break;    
+      case MouCollectionAssetTypeEnum.PDF:
+        actions.push({ id: CloudAssetAction.CREATE_ARTICLE, name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
+        break;    
     }
     actions.push({ id: CloudAssetAction.DOWNLOAD, small: true, name: (game as Game).i18n.localize("MOU.action_download"), icon: "fa-solid fa-cloud-arrow-down" })
     actions.push({ id: CloudAssetAction.MEMBERSHIP, small: true, name: (game as Game).i18n.localize("MOU.action_support"), icon: "fa-solid fa-hands-praying" })
@@ -348,6 +351,9 @@ export default class MouCollectionCloud implements MouCollection {
             case MouCollectionAssetTypeEnum.Item: 
             case MouCollectionAssetTypeEnum.Actor: 
               MouFoundryUtils.createJournalImageFromEntity(JSON.parse(resultArticle.message), folderPath); 
+              break
+            case MouCollectionAssetTypeEnum.PDF: 
+              MouFoundryUtils.createJournalPDF(resultArticle.path, folderPath); 
               break
             case MouCollectionAssetTypeEnum.Map: 
             case MouCollectionAssetTypeEnum.Image: 
