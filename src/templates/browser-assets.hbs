@@ -2,10 +2,11 @@
   <h3>Title</h3>
   <hr>
   <i class="fa-solid fa-circle-info"></i> <span class="description">Description</span>
+  <div class="thumbnail"></div>
 </div>
 
 {{#each assets as |a|}}
-  <div class="asset {{a.format}}" data-id="{{a.id}}">
+  <div class="asset {{a.format}}{{#if a.draggable}} draggable{{/if}}" data-id="{{a.id}}"{{#if a.draggable}}draggable="true"{{/if}}>
     <div class="overlay"></div>
     <div class="menu"></div>
     <div class="preview" {{#if a.background_color}}style="background-color: #{{a.background_color}}"{{/if}}>

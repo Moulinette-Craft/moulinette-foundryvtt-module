@@ -45,5 +45,5 @@ export default class MouMediaUtils {
       return `${(number / 1000000).toFixed(1)}M`
     }
   }
-  
+
 }

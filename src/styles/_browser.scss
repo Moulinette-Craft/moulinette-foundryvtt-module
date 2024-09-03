@@ -57,6 +57,14 @@
         overflow: hidden;
         white-space: nowrap;
       }
+
+      .thumbnail {
+        margin: 20px auto;
+        width: 100px;
+        height: 100px;
+        background-position: center;
+        background-size: cover;
+      }
     }
     
     .filters-toggle {
@@ -269,6 +277,16 @@
           button {
             text-align: left;
             margin-bottom: 10px;
+          }
+
+          .shortcuts {
+            display: flex;
+            justify-content: space-between;
+            
+            button {
+              width: 33px;
+              font-size: 15px;
+            }
           }
         }  
 

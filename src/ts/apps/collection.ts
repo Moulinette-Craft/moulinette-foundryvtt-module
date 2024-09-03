@@ -7,7 +7,8 @@ export enum MouCollectionAssetTypeEnum {
   Item = 6,
   Audio = 7,
   JournalEntry = 8,
-  Playlist = 9
+  Playlist = 9,
+  Macro = 10
 }
 
 export interface MouCollectionAssetType {
@@ -27,12 +28,14 @@ export interface MouCollectionAsset {
   format: string
   image: string
   creator: string
+  creator_url: string
   pack: string
   pack_id: string
   name: string
   meta: MouCollectionAssetMeta[]
   icons?: {descr: string, icon: string}[]
-  background_color: string
+  background_color: string,
+  draggable?: boolean
 }
 
 export interface MouCollectionCreator {
@@ -56,7 +59,9 @@ export interface MouCollectionFilters {
 export interface MouCollectionAction {
   id: number,
   name: string,
-  icon: string
+  icon: string,
+  small?: boolean,
+  drag?: boolean
 }
 
 export interface MouCollectionActionHint {
@@ -64,6 +69,14 @@ export interface MouCollectionActionHint {
   description: string
 }
 
+export interface MouCollectionDragData {
+  moulinette: {
+    asset: string,
+    collection: string
+  },
+  type: "Actor" | "Item" | "Macro"
+  data?: any
+}
 
 export interface MouCollection {
   
@@ -94,8 +107,11 @@ export interface MouCollection {
   /** Returns the hint associated to specified action  */
   getActionHint(asset: MouCollectionAsset, actionId: number) : MouCollectionActionHint | null
 
-  /** Execute the action */
+  /** Executes the action */
   executeAction(actionId: number, assetId: string): Promise<void>
+
+  /** Fills the data from desired asset */
+  fromDropData(assetId: string, data: MouCollectionDragData): Promise<void>
 }
 
 

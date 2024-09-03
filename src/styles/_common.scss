@@ -18,4 +18,12 @@
   .mou-hidden {
     display: none;
   }
+
+  .draggable {
+    cursor: grab;
+
+    img {
+      pointer-events: none;
+    }
+  }
 }

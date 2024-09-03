@@ -9,10 +9,12 @@ import MouCloudClient from "./clients/moulinette-cloud";
 import { MODULE_ID, SETTINGS_S3_BUCKET, SETTINGS_SESSION_ID, SETTINGS_USE_FOLDERS } from "./constants";
 import MouLayer from "./layers/mou-layer";
 import { MouModule } from "./types";
-import MouCache from "./utils/cache";
+import MouCache from "./apps/cache";
 import MouMediaUtils from "./utils/media-utils";
 import { MouCollection } from "./apps/collection";
 import MouCollectionCloud, { CloudMode } from "./collections/collection-cloud";
+import MouEventHandler from "./apps/event-handler";
+import MouHooks from "./utils/hooks";
 
 let module: MouModule;
 
@@ -25,6 +27,8 @@ Hooks.once("init", () => {
   module.cloudclient = new MouCloudClient();
   module.cache = new MouCache();
   module.collections = [] as MouCollection[]
+  module.eventHandler = new MouEventHandler();
+  module.debug = true;
   
   (game as Game).settings.register(MODULE_ID, SETTINGS_SESSION_ID, { scope: "world", config: false, type: String, default: "anonymous" });
 
@@ -69,39 +73,19 @@ Hooks.once("ready", () => {
   module.collections.push(new MouCollectionCloud(CloudMode.ONLY_SUPPORTED_CREATORS))
   module.collections.push(new MouCollectionCloud(CloudMode.ALL_ACCESSIBLE))
   module.collections.push(new MouCollectionCloud(CloudMode.ALL))
+  // hooks some FVTT functions
+  MouHooks.replaceFromDropData()
 });
 
 /**
  * Controls: adds a new Moulinette control
  */
-Hooks.on('getSceneControlButtons', (buttons) => {
+Hooks.on('getSceneControlButtons', (buttons) => MouHooks.addMoulinetteControls(buttons))
 
-  if((game as Game).user?.isGM) {
-    const moulinetteTool = {
-      activeTool: "",
-      icon: "fa-solid fa-photo-film-music",
-      layer: "moulayer",
-      name: "moulinette",
-      title: (game as Game).i18n.localize("MOU.user_authenticated"),
-      tools: [{ 
-        name: "actions", 
-        icon: "fa-solid fa-file-magnifying-glass", 
-        title: (game as Game).i18n.localize("MOU.browser"),
-        button: true, 
-        onClick: () => { module.browser.render(true) } 
-      }],
-      visible: true
-    }
-    
-    const isValidUser = module.cache.user && module.cache.user.fullName
-    moulinetteTool.tools.push({
-      name: "authenticated",
-      icon: isValidUser ? "fa-solid fa-user-check" : "fa-solid fa-user-xmark",
-      title: (game as Game).i18n.localize("MOU.user_authenticated"),
-      button: true,
-      onClick: () => { module.user.render(true) }
-    })
+/**
+ * Manage canvas drop
+ */
+Hooks.on('dropCanvasData', (canvas, data) => {
+  console.log("HERE", canvas, data)
+});
 
-    buttons.push(moulinetteTool)
-  }
-})

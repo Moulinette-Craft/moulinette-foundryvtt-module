@@ -1,7 +1,7 @@
 import { MODULE_ID } from "../constants";
 import { AnyDict, MouModule } from "../types";
 import MouApplication from "./application";
-import { MouCollection, MouCollectionAsset, MouCollectionAssetTypeEnum, MouCollectionFilters, MouCollectionUtils } from "./collection";
+import { MouCollection, MouCollectionAsset, MouCollectionAssetTypeEnum, MouCollectionDragData, MouCollectionFilters, MouCollectionUtils } from "./collection";
 
 
 export default class MouBrowser extends MouApplication {
@@ -127,6 +127,7 @@ export default class MouBrowser extends MouApplication {
     this.html?.find(".asset").on("mouseleave", this._onHideMenu.bind(this));
     this.html?.find(".asset a.creator").on("click", this._onClickAssetCreator.bind(this));
     this.html?.find(".asset a.pack").on("click", this._onClickAssetPack.bind(this));
+    this.html?.find(".asset.draggable").on("dragstart", this._onDragStart.bind(this));
   }
 
   /** Extend/collapse filter section */
@@ -214,8 +215,11 @@ export default class MouBrowser extends MouApplication {
         const actions = this.collection?.getActions(selAsset)
         if(actions && actions.length > 0) {
           asset.find(".menu").show(); 
-          asset.find(".overlay").show();       
-          renderTemplate(`modules/${MODULE_ID}/templates/browser-assets-actions.hbs`, { actions }).then( (html) => {
+          asset.find(".overlay").show();
+          renderTemplate(`modules/${MODULE_ID}/templates/browser-assets-actions.hbs`, { 
+            actions: actions.filter(a => a.small === undefined || !a.small),
+            smallActions: actions.filter(a => a.small !== undefined && a.small),
+          }).then( (html) => {
             asset.find(".menu").html(html)
             asset.find(".menu button").on("click", this._onAction.bind(this))
             asset.find(".menu button").on("mouseenter", this._onActionShowHint.bind(this))
@@ -308,6 +312,7 @@ export default class MouBrowser extends MouApplication {
       if(!hint) return;
       actionHint.find("h3").html(hint.name)
       actionHint.find(".description").html(hint.description)
+      actionHint.find(".thumbnail").css("background-image", `url('${selAsset.image}')`)
       // Show hint (to the right if enough space, otherwise to the left)
       const buttonPos = button.position()
       const assetPos = asset.position()
@@ -330,5 +335,33 @@ export default class MouBrowser extends MouApplication {
   _onActionHideHint(event: Event) {
     event.preventDefault();
     this.html?.find(".actionhint").css({'visibility': 'hidden', 'opacity': 0})
+  }
+
+  override _onDragStart(event: Event): void {
+    if(event.currentTarget) {
+      const target = $(event.currentTarget) // target can be asset itself or button
+      const assetId = target.closest(".asset").data("id")
+      const selAsset = this.currentAssets.find((a) => a.id == assetId)
+      if(selAsset) {
+        if(selAsset.image) {
+          // @ts-ignore
+          const originalEvent = event.originalEvent as DragEvent;
+          const dragImage = this.html?.find(".actionhint .thumbnail").get(0)
+          // @ts-ignore (checkVisibility invalid?)
+          if(dragImage && dragImage.checkVisibility()) {
+            originalEvent.dataTransfer?.setDragImage(this.html?.find(".actionhint .thumbnail").get(0) as Element, 50, 50);  
+          }
+          const assetType = MouCollectionAssetTypeEnum[selAsset.type]
+          if(this.collection && (assetType == "Macro" || assetType == "Actor" || assetType == "Item")) {
+            const data : MouCollectionDragData = {
+              moulinette: { asset: assetId, collection: this.collection?.getId() },
+              type: assetType
+            }
+            this.logInfo("DataTransfer", data)
+            originalEvent.dataTransfer?.setData('text/plain', JSON.stringify(data));
+          }
+        }
+      }
+    }
   }
 }

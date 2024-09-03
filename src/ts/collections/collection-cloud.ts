@@ -3,7 +3,7 @@ import MouCloudClient from "../clients/moulinette-cloud";
 import MouFileManager from "../utils/file-manager";
 import MouMediaUtils from "../utils/media-utils";
 
-import { MouCollection, MouCollectionAction, MouCollectionActionHint, MouCollectionAsset, MouCollectionAssetMeta, MouCollectionAssetType, MouCollectionAssetTypeEnum, MouCollectionCreator, MouCollectionFilters, MouCollectionPack } from "../apps/collection";
+import { MouCollection, MouCollectionAction, MouCollectionActionHint, MouCollectionAsset, MouCollectionAssetMeta, MouCollectionAssetType, MouCollectionAssetTypeEnum, MouCollectionCreator, MouCollectionDragData, MouCollectionFilters, MouCollectionPack } from "../apps/collection";
 import { MOU_STORAGE_PUB, SETTINGS_SESSION_ID } from "../constants";
 import { AnyDict } from "../types";
 import MouFoundryUtils from "../utils/foundry-utils";
@@ -21,6 +21,7 @@ enum CloudAssetType {
 }
 
 enum CloudAssetAction {
+  DRAG,                     // drag & drop capability for the asset
   DOWNLOAD,                 // download asset and copy path to clipboard
   IMPORT,                   // import asset (scenes/...)
   CREATE_ARTICLE,           // create article from asset
@@ -35,11 +36,13 @@ class MouCollectionCloudAsset implements MouCollectionAsset {
   image: string;
   background_color: string;
   creator: string;
+  creator_url: string;
   pack: string;
   pack_id: string;
   name: string;
   meta: MouCollectionAssetMeta[];
   icons?: {descr: string, icon: string}[];
+  draggable?: boolean;
 
   // specific to MouCollectionCloud
   cloud_type: number; 
@@ -51,6 +54,7 @@ class MouCollectionCloudAsset implements MouCollectionAsset {
     this.image = `${MOU_STORAGE_PUB}${data.pack.creator_ref}/${data.pack.path}/${basePath}.webp`
     this.background_color = [MouCollectionAssetTypeEnum.Scene, MouCollectionAssetTypeEnum.Map].includes(data.type) ? data.main_color : null
     this.creator = data.pack.creator
+    this.creator_url = data.creator_url
     this.pack = data.pack.name
     this.pack_id = data.pack_ref
     this.name = MouMediaUtils.prettyMediaName(data.filepath)
@@ -68,6 +72,11 @@ class MouCollectionCloudAsset implements MouCollectionAsset {
     }
     
     switch(data.type) {
+      case MouCollectionAssetTypeEnum.Item:
+      case MouCollectionAssetTypeEnum.Actor:
+      case MouCollectionAssetTypeEnum.Audio:
+        this.draggable = true
+        break
       case MouCollectionAssetTypeEnum.Scene:
         this.meta = []
         if(data.scene.width) {
@@ -91,8 +100,9 @@ class MouCollectionCloudAsset implements MouCollectionAsset {
         if(data.scene.hasDrawings) this.icons.push({descr: (game as Game).i18n.localize("MOU.scene_has_drawings"), icon: "fa-solid fa-pencil-alt"})
         if(data.scene.hasNotes) this.icons.push({descr: (game as Game).i18n.localize("MOU.scene_has_notes"), icon: "fa-solid fa-bookmark"})
         break
-      case MouCollectionAssetTypeEnum.Map:
       case MouCollectionAssetTypeEnum.Image:
+        this.draggable = true
+      case MouCollectionAssetTypeEnum.Map:  
         this.meta.push({ 
           icon: "fa-regular fa-expand-wide", 
           text: `${MouMediaUtils.prettyNumber(data.size.width, true)} x ${MouMediaUtils.prettyNumber(data.size.height, true)}`,
@@ -216,8 +226,12 @@ export default class MouCollectionCloud implements MouCollection {
     switch(cAsset.type) {
       case MouCollectionAssetTypeEnum.Scene:
       case MouCollectionAssetTypeEnum.Map:
+        actions.push({ id: CloudAssetAction.IMPORT, name: (game as Game).i18n.format("MOU.action_import", { type: assetName}), icon: "fa-solid fa-file-import" })
+        actions.push({ id: CloudAssetAction.CREATE_ARTICLE, name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
+        break; 
       case MouCollectionAssetTypeEnum.Item:
       case MouCollectionAssetTypeEnum.Actor:
+        actions.push({ id: CloudAssetAction.DRAG, drag: true, name: (game as Game).i18n.format("MOU.action_drag", { type: assetName}), icon: "fa-solid fa-hand" })
         actions.push({ id: CloudAssetAction.IMPORT, name: (game as Game).i18n.format("MOU.action_import", { type: assetName}), icon: "fa-solid fa-file-import" })
         actions.push({ id: CloudAssetAction.CREATE_ARTICLE, name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
         break;    
@@ -225,7 +239,8 @@ export default class MouCollectionCloud implements MouCollection {
         actions.push({ id: CloudAssetAction.CREATE_ARTICLE, name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
         break;    
     }
-    actions.push({ id: CloudAssetAction.DOWNLOAD, name: (game as Game).i18n.localize("MOU.action_download"), icon: "fa-solid fa-cloud-arrow-down" })
+    actions.push({ id: CloudAssetAction.DOWNLOAD, small: true, name: (game as Game).i18n.localize("MOU.action_download"), icon: "fa-solid fa-cloud-arrow-down" })
+    actions.push({ id: CloudAssetAction.MEMBERSHIP, small: true, name: (game as Game).i18n.localize("MOU.action_support"), icon: "fa-solid fa-hands-praying" })
     
     return actions
   }
@@ -234,6 +249,12 @@ export default class MouCollectionCloud implements MouCollection {
     const action = this.getActions(asset).find(a => a.id == actionId)
     if(!action) return null
     switch(actionId) {
+      case CloudAssetAction.DRAG:
+        switch(asset.type) {
+          case MouCollectionAssetTypeEnum.Item: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_drag_item") }
+          case MouCollectionAssetTypeEnum.Actor: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_drag_actor") }
+        }
+        break
       case CloudAssetAction.IMPORT:
         switch(asset.type) {
           case MouCollectionAssetTypeEnum.Map: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_import_image") }
@@ -242,6 +263,7 @@ export default class MouCollectionCloud implements MouCollection {
           case MouCollectionAssetTypeEnum.Actor: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_import_asset") }
           case MouCollectionAssetTypeEnum.Image: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_import_image") }
         }
+        break
       case CloudAssetAction.DOWNLOAD:
         switch(asset.type) {
           case MouCollectionAssetTypeEnum.Scene: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_download_scene") }
@@ -251,6 +273,12 @@ export default class MouCollectionCloud implements MouCollection {
         switch(asset.type) {
           case MouCollectionAssetTypeEnum.Scene: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_create_article_scene") }
           default: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_create_article_asset") }
+        }
+      case CloudAssetAction.MEMBERSHIP:
+        if((asset as MouCollectionCloudAsset).cloud_type == CloudAssetType.PREVIEW) { 
+          return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_subscribe_creator") }
+        } else {
+          return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_visit_creator") }
         }
     }
     return null
@@ -298,6 +326,9 @@ export default class MouCollectionCloud implements MouCollection {
     const asset = await MouCloudClient.apiGET(`/asset/${assetId}`, { session: MouApplication.getSettings(SETTINGS_SESSION_ID) })
     const folderPath = `Moulinette/${asset.creator}/${asset.pack}`
     switch(actionId) {
+      case CloudAssetAction.DRAG:
+        ui.notifications?.info((game as Game).i18n.localize("MOU.dragdrop_instructions"))
+        break
       case CloudAssetAction.IMPORT:
         const resultImport = await MouCollectionCloud.downloadAsset(asset)
         if(resultImport) {
@@ -351,7 +382,37 @@ export default class MouCollectionCloud implements MouCollection {
           break
         }
         break
-        
+      
+      case CloudAssetAction.MEMBERSHIP:
+        const cAsset = (asset as MouCollectionCloudAsset)
+        if(cAsset.cloud_type == CloudAssetType.PREVIEW) {
+        } else {
+          var win = window.open(cAsset.creator_url, '_blank');
+          if (win) { 
+            win.focus();
+          }
+        }
     }
   }
+
+  /**
+   * Fills data (from DropData) with JSON data from asset
+   */
+  async fromDropData(assetId: string, data: MouCollectionDragData): Promise<void> {
+    const asset = await MouCloudClient.apiGET(`/asset/${assetId}`, { session: MouApplication.getSettings(SETTINGS_SESSION_ID) })    
+    if(asset) {
+      MouApplication.logDebug(this.APP_NAME, `fromDropData for asset ${assetId}`, data)
+      switch(asset.type) {
+        case MouCollectionAssetTypeEnum.Macro: 
+        case MouCollectionAssetTypeEnum.Actor: 
+        case MouCollectionAssetTypeEnum.Item: 
+          const result = await MouCollectionCloud.downloadAsset(asset)  
+          if(result) {
+            data.data = JSON.parse(result.message)
+          }
+          break
+      }
+    }
+  }
+  
 }
