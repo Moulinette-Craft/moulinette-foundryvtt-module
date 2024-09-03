@@ -1,3 +1,5 @@
+import { AnyDict } from "../types"
+
 export enum MouCollectionAssetTypeEnum {
   Scene = 1,
   Map = 2,
@@ -26,7 +28,7 @@ export interface MouCollectionAsset {
   id: string
   type: number
   format: string
-  image: string
+  preview: string
   creator: string
   creator_url: string
   pack: string
@@ -35,7 +37,8 @@ export interface MouCollectionAsset {
   meta: MouCollectionAssetMeta[]
   icons?: {descr: string, icon: string}[]
   background_color: string,
-  draggable?: boolean
+  draggable?: boolean,
+  flags: AnyDict
 }
 
 export interface MouCollectionCreator {
@@ -108,7 +111,7 @@ export interface MouCollection {
   getActionHint(asset: MouCollectionAsset, actionId: number) : MouCollectionActionHint | null
 
   /** Executes the action */
-  executeAction(actionId: number, assetId: string): Promise<void>
+  executeAction(actionId: number, asset: MouCollectionAsset): Promise<void>
 
   /** Fills the data from desired asset */
   fromDropData(assetId: string, data: MouCollectionDragData): Promise<void>

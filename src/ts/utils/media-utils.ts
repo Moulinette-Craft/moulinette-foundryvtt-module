@@ -46,4 +46,19 @@ export default class MouMediaUtils {
     }
   }
 
+  /** Generates a human readable duration **/
+  static prettyDuration(seconds: number) {
+    seconds = Math.round(seconds)
+    let minutes = Math.floor(seconds / 60);
+    let hours = Math.floor(seconds / 3600);
+    seconds = seconds % 60;
+    
+    // Format MM:SS for duration less than 1 hour
+    if (hours === 0) {
+      return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    } else {
+      return `${hours}:${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    }
+  }
+
 }

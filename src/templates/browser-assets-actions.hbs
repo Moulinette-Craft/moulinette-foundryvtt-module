@@ -1,5 +1,5 @@
 {{#each actions as |a|}}
-<button data-id="{{a.id}}"{{#if a.drag}}draggable="true" class="draggable"{{/if}}><i class="{{a.icon}}"></i> {{a.name}}</button>
+<button data-id="{{a.id}}"{{#if a.drag}}class="draggable"{{/if}}><i class="{{a.icon}}"></i> {{a.name}}</button>
 {{/each}}
 <div class="shortcuts">
   {{#each smallActions as |a|}}

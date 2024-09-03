@@ -24,7 +24,7 @@ export default class MouBrowser extends MouApplication {
 
   /* Filters */
   private filters: MouCollectionFilters = {
-    type: MouCollectionAssetTypeEnum.Map,
+    type: MouCollectionAssetTypeEnum.Audio,
     creator: "",
     pack: 0
   }
@@ -67,8 +67,9 @@ export default class MouBrowser extends MouApplication {
     const types1 = typesObj.slice(0, middleIndex);
     const types2 = typesObj.slice(middleIndex);
     
-
+    const mode = this.filters.type == MouCollectionAssetTypeEnum.Audio ? "vertical" : "horizontal"
     return {
+      mode,
       filters: {
         collections: module.collections.map( col => ( {id: col.getId(), name: col.getName() } )),
         prefs: this.filters_prefs,
@@ -117,7 +118,14 @@ export default class MouBrowser extends MouApplication {
     } 
     else {
       this.page++
-      const html = await renderTemplate(`modules/${MODULE_ID}/templates/browser-assets.hbs`, { assets })
+      let html = ""
+      switch(this.filters.type) {
+        case MouCollectionAssetTypeEnum.Audio: 
+          html = await renderTemplate(`modules/${MODULE_ID}/templates/browser-audio.hbs`, { assets })
+          break
+        default:
+          html = await renderTemplate(`modules/${MODULE_ID}/templates/browser-assets.hbs`, { assets })
+      }
       this.html?.find(".content").append(html)
       Array.prototype.push.apply(this.currentAssets, assets);
     }
@@ -214,7 +222,7 @@ export default class MouBrowser extends MouApplication {
       if(selAsset) {
         const actions = this.collection?.getActions(selAsset)
         if(actions && actions.length > 0) {
-          asset.find(".menu").show(); 
+          asset.find(".menu").css("display", "flex"); 
           asset.find(".overlay").show();
           renderTemplate(`modules/${MODULE_ID}/templates/browser-assets-actions.hbs`, { 
             actions: actions.filter(a => a.small === undefined || !a.small),
@@ -255,7 +263,10 @@ export default class MouBrowser extends MouApplication {
       const target = $(event.currentTarget)
       const actionId = target.data("id")
       const assetId = target.closest(".asset").data("id")
-      this.collection?.executeAction(actionId, assetId)
+      const selAsset = this.currentAssets.find((a) => a.id == assetId)
+      if(selAsset) {
+        this.collection?.executeAction(actionId, selAsset)  
+      }
     }
   }
 
@@ -312,21 +323,29 @@ export default class MouBrowser extends MouApplication {
       if(!hint) return;
       actionHint.find("h3").html(hint.name)
       actionHint.find(".description").html(hint.description)
-      actionHint.find(".thumbnail").css("background-image", `url('${selAsset.image}')`)
+      actionHint.find(".thumbnail").css("background-image", `url('${selAsset.preview}')`)
       // Show hint (to the right if enough space, otherwise to the left)
+      let posTop = 0
+      let posLeft = 0
       const buttonPos = button.position()
-      const assetPos = asset.position()
-      const assetWidth = asset.outerWidth()
-      const contentWidth = content.outerWidth(true)
+      const assetPos = asset.position()  
       const contentScrollY = content.scrollTop()
-      if(assetPos !== undefined && assetWidth !== undefined && contentWidth !== undefined && buttonPos !== undefined && contentScrollY !== undefined) {
-        const remainingSpace = contentWidth - (assetPos.left + assetWidth)
-        if(remainingSpace > 220) {
-          actionHint.css({ top: assetPos.top + buttonPos.top + contentScrollY, left: assetPos.left + assetWidth, 'visibility': 'visible', 'opacity': 1})
-        } else {
-          actionHint.css({ top: assetPos.top + buttonPos.top + contentScrollY, left: assetPos.left - 200 + 16, 'visibility': 'visible', 'opacity': 1})
+      if(asset.hasClass("visual")) {
+        const assetWidth = asset.outerWidth()
+        const contentWidth = content.outerWidth(true)
+        if(assetPos !== undefined && assetWidth !== undefined && contentWidth !== undefined && buttonPos !== undefined && contentScrollY !== undefined) {
+          const remainingSpace = contentWidth - (assetPos.left + assetWidth)
+          posTop = assetPos.top + buttonPos.top + contentScrollY
+          posLeft = remainingSpace > 220 ? assetPos.left + assetWidth : assetPos.left - 200 + 16
+        }
+      } else {
+        const assetHeight = asset.outerHeight()
+        if(assetHeight !== undefined && contentScrollY !== undefined) {
+          posTop = assetPos.top + assetHeight + contentScrollY +15
+          posLeft = buttonPos.left + 15
         }
       }
+      actionHint.css({ top: posTop, left: posLeft, 'visibility': 'visible', 'opacity': 1})
     }
     
     //.css({ top: div.offset().top, left: div.offset().left + div.width() + 20, 'visibility': 'visible', 'opacity': 1})
@@ -343,7 +362,7 @@ export default class MouBrowser extends MouApplication {
       const assetId = target.closest(".asset").data("id")
       const selAsset = this.currentAssets.find((a) => a.id == assetId)
       if(selAsset) {
-        if(selAsset.image) {
+        if(selAsset.preview) {
           // @ts-ignore
           const originalEvent = event.originalEvent as DragEvent;
           const dragImage = this.html?.find(".actionhint .thumbnail").get(0)

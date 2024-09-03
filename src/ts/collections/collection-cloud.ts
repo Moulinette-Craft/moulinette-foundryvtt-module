@@ -25,7 +25,8 @@ enum CloudAssetAction {
   DOWNLOAD,                 // download asset and copy path to clipboard
   IMPORT,                   // import asset (scenes/...)
   CREATE_ARTICLE,           // create article from asset
-  MEMBERSHIP                // creator support page
+  MEMBERSHIP,               // creator support page,
+  PREVIEW,                  // preview audio
 }
 
 class MouCollectionCloudAsset implements MouCollectionAsset {
@@ -33,7 +34,7 @@ class MouCollectionCloudAsset implements MouCollectionAsset {
   id: string;
   type: number;
   format: string;
-  image: string;
+  preview: string;
   background_color: string;
   creator: string;
   creator_url: string;
@@ -43,6 +44,7 @@ class MouCollectionCloudAsset implements MouCollectionAsset {
   meta: MouCollectionAssetMeta[];
   icons?: {descr: string, icon: string}[];
   draggable?: boolean;
+  flags: AnyDict;
 
   // specific to MouCollectionCloud
   cloud_type: number; 
@@ -51,7 +53,7 @@ class MouCollectionCloudAsset implements MouCollectionAsset {
     this.id = data._id;
     this.format = [MouCollectionAssetTypeEnum.Scene, MouCollectionAssetTypeEnum.Map].includes(data.type) ? "large" : "small"
     const basePath = MouMediaUtils.getBasePath(data.filepath)
-    this.image = `${MOU_STORAGE_PUB}${data.pack.creator_ref}/${data.pack.path}/${basePath}.webp`
+    this.preview = `${MOU_STORAGE_PUB}${data.pack.creator_ref}/${data.pack.path}/${basePath}.${data.type == MouCollectionAssetTypeEnum.Audio ? "ogg" : "webp"}`
     this.background_color = [MouCollectionAssetTypeEnum.Scene, MouCollectionAssetTypeEnum.Map].includes(data.type) ? data.main_color : null
     this.creator = data.pack.creator
     this.creator_url = data.creator_url
@@ -61,6 +63,7 @@ class MouCollectionCloudAsset implements MouCollectionAsset {
     this.type = data.type;
     this.meta = []
     this.icons = []
+    this.flags = {}
 
     if(data.perms == 0) {
       this.icons.push({descr: (game as Game).i18n.localize("MOU.pack_is_free"), icon: "fa-solid fa-gift"})
@@ -74,8 +77,18 @@ class MouCollectionCloudAsset implements MouCollectionAsset {
     switch(data.type) {
       case MouCollectionAssetTypeEnum.Item:
       case MouCollectionAssetTypeEnum.Actor:
+        this.draggable = true
+        break
       case MouCollectionAssetTypeEnum.Audio:
         this.draggable = true
+        if(data.audio.duration >= 45) {
+          this.flags["hasAudioPreview"] = true
+        }
+        this.meta.push({ 
+          icon: "fa-regular fa-stopwatch", 
+          text: MouMediaUtils.prettyDuration(data.audio.duration),
+          hint: (game as Game).i18n.localize("MOU.meta_audio_duration")
+        })
         break
       case MouCollectionAssetTypeEnum.Scene:
         this.meta = []
@@ -241,6 +254,11 @@ export default class MouCollectionCloud implements MouCollection {
       case MouCollectionAssetTypeEnum.PDF:
         actions.push({ id: CloudAssetAction.CREATE_ARTICLE, name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
         break;    
+      case MouCollectionAssetTypeEnum.Audio:
+        if(asset.flags.hasAudioPreview) {
+          actions.push({ id: CloudAssetAction.PREVIEW, name: (game as Game).i18n.localize("MOU.action_preview"), icon: "fa-solid fa-play" })
+        }
+        break;    
     }
     actions.push({ id: CloudAssetAction.DOWNLOAD, small: true, name: (game as Game).i18n.localize("MOU.action_download"), icon: "fa-solid fa-cloud-arrow-down" })
     actions.push({ id: CloudAssetAction.MEMBERSHIP, small: true, name: (game as Game).i18n.localize("MOU.action_support"), icon: "fa-solid fa-hands-praying" })
@@ -283,6 +301,12 @@ export default class MouCollectionCloud implements MouCollection {
         } else {
           return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_visit_creator") }
         }
+
+      case CloudAssetAction.PREVIEW:
+        switch(asset.type) {
+          case MouCollectionAssetTypeEnum.Audio: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_preview_audio") }
+        }
+        break
     }
     return null
   }
@@ -325,8 +349,8 @@ export default class MouCollectionCloud implements MouCollection {
   }
 
 
-  async executeAction(actionId: number, assetId: string): Promise<void> {
-    const asset = await MouCloudClient.apiGET(`/asset/${assetId}`, { session: MouApplication.getSettings(SETTINGS_SESSION_ID) })
+  async executeAction(actionId: number, selAsset: MouCollectionAsset): Promise<void> {
+    const asset = await MouCloudClient.apiGET(`/asset/${selAsset.id}`, { session: MouApplication.getSettings(SETTINGS_SESSION_ID) })
     const folderPath = `Moulinette/${asset.creator}/${asset.pack}`
     switch(actionId) {
       case CloudAssetAction.DRAG:
@@ -386,6 +410,26 @@ export default class MouCollectionCloud implements MouCollection {
             ui.notifications?.warn((game as Game).i18n.localize("MOU.clipboard_copy_failed"))
           });
           break
+        }
+        break
+
+      case CloudAssetAction.PREVIEW:
+        switch(asset.type) {
+          case MouCollectionAssetTypeEnum.Audio:
+            const audio_url = selAsset.preview
+            // assuming there is an audio preview and there is a audio#audiopreview element on the page
+            const audio = $("#audiopreview")[0] as HTMLAudioElement
+            if(decodeURI(audio.src) != decodeURI(audio_url)) {
+              audio.pause()
+              audio.src = audio_url
+            }
+            if (audio.paused) {
+              audio.src = audio_url
+              audio.play();
+            } else {
+              audio.pause();
+            }
+            break
         }
         break
       

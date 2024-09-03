@@ -64,6 +64,10 @@ Hooks.once("init", () => {
   Handlebars.registerHelper('mouIf', function(cond, value1, value2) {
     return cond ? value1 : value2
   });
+
+  Handlebars.registerHelper('increment', function(value, valueAdd) {
+    return value + valueAdd;
+  });
 });
 
 Hooks.once("ready", () => {
