@@ -1,0 +1,18 @@
+<div class="config">
+  <h2>{{localize "MOU.scope"}}</h2>
+  <ul>
+    {{#each modes as |m|}}
+    <li>
+      <input type="radio" name="mode" id="{{m.id}}" {{#if (eq ../mode m.id)}}checked{{/if}}>
+      <label for="{{m.id}}">{{m.name}}</label>
+      <div class="description">{{m.desc}}</div>
+    </li>
+    {{/each}}
+  </ul>
+  <footer>
+    <div class="actions">
+      <button data-id="save"><i class="fa-solid fa-floppy-disk"></i> {{localize "MOU.save_settings"}}</button>
+      <button data-id="cancel"><i class="fa-solid fa-trash-can-xmark"></i> {{localize "MOU.cancel"}}</button>
+    </div>
+  </footer>
+</div>

@@ -4,14 +4,15 @@ import MouFileManager from "../utils/file-manager";
 import MouMediaUtils from "../utils/media-utils";
 
 import { MouCollection, MouCollectionAction, MouCollectionActionHint, MouCollectionAsset, MouCollectionAssetMeta, MouCollectionAssetType, MouCollectionAssetTypeEnum, MouCollectionCreator, MouCollectionDragData, MouCollectionFilters, MouCollectionPack } from "../apps/collection";
-import { MOU_STORAGE_PUB, SETTINGS_SESSION_ID } from "../constants";
+import { MOU_STORAGE_PUB, SETTINGS_COLLECTION_CLOUD, SETTINGS_SESSION_ID } from "../constants";
 import { AnyDict } from "../types";
 import MouFoundryUtils from "../utils/foundry-utils";
+import CloudCollectionConfig from "./collection-cloud-config";
 
 export enum CloudMode {
-  ALL,                      // all assets including non-accessible
-  ALL_ACCESSIBLE,           // all assets the user can access
-  ONLY_SUPPORTED_CREATORS   // only assets from creators the user actively supports
+  ALL = "cloud-all",                          // all assets including non-accessible
+  ALL_ACCESSIBLE = "cloud-accessible",        // all assets the user can access
+  ONLY_SUPPORTED_CREATORS = "cloud-supported" // only assets from creators the user actively supports
 }
 
 enum CloudAssetType {
@@ -143,16 +144,18 @@ export default class MouCollectionCloud implements MouCollection {
 
   private mode: CloudMode
 
-  constructor(mode: CloudMode) {
-    this.mode = mode
+  constructor() {
+    this.mode = CloudMode.ALL
+    this.refreshSettings();
   }
 
+  private refreshSettings() {
+    const settings = MouApplication.getSettings(SETTINGS_COLLECTION_CLOUD) as AnyDict
+    this.mode = "mode" in settings ? settings.mode : CloudMode.ALL
+  }
+  
   getId() : string {
-    switch(this.mode) {
-      case CloudMode.ALL : return "cloud-all"
-      case CloudMode.ALL_ACCESSIBLE : return "cloud-accessible"
-      case CloudMode.ONLY_SUPPORTED_CREATORS: return "cloud-supported"
-    }
+    return "moulinette-cloud"
   }
   
   getName(): string {
@@ -166,7 +169,7 @@ export default class MouCollectionCloud implements MouCollection {
   private getScope() {
     return {
       session: MouApplication.getSettings(SETTINGS_SESSION_ID),
-      mode: this.getId()
+      mode: this.mode
     }
   }
 
@@ -463,6 +466,20 @@ export default class MouCollectionCloud implements MouCollection {
           break
       }
     }
+  }
+
+  /** Collection Cloud has specific configurations */
+  isConfigurable(): boolean {
+    return true
+  }
+
+  /** Opens Configuration UI */
+  configure(callback: Function): void {
+    const parent = this
+    new CloudCollectionConfig(function() {
+      parent.refreshSettings()
+      callback()
+    }).render(true)
   }
   
 }

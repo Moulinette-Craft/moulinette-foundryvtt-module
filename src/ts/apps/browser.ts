@@ -18,7 +18,7 @@ export default class MouBrowser extends MouApplication {
   private filters_prefs:AnyDict = {
     visible: true,
     opensections: { collection: true, asset_type: true, creator: true },
-    collection: "cloud-accessible",
+    collection: "moulinette-cloud",
     focus: "search"
   }
 
@@ -67,11 +67,9 @@ export default class MouBrowser extends MouApplication {
     const types1 = typesObj.slice(0, middleIndex);
     const types2 = typesObj.slice(middleIndex);
     
-    const mode = this.filters.type == MouCollectionAssetTypeEnum.Audio ? "vertical" : "horizontal"
     return {
-      mode,
       filters: {
-        collections: module.collections.map( col => ( {id: col.getId(), name: col.getName() } )),
+        collections: module.collections.map( col => ( {id: col.getId(), name: col.getName(), configurable: col.isConfigurable() } )),
         prefs: this.filters_prefs,
         values: this.filters,
         creators,
@@ -97,6 +95,9 @@ export default class MouBrowser extends MouApplication {
       .on("change", this._onSelectFilters.bind(this));
     html.find(".content")
       .on('scroll', this._onScroll.bind(this))
+    html.find(".filters .action a")
+      .on("click", this._onConfigureCollection.bind(this));
+    
 
     switch(this.filters_prefs.focus) {
       case "search": this.html.find(".searchbar input").trigger("focus"); break
@@ -382,5 +383,15 @@ export default class MouBrowser extends MouApplication {
         }
       }
     }
+  }
+
+  _onConfigureCollection(event: Event): void {
+    event.preventDefault()
+    event.stopPropagation();
+    this.collection?.configure(this._callbackAfterConfiguration.bind(this))
+  }
+
+  _callbackAfterConfiguration(): void {
+    this.render()
   }
 }

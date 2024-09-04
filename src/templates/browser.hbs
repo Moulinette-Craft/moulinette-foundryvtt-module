@@ -13,6 +13,7 @@
           <li>
             <input type="radio" name="collection" id="{{c.id}}" {{#if (eq ../filters.prefs.collection c.id)}}checked{{/if}}>
             <label for="{{c.id}}">{{c.name}}</label>
+            <div class="action" data-col="{{c.id}}"><a href><i class="fa-solid fa-gears" title="{{localize "MOU.configure_collection"}}"></i></a></div>
           </li>
           {{/each}}
         </ul>
@@ -58,7 +59,7 @@
         </div>
       </div>
     </aside>
-    <main class="content {{mode}}">
+    <main class="content">
     </main>
   </div>
 </div>

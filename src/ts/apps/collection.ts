@@ -115,6 +115,12 @@ export interface MouCollection {
 
   /** Fills the data from desired asset */
   fromDropData(assetId: string, data: MouCollectionDragData): Promise<void>
+
+  /** Must return true if source has configurations/options */
+  isConfigurable(): boolean
+
+  /** Opens UI for configuring source settings */
+  configure(callback: Function): void
 }
 
 

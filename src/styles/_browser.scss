@@ -100,6 +100,10 @@
       overflow: hidden;
       height: calc(100% - var(--mou-browser-header-height));
 
+      .action {
+        margin-left: 10px;
+      }
+
       .clear {
         display: flex;
         flex-direction: row-reverse;
@@ -107,12 +111,6 @@
 
       &.collapsed {
         display: none;
-      }
-
-      input[type="radio"] {
-        margin: 3px 5px;
-        width: 20px;
-        height: 20px;
       }
 
       h2 {
@@ -128,11 +126,6 @@
       .options {
         display: flex;
         ul { margin-right: 20px; }
-      }
-
-      ul {
-        padding: 0;
-        list-style-type: none;
       }
 
       .collapsed { display: none; }
@@ -162,10 +155,8 @@
       overflow-y: auto;
       box-sizing: border-box;
       scrollbar-width: auto;
+      flex-direction: row;
       overflow-x: hidden;
-
-      &.horizontal { flex-direction: row; }
-      &.vertical { flex-direction: column; }
       
       .visual {
         position: relative;
@@ -317,6 +308,10 @@
         border-top-left-radius: 10px;
         border-bottom-left-radius: 10px;
 
+        &:hover {
+          border: 2px solid rgba(0, 0, 0, 0.7); 
+        }
+
         .row {
           display: flex;
           flex-direction: row-reverse;
@@ -326,8 +321,8 @@
           font-size: 14px;
           font-weight: bold;
           height: 100%;
-          border-top-left-radius: 10px;
-          border-bottom-left-radius: 10px;
+          border-top-left-radius: 5px;
+          border-bottom-left-radius: 5px;
           background-color: #bbb;
         }
 
@@ -351,8 +346,8 @@
           z-index: 20;
           position: absolute;
           background: black;
-          border-top-left-radius: 10px;
-          border-bottom-left-radius: 10px;
+          border-top-left-radius: 5px;
+          border-bottom-left-radius: 5px;
           width: calc(100% - 140px);
           height: 100%;
           opacity: 75%;
@@ -370,7 +365,7 @@
           button {
             margin-right: 10px;
             text-align: left;
-            width: 100px;
+            width: 140px;
           }
 
           .shortcuts {

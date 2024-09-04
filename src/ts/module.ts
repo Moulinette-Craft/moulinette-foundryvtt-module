@@ -6,9 +6,9 @@ import "../styles/style.scss";
 import MouBrowser from "./apps/browser";
 import MouUser from "./apps/user";
 import MouCloudClient from "./clients/moulinette-cloud";
-import { MODULE_ID, SETTINGS_S3_BUCKET, SETTINGS_SESSION_ID, SETTINGS_USE_FOLDERS } from "./constants";
+import { MODULE_ID, SETTINGS_COLLECTION_CLOUD, SETTINGS_S3_BUCKET, SETTINGS_SESSION_ID, SETTINGS_USE_FOLDERS } from "./constants";
 import MouLayer from "./layers/mou-layer";
-import { MouModule } from "./types";
+import { AnyDict, MouModule } from "./types";
 import MouCache from "./apps/cache";
 import MouMediaUtils from "./utils/media-utils";
 import { MouCollection } from "./apps/collection";
@@ -50,6 +50,8 @@ Hooks.once("init", () => {
     type: String
   });
 
+  (game as Game).settings.register(MODULE_ID, SETTINGS_COLLECTION_CLOUD, { scope: "world", config: false, type: Object, default: { mode: CloudMode.ALL } as AnyDict });
+
   const layers = { moulayer: { layerClass: MouLayer, group: "primary" } }
   CONFIG.Canvas.layers = foundry.utils.mergeObject(Canvas.layers, layers);
 
@@ -74,9 +76,7 @@ Hooks.once("ready", () => {
   // force retrieving Moulinette user
   module.cloudclient.getUser()
   // load default collections
-  module.collections.push(new MouCollectionCloud(CloudMode.ONLY_SUPPORTED_CREATORS))
-  module.collections.push(new MouCollectionCloud(CloudMode.ALL_ACCESSIBLE))
-  module.collections.push(new MouCollectionCloud(CloudMode.ALL))
+  module.collections.push(new MouCollectionCloud())
   // hooks some FVTT functions
   MouHooks.replaceFromDropData()
 });
