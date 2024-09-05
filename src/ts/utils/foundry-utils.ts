@@ -47,6 +47,7 @@ export default class MouFoundryUtils {
    * Create a journal article with a single page for an image
    */
   static async createJournalImage(path: string, folder: string) {
+    if (!(game as Game).user?.isGM) return;
     const articleName = MouMediaUtils.prettyMediaName(path)
     const folderObj = await MouFoundryUtils.getOrCreateFolder("JournalEntry", folder)
     const json_text = await renderTemplate(`modules/${MODULE_ID}/templates/json/note-image.hbs`, { path: path, folder: folderObj ? `"${folderObj.id}"` : "null", name: articleName })
@@ -59,6 +60,7 @@ export default class MouFoundryUtils {
    * Create a journal article with a single page for an entity (scene, actor, etc.)
    */
   static async createJournalImageFromEntity(entity: AnyDict, folder: string) {
+    if (!(game as Game).user?.isGM) return;
     const path = MouFoundryUtils.getImagePathFromEntity(entity)
     if(path) {
       const articleName = MouMediaUtils.prettyMediaName(path)
@@ -84,6 +86,7 @@ export default class MouFoundryUtils {
    * Create a journal article with a single page for a PDF
    */
   static async createJournalPDF(path: string, folder: string) {
+    if (!(game as Game).user?.isGM) return;
     const articleName = MouMediaUtils.prettyMediaName(path)
     const folderObj = await MouFoundryUtils.getOrCreateFolder("JournalEntry", folder)
     const json_text = await renderTemplate(`modules/${MODULE_ID}/templates/json/note-pdf.hbs`, { path: path, folder: folderObj ? `"${folderObj.id}"` : "null", name: articleName })
@@ -96,6 +99,7 @@ export default class MouFoundryUtils {
    * Creates a new scene from a map image (provided as path)
    */
   static async importSceneFromMap(path: string, folder: string) {
+    if (!(game as Game).user?.isGM) return;
     const sceneName = MouMediaUtils.prettyMediaName(path)
     const json_text = await renderTemplate(`modules/${MODULE_ID}/templates/json/scene.hbs`, { path: path, name: sceneName })
     await MouFoundryUtils.importScene(JSON.parse(json_text), folder)
@@ -105,6 +109,7 @@ export default class MouFoundryUtils {
    * Creates a new scene from the given data
    */
   static async importScene(sceneData: AnyDict, folder:string) {
+    if (!(game as Game).user?.isGM) return;
     let needsDims = !("width" in sceneData)
     delete sceneData._stats // causes sometimes incompatibilites
     // @ts-ignore: https://foundryvtt.com/api/classes/client.Scene.html#fromSource
@@ -129,6 +134,7 @@ export default class MouFoundryUtils {
    * Creates a new item from the given data
    */
   static async importItem(itemData: AnyDict, folder:string) {
+    if (!(game as Game).user?.isGM) return;
     // @ts-ignore: https://foundryvtt.com/api/classes/client.Item.html#fromSource
     const doc = await Item.fromSource(itemData)
     const newItem = await Item.create(doc)
@@ -145,6 +151,7 @@ export default class MouFoundryUtils {
    * Creates a new actor from the given data
    */
   static async importActor(actorData: AnyDict, folder:string) {
+    if (!(game as Game).user?.isGM) return;
     // @ts-ignore: https://foundryvtt.com/api/classes/client.Actor.html#fromSource
     const doc = await Actor.fromSource(actorData)
     const newActor = await Actor.create(doc)
@@ -155,7 +162,32 @@ export default class MouFoundryUtils {
       ui.actors?.activate()
       newActor?.sheet?.render(true)
     }
-              
   }
+
+  /**
+   * Imports the audio and plays or stops it
+   */
+  static async playStopSound(path: string, playlistName:string) {
+    if (!(game as Game).user?.isGM) return;
+    const volume = 1.0 //audio.volume ? Number(audio.volume) : 1.0
+      
+    // get playlist
+    let playlist = (game as Game).playlists?.find( pl => pl.name == playlistName)
+    if(!playlist) {
+      playlist = await Playlist.create({name: playlistName, mode: -1})
+    }
+    if(!playlist) return
+    // get sound
+    let sound = playlist.sounds.find( s => s.path == decodeURI(path))
+    if(!sound) {
+      const name = MouMediaUtils.prettyMediaName(path)
+      const soundData = (await playlist.createEmbeddedDocuments("PlaylistSound", [{name: name, path: path, volume: volume}], {}))[0]
+      playlist.updateEmbeddedDocuments("PlaylistSound", [{_id: soundData.id, playing: true, volume: volume }]);
+    } else {
+      playlist.updateEmbeddedDocuments("PlaylistSound", [{_id: sound.id, playing: !sound.playing, volume: volume }]);
+    }    
+  }
+
+  
 
 }

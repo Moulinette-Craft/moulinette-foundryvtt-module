@@ -55,8 +55,8 @@ Hooks.once("init", () => {
   const layers = { moulayer: { layerClass: MouLayer, group: "primary" } }
   CONFIG.Canvas.layers = foundry.utils.mergeObject(Canvas.layers, layers);
 
-  Handlebars.registerHelper('prettyFileSize', function(value) {
-    return MouMediaUtils.prettyFilesize(value)
+  Handlebars.registerHelper('prettyFileSize', function(value, decimals) {
+    return MouMediaUtils.prettyFilesize(value, decimals)
   });
 
   Handlebars.registerHelper('prettyNumber', function(value, full) {

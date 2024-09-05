@@ -149,7 +149,7 @@
       align-content: flex-start;
       flex: 1;
       flex-wrap: wrap;
-      padding: 20px;
+      padding: 0px 10px;
       height: calc(100% - var(--mou-browser-header-height));
       max-height: calc(100% - var(--mou-browser-header-height));
       overflow-y: auto;
@@ -309,7 +309,7 @@
         border-bottom-left-radius: 10px;
 
         &:hover {
-          border: 2px solid rgba(0, 0, 0, 0.7); 
+          border: 1px solid rgba(0, 0, 0, 0.7); 
         }
 
         .row {

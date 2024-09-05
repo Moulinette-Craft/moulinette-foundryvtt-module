@@ -11,7 +11,7 @@
   <div class="asset audio draggable" data-id="{{a.id}}" draggable="true">
     <div class="overlay"></div>
     <div class="menu"></div>
-    <div class="row">{{increment @index 1}}</div>
+    <div class="row">{{increment @index ../index}}</div>
     <div class="info">
       <div class="title">{{a.name}}</div>
       <div class="source" title="{{a.creator}} - {{a.pack}}" data-creator="{{a.creator}}" data-pack="{{a.pack_id}}">

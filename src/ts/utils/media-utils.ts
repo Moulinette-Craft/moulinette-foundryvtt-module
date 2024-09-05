@@ -18,15 +18,23 @@ export default class MouMediaUtils {
   }
 
   /** Generates a human readable filesize **/
-  static prettyFilesize(filesize : number) {
+  static prettyFilesize(filesize : number, decimals = 1) {
     if(filesize < 1024) {
       return `${filesize.toLocaleString()} B`
     } else if(filesize < 1024*1024) {
       const size = filesize / 1024
-      return `${size.toFixed(1).toLocaleString()} KB`
+      if(decimals == 0) {
+        return `${Math.round(size).toLocaleString()} KB`
+      } else {
+        return `${size.toFixed(decimals).toLocaleString()} KB`
+      }
     } else {
       const size = filesize / (1024*1024)
-      return `${size.toFixed(1).toLocaleString()} MB`
+      if(decimals == 0) {
+        return `${Math.round(size).toLocaleString()} MB`
+      } else {
+        return `${size.toFixed(decimals).toLocaleString()} MB`
+      }
     }
   }
 

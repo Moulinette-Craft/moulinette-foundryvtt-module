@@ -84,6 +84,11 @@ class MouCollectionCloudAsset implements MouCollectionAsset {
         this.draggable = true
         if(data.audio.duration >= 45) {
           this.flags["hasAudioPreview"] = true
+          this.meta.push({ 
+            icon: "fa-solid fa-headphones", 
+            text: "",
+            hint: (game as Game).i18n.localize("MOU.meta_audio_has_preview")
+          })
         }
         this.meta.push({ 
           icon: "fa-regular fa-stopwatch", 
@@ -133,7 +138,7 @@ class MouCollectionCloudAsset implements MouCollectionAsset {
     }
     this.meta.push({ 
       icon: "fa-regular fa-weight-hanging",
-      text: MouMediaUtils.prettyFilesize(data.filesize),
+      text: MouMediaUtils.prettyFilesize(data.filesize, 0),
       hint: (game as Game).i18n.localize("MOU.meta_filesize")})
   }
 }
@@ -141,6 +146,8 @@ class MouCollectionCloudAsset implements MouCollectionAsset {
 export default class MouCollectionCloud implements MouCollection {
 
   APP_NAME = "MouCollectionCloud"
+
+  static PLAYLIST_NAME = "Moulinette"
 
   private mode: CloudMode
 
@@ -234,6 +241,9 @@ export default class MouCollectionCloud implements MouCollection {
     const actions = [] as MouCollectionAction[]
     const cAsset = (asset as MouCollectionCloudAsset)
     if(cAsset.cloud_type == CloudAssetType.PREVIEW) {
+      if(cAsset.type == MouCollectionAssetTypeEnum.Audio && asset.flags.hasAudioPreview) {
+        actions.push({ id: CloudAssetAction.PREVIEW, name: (game as Game).i18n.localize("MOU.action_preview"), icon: "fa-solid fa-headphones" })
+      }
       actions.push({ id: CloudAssetAction.MEMBERSHIP, name: (game as Game).i18n.localize("MOU.action_support"), icon: "fa-solid fa-hands-praying" })
       return actions
     }
@@ -258,8 +268,9 @@ export default class MouCollectionCloud implements MouCollection {
         actions.push({ id: CloudAssetAction.CREATE_ARTICLE, name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
         break;    
       case MouCollectionAssetTypeEnum.Audio:
+        actions.push({ id: CloudAssetAction.IMPORT, name: (game as Game).i18n.localize("MOU.action_audio_play"), icon: "fa-solid fa-play-pause" })
         if(asset.flags.hasAudioPreview) {
-          actions.push({ id: CloudAssetAction.PREVIEW, name: (game as Game).i18n.localize("MOU.action_preview"), icon: "fa-solid fa-play" })
+          actions.push({ id: CloudAssetAction.PREVIEW, name: (game as Game).i18n.localize("MOU.action_preview"), icon: "fa-solid fa-headphones" })
         }
         break;    
     }
@@ -286,6 +297,7 @@ export default class MouCollectionCloud implements MouCollection {
           case MouCollectionAssetTypeEnum.Item: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_import_asset") }
           case MouCollectionAssetTypeEnum.Actor: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_import_asset") }
           case MouCollectionAssetTypeEnum.Image: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_import_image") }
+          case MouCollectionAssetTypeEnum.Audio: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_import_audio") }
         }
         break
       case CloudAssetAction.DOWNLOAD:
@@ -367,6 +379,7 @@ export default class MouCollectionCloud implements MouCollection {
             case MouCollectionAssetTypeEnum.Scene: MouFoundryUtils.importScene(JSON.parse(resultImport.message), folderPath); break
             case MouCollectionAssetTypeEnum.Item: MouFoundryUtils.importItem(JSON.parse(resultImport.message), folderPath); break
             case MouCollectionAssetTypeEnum.Actor: MouFoundryUtils.importActor(JSON.parse(resultImport.message), folderPath); break
+            case MouCollectionAssetTypeEnum.Audio: MouFoundryUtils.playStopSound(resultImport.path, MouCollectionCloud.PLAYLIST_NAME); break
           }
         }
         break
@@ -480,6 +493,5 @@ export default class MouCollectionCloud implements MouCollection {
       parent.refreshSettings()
       callback()
     }).render(true)
-  }
-  
+  }  
 }

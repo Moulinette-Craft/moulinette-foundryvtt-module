@@ -7,6 +7,7 @@ import { MouCollection, MouCollectionAsset, MouCollectionAssetTypeEnum, MouColle
 export default class MouBrowser extends MouApplication {
   
   override APP_NAME = "MouBrowser"
+  static PAGE_SIZE = 100
   
   private html?: JQuery<HTMLElement>;
   private ignoreScroll: boolean = false;
@@ -116,16 +117,19 @@ export default class MouBrowser extends MouApplication {
     if(assets.length == 0) {
       this.page = -1
       this.logInfo("No more content!")
+      return
     } 
     else {
+      const index = this.page * MouBrowser.PAGE_SIZE + 1
+      console.log(index)
       this.page++
       let html = ""
       switch(this.filters.type) {
         case MouCollectionAssetTypeEnum.Audio: 
-          html = await renderTemplate(`modules/${MODULE_ID}/templates/browser-audio.hbs`, { assets })
+          html = await renderTemplate(`modules/${MODULE_ID}/templates/browser-audio.hbs`, { assets, index })
           break
         default:
-          html = await renderTemplate(`modules/${MODULE_ID}/templates/browser-assets.hbs`, { assets })
+          html = await renderTemplate(`modules/${MODULE_ID}/templates/browser-assets.hbs`, { assets, index })
       }
       this.html?.find(".content").append(html)
       Array.prototype.push.apply(this.currentAssets, assets);
