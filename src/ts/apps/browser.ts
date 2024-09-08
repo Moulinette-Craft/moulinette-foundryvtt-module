@@ -20,7 +20,7 @@ export default class MouBrowser extends MouApplication {
   private filters_prefs:AnyDict = {
     visible: true,
     opensections: { collection: true, asset_type: true, creator: true },
-    collection: "moulinette-local",
+    collection: "mou-compendiums",
     focus: "search"
   }
 
@@ -145,11 +145,14 @@ export default class MouBrowser extends MouApplication {
       this.page++
       let html = ""
       switch(this.filters.type) {
+        case MouCollectionAssetTypeEnum.JournalEntry: 
+        case MouCollectionAssetTypeEnum.Macro: 
+        case MouCollectionAssetTypeEnum.Playlist: 
         case MouCollectionAssetTypeEnum.Audio: 
-          html = await renderTemplate(`modules/${MODULE_ID}/templates/browser-audio.hbs`, { assets, index })
+          html = await renderTemplate(`modules/${MODULE_ID}/templates/browser-assets-rows.hbs`, { assets, index })
           break
         default:
-          html = await renderTemplate(`modules/${MODULE_ID}/templates/browser-assets.hbs`, { assets, index })
+          html = await renderTemplate(`modules/${MODULE_ID}/templates/browser-assets-blocks.hbs`, { assets, index })
       }
       this.html?.find(".content").append(html)
       Array.prototype.push.apply(this.currentAssets, assets);
@@ -355,7 +358,7 @@ export default class MouBrowser extends MouApplication {
       const buttonPos = button.position()
       const assetPos = asset.position()  
       const contentScrollY = content.scrollTop()
-      if(asset.hasClass("visual")) {
+      if(asset.hasClass("block")) {
         const assetWidth = asset.outerWidth()
         const contentWidth = content.outerWidth(true)
         if(assetPos !== undefined && assetWidth !== undefined && contentWidth !== undefined && buttonPos !== undefined && contentScrollY !== undefined) {

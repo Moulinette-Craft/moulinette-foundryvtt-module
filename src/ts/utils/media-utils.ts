@@ -1,3 +1,4 @@
+import { MouCollectionAssetTypeEnum } from "../apps/collection";
 
 export default class MouMediaUtils {
 
@@ -81,4 +82,20 @@ export default class MouMediaUtils {
     }
   }
 
+  /** Returs the FA icon representing the asset type */
+  static getIcon(type: MouCollectionAssetTypeEnum): string | null {
+    switch(type) {
+      case MouCollectionAssetTypeEnum.Actor: return "fa-solid fa-user";
+      case MouCollectionAssetTypeEnum.Playlist:
+      case MouCollectionAssetTypeEnum.Audio: return "fa-solid fa-music";
+      case MouCollectionAssetTypeEnum.Item: return "fa-solid fa-suitcase";
+      case MouCollectionAssetTypeEnum.JournalEntry: return "fa-solid fa-book-open";
+      case MouCollectionAssetTypeEnum.Image: return "fa-solid fa-image";
+      case MouCollectionAssetTypeEnum.Scene:
+      case MouCollectionAssetTypeEnum.Map: return "fa-solid fa-map";
+      case MouCollectionAssetTypeEnum.PDF: return "fa-solid fa-file-pdf";
+      case MouCollectionAssetTypeEnum.Macro: return "fa-solid fa-code";
+    }
+    return null
+  }
 }

@@ -43,6 +43,7 @@ class MouCollectionCloudAsset implements MouCollectionAsset {
   pack_id: string;
   name: string;
   meta: MouCollectionAssetMeta[];
+  icon: string | null;
   icons?: {descr: string, icon: string}[];
   draggable?: boolean;
   flags: AnyDict;
@@ -63,6 +64,7 @@ class MouCollectionCloudAsset implements MouCollectionAsset {
     this.name = MouMediaUtils.prettyMediaName(data.filepath)
     this.type = data.type;
     this.meta = []
+    this.icon = MouMediaUtils.getIcon(data.type)
     this.icons = []
     this.flags = {}
 
@@ -166,7 +168,7 @@ export default class MouCollectionCloud implements MouCollection {
   }
   
   getId() : string {
-    return "moulinette-cloud"
+    return "mou-cloud"
   }
   
   getName(): string {

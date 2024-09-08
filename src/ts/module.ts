@@ -15,7 +15,7 @@ import { MouCollection } from "./apps/collection";
 import MouCollectionCloud, { CloudMode } from "./collections/collection-cloud";
 import MouEventHandler from "./apps/event-handler";
 import MouHooks from "./utils/hooks";
-import MouCollectionLocal from "./collections/collection-local";
+import MouCollectionCompendiums from "./collections/collection-compendiums";
 
 let module: MouModule;
 
@@ -79,7 +79,7 @@ Hooks.once("ready", () => {
   module.cloudclient.getUser()
   // load default collections
   module.collections.push(new MouCollectionCloud())
-  module.collections.push(new MouCollectionLocal())
+  module.collections.push(new MouCollectionCompendiums())
   // hooks some FVTT functions
   MouHooks.replaceFromDropData()
 });

@@ -2,27 +2,26 @@
   <h3>Title</h3>
   <hr>
   <i class="fa-solid fa-circle-info"></i> <span class="description">Description</span>
-  <div class="thumbnail"></div>
+  <audio id="audiopreview" style="display: none">
+    <source src="" type="audio/ogg">
+  </audio>
 </div>
 
 {{#each assets as |a|}}
-  <div class="asset visual {{a.format}}{{#if a.draggable}} draggable{{/if}}" data-id="{{a.id}}"{{#if a.draggable}}draggable="true"{{/if}}>
+  <div class="asset inline draggable" data-id="{{a.id}}" draggable="true">
     <div class="overlay"></div>
     <div class="menu"></div>
-    <div class="preview" {{#if a.background_color}}style="background-color: #{{a.background_color}}"{{/if}}>
-      <img src="{{a.preview}}"/>
-      {{#if a.icons}}
-      <ul class="icons">
-        {{#each a.icons as |i|}}<li title="{{i.descr}}"><i class="{{i.icon}}"></i></li>{{/each}}
-      </ul>
-      {{/if}}
+    <div class="row">
+      <div class="icon"><i class="{{a.icon}}"></i></div>
+      <div class="num">{{increment @index ../index}}</div>
     </div>
     <div class="info">
+      <div class="title">{{a.name}}</div>
       <div class="source" title="{{a.creator}} - {{a.pack}}" data-creator="{{a.creator}}" data-pack="{{a.pack_id}}">
         <a class="creator" href>{{a.creator}}</a> - <a class="pack" href>{{a.pack}}</a>
       </div>
-      <div class="title">{{a.name}}</div>
     </div>
+    
     <div class="meta">
       {{#each a.meta as |m|}}<span title="{{m.hint}}"><i class="{{m.icon}}"></i> {{m.text}}</span>{{/each}}
     </div>

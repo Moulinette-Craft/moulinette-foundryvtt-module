@@ -36,6 +36,7 @@ export interface MouCollectionAsset {
   pack_id: string
   name: string
   meta: MouCollectionAssetMeta[]
+  icon: string | null, // Font Awesome icon representing the asset
   icons?: {descr: string, icon: string}[]
   background_color?: string,
   draggable?: boolean,

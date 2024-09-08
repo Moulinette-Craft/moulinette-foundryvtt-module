@@ -6,7 +6,7 @@ import { AnyDict } from "../types";
 import MouFoundryUtils from "../utils/foundry-utils";
 import MouMediaUtils from "../utils/media-utils";
 
-enum CloudAssetAction {
+enum CompendiumAssetAction {
   DRAG,                     // drag & drop capability for the asset
   CLIPBOARD,                // copy path to clipboard
   VIEW,                     // open sheet (without importing)
@@ -15,7 +15,7 @@ enum CloudAssetAction {
   PREVIEW,                  // preview audio
 }
 
-class MouCollectionLocalAsset implements MouCollectionAsset {
+class MouCollectionCompendiumAsset implements MouCollectionAsset {
   
   id: string;
   type: number;
@@ -27,6 +27,7 @@ class MouCollectionLocalAsset implements MouCollectionAsset {
   pack_id: string;
   name: string;
   meta: MouCollectionAssetMeta[];
+  icon: string | null;
   icons?: {descr: string, icon: string}[];
   draggable?: boolean;
   flags: AnyDict;
@@ -45,16 +46,17 @@ class MouCollectionLocalAsset implements MouCollectionAsset {
     this.type = assetType
     this.meta = []
     this.draggable = true
+    this.icon = MouMediaUtils.getIcon(assetType)
     this.icons = []
     this.flags = {}
   }
 }
 
-export default class MouCollectionLocal implements MouCollection {
+export default class MouCollectionCompendiums implements MouCollection {
 
-  APP_NAME = "MouCollectionLocal"
+  APP_NAME = "MouCollectionCompendiums"
 
-  static PLAYLIST_NAME = "Moulinette Local"
+  static PLAYLIST_NAME = "Moulinette Compendiums"
 
   private compendiums: AnyDict
 
@@ -63,7 +65,7 @@ export default class MouCollectionLocal implements MouCollection {
   }
 
   getId(): string {
-    return "moulinette-local"
+    return "mou-compendiums"
   }
 
   async initialize(): Promise<void> {
@@ -73,7 +75,7 @@ export default class MouCollectionLocal implements MouCollection {
   }
 
   getName(): string {
-    return (game as Game).i18n.localize("MOU.collection_type_local");
+    return (game as Game).i18n.localize("MOU.collection_type_compendiums");
   }
 
   async getTypes(): Promise<MouCollectionAssetType[]> {
@@ -159,7 +161,7 @@ export default class MouCollectionLocal implements MouCollection {
     const fromIdx = page * MouBrowser.PAGE_SIZE
     if(fromIdx >= filteredAssets.length) return []
     for(const data of filteredAssets.slice(fromIdx, fromIdx + MouBrowser.PAGE_SIZE)) {
-      results.push(new MouCollectionLocalAsset(data, this.compendiums.packs[data.pack]))
+      results.push(new MouCollectionCompendiumAsset(data, this.compendiums.packs[data.pack]))
     }
     return results
   }
@@ -170,36 +172,42 @@ export default class MouCollectionLocal implements MouCollection {
 
   getActions(asset: MouCollectionAsset): MouCollectionAction[] {
     const actions = [] as MouCollectionAction[]
-    const cAsset = (asset as MouCollectionLocalAsset)
+    const cAsset = (asset as MouCollectionCompendiumAsset)
     const assetType = MouCollectionAssetTypeEnum[asset.type]
     switch(cAsset.type) {
       case MouCollectionAssetTypeEnum.Scene:
       case MouCollectionAssetTypeEnum.Map:
-        actions.push({ id: CloudAssetAction.IMPORT, name: (game as Game).i18n.format("MOU.action_import", { type: assetType}), icon: "fa-solid fa-file-import" })
-        actions.push({ id: CloudAssetAction.CREATE_ARTICLE, name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
-        actions.push({ id: CloudAssetAction.VIEW, small: true, name: (game as Game).i18n.localize("MOU.action_view"), icon: "fa-solid fa-eye" })
+        actions.push({ id: CompendiumAssetAction.IMPORT, name: (game as Game).i18n.format("MOU.action_import", { type: assetType}), icon: "fa-solid fa-file-import" })
+        actions.push({ id: CompendiumAssetAction.CREATE_ARTICLE, name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
+        actions.push({ id: CompendiumAssetAction.VIEW, small: true, name: (game as Game).i18n.localize("MOU.action_view"), icon: "fa-solid fa-eye" })
         break; 
       case MouCollectionAssetTypeEnum.Item:
       case MouCollectionAssetTypeEnum.Actor:
-        actions.push({ id: CloudAssetAction.DRAG, drag: true, name: (game as Game).i18n.format("MOU.action_drag", { type: assetType}), icon: "fa-solid fa-hand" })
-        actions.push({ id: CloudAssetAction.IMPORT, name: (game as Game).i18n.format("MOU.action_import", { type: assetType}), icon: "fa-solid fa-file-import" })
-        actions.push({ id: CloudAssetAction.CREATE_ARTICLE, name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
-        actions.push({ id: CloudAssetAction.VIEW, small: true, name: (game as Game).i18n.localize("MOU.action_view"), icon: "fa-solid fa-eye" })
+        actions.push({ id: CompendiumAssetAction.DRAG, drag: true, name: (game as Game).i18n.format("MOU.action_drag", { type: assetType}), icon: "fa-solid fa-hand" })
+        actions.push({ id: CompendiumAssetAction.IMPORT, name: (game as Game).i18n.format("MOU.action_import", { type: assetType}), icon: "fa-solid fa-file-import" })
+        actions.push({ id: CompendiumAssetAction.CREATE_ARTICLE, name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
+        actions.push({ id: CompendiumAssetAction.VIEW, small: true, name: (game as Game).i18n.localize("MOU.action_view"), icon: "fa-solid fa-eye" })
         break;    
+      case MouCollectionAssetTypeEnum.JournalEntry:
+      case MouCollectionAssetTypeEnum.Macro:
+        actions.push({ id: CompendiumAssetAction.DRAG, drag: true, name: (game as Game).i18n.format("MOU.action_drag", { type: assetType}), icon: "fa-solid fa-hand" })
+        actions.push({ id: CompendiumAssetAction.IMPORT, name: (game as Game).i18n.format("MOU.action_import", { type: assetType}), icon: "fa-solid fa-file-import" })
+        actions.push({ id: CompendiumAssetAction.VIEW, small: true, name: (game as Game).i18n.localize("MOU.action_view"), icon: "fa-solid fa-eye" })
+        break
       case MouCollectionAssetTypeEnum.Image:
-        actions.push({ id: CloudAssetAction.CREATE_ARTICLE, name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
+        actions.push({ id: CompendiumAssetAction.CREATE_ARTICLE, name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
         break;    
       case MouCollectionAssetTypeEnum.PDF:
-        actions.push({ id: CloudAssetAction.CREATE_ARTICLE, name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
+        actions.push({ id: CompendiumAssetAction.CREATE_ARTICLE, name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
         break;    
       case MouCollectionAssetTypeEnum.Audio:
-        actions.push({ id: CloudAssetAction.IMPORT, name: (game as Game).i18n.localize("MOU.action_audio_play"), icon: "fa-solid fa-play-pause" })
+        actions.push({ id: CompendiumAssetAction.IMPORT, name: (game as Game).i18n.localize("MOU.action_audio_play"), icon: "fa-solid fa-play-pause" })
         if(asset.flags.hasAudioPreview) {
-          actions.push({ id: CloudAssetAction.PREVIEW, name: (game as Game).i18n.localize("MOU.action_preview"), icon: "fa-solid fa-headphones" })
+          actions.push({ id: CompendiumAssetAction.PREVIEW, name: (game as Game).i18n.localize("MOU.action_preview"), icon: "fa-solid fa-headphones" })
         }
         break;    
     }
-    actions.push({ id: CloudAssetAction.CLIPBOARD, small: true, name: (game as Game).i18n.localize("MOU.action_clipboard"), icon: "fa-solid fa-clipboard" })
+    actions.push({ id: CompendiumAssetAction.CLIPBOARD, small: true, name: (game as Game).i18n.localize("MOU.action_clipboard"), icon: "fa-solid fa-clipboard" })
     
     return actions
   }
@@ -208,13 +216,16 @@ export default class MouCollectionLocal implements MouCollection {
     const action = this.getActions(asset).find(a => a.id == actionId)
     if(!action) return null
     switch(actionId) {
-      case CloudAssetAction.DRAG:
+      case CompendiumAssetAction.DRAG:
         switch(asset.type) {
           case MouCollectionAssetTypeEnum.Item: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_drag_item") }
           case MouCollectionAssetTypeEnum.Actor: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_drag_actor") }
+          case MouCollectionAssetTypeEnum.JournalEntry: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_drag_journalentry") }
+          case MouCollectionAssetTypeEnum.Audio: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_drag_audio") }
+          case MouCollectionAssetTypeEnum.Macro: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_drag_macro") }
         }
         break
-      case CloudAssetAction.IMPORT:
+      case CompendiumAssetAction.IMPORT:
         switch(asset.type) {
           case MouCollectionAssetTypeEnum.Map: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_import_image") }
           case MouCollectionAssetTypeEnum.Scene: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_import_asset") }
@@ -224,13 +235,13 @@ export default class MouCollectionLocal implements MouCollection {
           case MouCollectionAssetTypeEnum.Audio: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_import_audio") }
         }
         break
-      case CloudAssetAction.CLIPBOARD:
+      case CompendiumAssetAction.CLIPBOARD:
         return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_clipboard") }
-      case CloudAssetAction.CREATE_ARTICLE:
+      case CompendiumAssetAction.CREATE_ARTICLE:
         return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_create_article_asset") }
-      case CloudAssetAction.VIEW:
+      case CompendiumAssetAction.VIEW:
         return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_view_asset") }
-      case CloudAssetAction.PREVIEW:
+      case CompendiumAssetAction.PREVIEW:
         switch(asset.type) {
           case MouCollectionAssetTypeEnum.Audio: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_preview_audio") }
         }
@@ -242,15 +253,15 @@ export default class MouCollectionLocal implements MouCollection {
   async executeAction(actionId: number, asset: MouCollectionAsset): Promise<void> {
     const folderPath = `Moulinette/${asset.creator}/${asset.pack}`
     switch(actionId) {
-      case CloudAssetAction.DRAG:
+      case CompendiumAssetAction.DRAG:
         ui.notifications?.info((game as Game).i18n.localize("MOU.dragdrop_instructions"))
         break
       
-      case CloudAssetAction.CLIPBOARD:
+      case CompendiumAssetAction.CLIPBOARD:
         MouMediaUtils.copyToClipboard(asset.preview)
         break
 
-      case CloudAssetAction.VIEW:
+      case CompendiumAssetAction.VIEW:
         const itemEl = await fromUuid(asset.id)
         if(itemEl) {
           // @ts-ignore
@@ -258,7 +269,7 @@ export default class MouCollectionLocal implements MouCollection {
         }
         break
       
-      case CloudAssetAction.IMPORT:
+      case CompendiumAssetAction.IMPORT:
         const id = asset.id.split(".").pop()
         const pack = (game as Game).packs.get(asset.pack_id)
         const collection = (game as Game).collections.get(MouCollectionAssetTypeEnum[asset.type]);
@@ -275,7 +286,7 @@ export default class MouCollectionLocal implements MouCollection {
         }
         break
 
-      case CloudAssetAction.CREATE_ARTICLE:
+      case CompendiumAssetAction.CREATE_ARTICLE:
         switch(asset.type) {
           case MouCollectionAssetTypeEnum.Scene: 
           case MouCollectionAssetTypeEnum.Item: 
