@@ -10,7 +10,8 @@ export enum MouCollectionAssetTypeEnum {
   Audio = 7,
   JournalEntry = 8,
   Playlist = 9,
-  Macro = 10
+  Macro = 10,
+  Undefined = 99
 }
 
 export interface MouCollectionAssetType {
@@ -36,7 +37,7 @@ export interface MouCollectionAsset {
   name: string
   meta: MouCollectionAssetMeta[]
   icons?: {descr: string, icon: string}[]
-  background_color: string,
+  background_color?: string,
   draggable?: boolean,
   flags: AnyDict
 }
@@ -55,8 +56,9 @@ export interface MouCollectionPack {
 
 export interface MouCollectionFilters {
   creator?: string,
-  pack?: number,
-  type?: number
+  pack?: string,
+  type?: number,
+  searchTerms?: string
 }
 
 export interface MouCollectionAction {
@@ -78,6 +80,7 @@ export interface MouCollectionDragData {
     collection: string
   },
   type: "Actor" | "Item" | "Macro"
+  uuid?: string
   data?: any
 }
 
@@ -88,6 +91,9 @@ export interface MouCollection {
 
   /** Returns the collection name */
   getName(): string;
+
+  /** Initializes the collection (retrieving data if required) */
+  initialize(): Promise<void>
   
   /** Returns the list of types */
   getTypes(filters: MouCollectionFilters): Promise<MouCollectionAssetType[]>

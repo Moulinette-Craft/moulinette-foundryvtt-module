@@ -124,7 +124,7 @@ export default class MouFileManager {
    * Example : 
    *    uri: animated/Broken Tower_2.webm?se=...
    *    pack_path: https://mttestorage.blob.core.windows.net/creator/packname
-   *    folder: moulinette-v2/scenes/creator/packname
+   *    folder: {MOU_DEF_FOLDER}/scenes/creator/packname
    */
   static async downloadFile(uri: string, packPath: string, folder: string, force=false): Promise<FilePicker.UploadResult | false> {
 

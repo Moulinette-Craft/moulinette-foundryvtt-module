@@ -1,0 +1,20 @@
+#mou-progress {
+  .window-content {
+    overflow: hidden;
+  }
+
+  .progressbar {
+    background-color: lightgray;
+  }
+
+  .progress {
+    background-color: #f79007;
+    padding: 2px 5px;
+    text-align: center;
+  }
+
+  .description {
+    text-align: center;
+    padding: 5px;
+  }
+} 

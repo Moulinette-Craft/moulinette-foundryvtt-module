@@ -49,6 +49,24 @@ export default class MouHooks {
     const module = (game as Game).modules.get(MODULE_ID) as MouModule;
     const isLibwrapperAvailable = typeof libWrapper === "function"; // See: https://github.com/ruipin/fvtt-lib-wrapper
 
+    // replace default FVTT implementation for Actors
+    if (isLibwrapperAvailable) {
+      // @ts-ignore
+      libWrapper.register("moulinette", "Actor.implementation.fromDropData", async (wrapped, ...args) => {
+        await module.eventHandler.handleDragAndDrop(args[0])
+        return wrapped(...args);
+      }, "WRAPPER");
+    } else {
+      // @ts-ignore
+      Actor.implementation.fromDropDataOrig = Actor.implementation.fromDropData
+      // @ts-ignore
+      Actor.implementation.fromDropData = async function(data, options={}) {
+        await module.eventHandler.handleDragAndDrop(data)
+        // @ts-ignore
+        return await Actor.implementation.fromDropDataOrig(data, options)
+      }
+    }
+
     // replace default FVTT implementation for Items
     if (isLibwrapperAvailable) {
       // @ts-ignore

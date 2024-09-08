@@ -6,7 +6,7 @@ import "../styles/style.scss";
 import MouBrowser from "./apps/browser";
 import MouUser from "./apps/user";
 import MouCloudClient from "./clients/moulinette-cloud";
-import { MODULE_ID, SETTINGS_COLLECTION_CLOUD, SETTINGS_S3_BUCKET, SETTINGS_SESSION_ID, SETTINGS_USE_FOLDERS } from "./constants";
+import { MODULE_ID, SETTINGS_COLLECTION_CLOUD, SETTINGS_DATA_EXCLUSION, SETTINGS_S3_BUCKET, SETTINGS_SESSION_ID, SETTINGS_USE_FOLDERS } from "./constants";
 import MouLayer from "./layers/mou-layer";
 import { AnyDict, MouModule } from "./types";
 import MouCache from "./apps/cache";
@@ -15,6 +15,7 @@ import { MouCollection } from "./apps/collection";
 import MouCollectionCloud, { CloudMode } from "./collections/collection-cloud";
 import MouEventHandler from "./apps/event-handler";
 import MouHooks from "./utils/hooks";
+import MouCollectionLocal from "./collections/collection-local";
 
 let module: MouModule;
 
@@ -31,6 +32,7 @@ Hooks.once("init", () => {
   module.debug = true;
   
   (game as Game).settings.register(MODULE_ID, SETTINGS_SESSION_ID, { scope: "world", config: false, type: String, default: "anonymous" });
+  (game as Game).settings.register(MODULE_ID, SETTINGS_DATA_EXCLUSION, { scope: "world", config: false, type: Object, default: {} });
 
   (game as Game).settings.register(MODULE_ID, SETTINGS_USE_FOLDERS, {
     name: (game as Game).i18n.localize("MOU.settings_use_folders"),
@@ -77,6 +79,7 @@ Hooks.once("ready", () => {
   module.cloudclient.getUser()
   // load default collections
   module.collections.push(new MouCollectionCloud())
+  module.collections.push(new MouCollectionLocal())
   // hooks some FVTT functions
   MouHooks.replaceFromDropData()
 });

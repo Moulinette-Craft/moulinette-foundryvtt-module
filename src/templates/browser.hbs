@@ -1,6 +1,6 @@
 <div class="browser">
   <header class="search-bar">
-    <input type="text" placeholder="{{localize "MOU.search"}}" aria-label="Search">
+    <input type="text" placeholder="{{localize "MOU.search"}}" aria-label="Search" value="{{filters.values.searchTerms}}">
   </header>
   <div class="container">
     <div class="filters-toggle {{#unless filters.prefs.visible}}collapsed{{/unless}}"><i class="fa-solid fa-angles-{{mouIf filters.prefs.visible "left" "right"}}"></i></div>
@@ -13,7 +13,9 @@
           <li>
             <input type="radio" name="collection" id="{{c.id}}" {{#if (eq ../filters.prefs.collection c.id)}}checked{{/if}}>
             <label for="{{c.id}}">{{c.name}}</label>
+            {{#if c.configurable}}
             <div class="action" data-col="{{c.id}}"><a href><i class="fa-solid fa-gears" title="{{localize "MOU.configure_collection"}}"></i></a></div>
+            {{/if}}
           </li>
           {{/each}}
         </ul>

@@ -8,6 +8,7 @@ export default class MouBrowser extends MouApplication {
   
   override APP_NAME = "MouBrowser"
   static PAGE_SIZE = 100
+  static DEBOUNCE_TIME = 500 // delay (in ms) before executing search
   
   private html?: JQuery<HTMLElement>;
   private ignoreScroll: boolean = false;
@@ -19,15 +20,16 @@ export default class MouBrowser extends MouApplication {
   private filters_prefs:AnyDict = {
     visible: true,
     opensections: { collection: true, asset_type: true, creator: true },
-    collection: "moulinette-cloud",
+    collection: "moulinette-local",
     focus: "search"
   }
 
   /* Filters */
   private filters: MouCollectionFilters = {
-    type: MouCollectionAssetTypeEnum.Audio,
+    type: MouCollectionAssetTypeEnum.Actor,
     creator: "",
-    pack: 0
+    pack: "",
+    searchTerms: ""
   }
 
   override get title(): string {
@@ -56,12 +58,19 @@ export default class MouBrowser extends MouApplication {
       throw new Error(`${this.APP_NAME} | Collection ${this.filters_prefs.collection} couldn't be found!`);
     }
 
+    await this.collection.initialize()
+
     this.page = 0
     this.currentAssets = []
+    const types = await this.collection.getTypes(this.filters)
+    const typesObj = types.map( type => ({ id: Number(type.id), name: MouCollectionUtils.getTranslatedType(Number(type.id)), assetsCount: type.assetsCount}))
+    // change type if selected type not available for current collection
+    if(!types.find(t => t.id == this.filters.type)) {
+      this.filters.type = types.length > 0 ? types[0].id : undefined
+    }
     const creators = this.filters.type ? await this.collection.getCreators(this.filters.type) : null
     const packs = this.filters.creator && this.filters.type ? await this.collection.getPacks(this.filters.type, this.filters.creator) : null
-    const types = await this.collection.getTypes(this.filters)
-    const typesObj = Object.keys(types).map( k => ({ id: Number(k), name: MouCollectionUtils.getTranslatedType(Number(k)), assetsCount: types[Number(k)]}))
+    
 
     // split types into 2 lists
     const middleIndex = Math.ceil(typesObj.length/2);
@@ -99,9 +108,21 @@ export default class MouBrowser extends MouApplication {
     html.find(".filters .action a")
       .on("click", this._onConfigureCollection.bind(this));
     
+    // input triggers searches
+    const search = html.find(".search-bar input");
+    let typingTimer: ReturnType<typeof setTimeout>;
+    search.on('input', () => {
+      clearTimeout(typingTimer);
+      typingTimer = setTimeout(() => {
+        this.filters.searchTerms = search.val() as string
+        this.page = 0
+        this.html?.find(".content").html("")
+        this.loadMoreAssets()
+      }, MouBrowser.DEBOUNCE_TIME);
+    });
 
     switch(this.filters_prefs.focus) {
-      case "search": this.html.find(".searchbar input").trigger("focus"); break
+      case "search": search.trigger("focus"); break
       case "creator": this.html.find("#creator-select").trigger("focus"); break
       case "pack": this.html.find("#pack-select").trigger("focus"); break
       default:
@@ -121,7 +142,6 @@ export default class MouBrowser extends MouApplication {
     } 
     else {
       const index = this.page * MouBrowser.PAGE_SIZE + 1
-      console.log(index)
       this.page++
       let html = ""
       switch(this.filters.type) {
@@ -168,10 +188,10 @@ export default class MouBrowser extends MouApplication {
       const combo = $(event.currentTarget)
       if(combo.attr('id') == "creator-select") {
         this.filters.creator = String(combo.val());
-        this.filters.pack = 0
+        this.filters.pack = ""
         this.filters_prefs.focus = "creator"
       } else if(combo.attr('id') == "pack-select") {
-        this.filters.pack = Number(combo.val());
+        this.filters.pack = String(combo.val());
         this.filters_prefs.focus = "pack"
       }
       
@@ -284,7 +304,7 @@ export default class MouBrowser extends MouApplication {
       const creator = target.closest(".source").data("creator")
       if(creator) {
         this.filters.creator = creator
-        this.filters.pack = 0
+        this.filters.pack = ""
         this.render()
       }
     }
@@ -299,7 +319,7 @@ export default class MouBrowser extends MouApplication {
       const pack = target.closest(".source").data("pack")
       if(creator && pack) {
         this.filters.creator = creator
-        this.filters.pack = Number(pack)
+        this.filters.pack = pack
         this.render()
       }
     }
@@ -309,7 +329,7 @@ export default class MouBrowser extends MouApplication {
     event.preventDefault();
     event.stopPropagation();
     this.filters.creator = ""
-    this.filters.pack = 0
+    this.filters.pack = ""
     this.filters.type = MouCollectionAssetTypeEnum.Map
     this.render()
   }
@@ -398,4 +418,5 @@ export default class MouBrowser extends MouApplication {
   _callbackAfterConfiguration(): void {
     this.render()
   }
+
 }
