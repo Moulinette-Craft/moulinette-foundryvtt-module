@@ -1,13 +1,14 @@
 import MouApplication from "../apps/application";
 import { MoulinetteProgress } from "../apps/progressbar";
-import { MOU_DEF_FOLDER } from "../constants";
-import { AnyDict } from "../types";
+import { MEDIA_AUDIO, MEDIA_IMAGES, MEDIA_VIDEOS, MODULE_ID, MOU_DEF_FOLDER, SETTINGS_COLLECTION_LOCAL } from "../constants";
+import { AnyDict, MouModule } from "../types";
 import MouFileManager from "../utils/file-manager";
 
 export default class MouLocalClient {
 
   static APP_NAME = "MouLocalClient"
   static INDEX_COMPENDIUMS = "index-compendiums.json"
+  static INDEX_LOCAL_ASSETS = "index-localassets.json"
 
   /**
    * Returns a thumbnail for this entry (from compendium)
@@ -39,17 +40,9 @@ export default class MouLocalClient {
     MouApplication.logInfo(MouLocalClient.APP_NAME, "Indexing all active compendiums in world...")
     const _game = game as Game
 
-    // read existing index
-    let indexData = {} as AnyDict
-    const noCache = "?ms=" + new Date().getTime();
     const indexPath = `${MOU_DEF_FOLDER}/${MouLocalClient.INDEX_COMPENDIUMS}`
-    const response = await fetch(indexPath + noCache, {cache: "no-store"}).catch(function(e) {
-      MouApplication.logWarn(MouLocalClient.APP_NAME, `Index couldn't be downloaded (${indexPath})`, e)
-    });
-    if(response && response.status == 200) {
-      indexData = await response.json();
-    }
-
+    let indexData = await MouFileManager.loadJSON(indexPath)
+    
     // read all compendiums 
     let updated = false
     const assetsPacks = []
@@ -57,7 +50,8 @@ export default class MouLocalClient {
     let idx = 0
     let processed = 0
     
-    const progressbar = (new MoulinetteProgress((game as Game).i18n.format("MOU.index_compendiums", { count: (game as Game).packs.size})))
+    console.log("HERE")
+    const progressbar = (new MoulinetteProgress((game as Game).i18n.localize("MOU.index_compendiums")))
     progressbar.render(true)
 
     for(const p of _game.packs) {
@@ -102,7 +96,7 @@ export default class MouLocalClient {
 
       // check if already in index data (world compendiums must always re-indexed because they have no version)
       if(!reindex && packId in indexData && version && indexData[packId].version == version) {
-        console.log(`Moulinette Compendiums | Re-using existing index for ${packId} (v. ${version})... (remove index ${indexPath} to force re-indexing)`)
+        MouApplication.logInfo(MouLocalClient.APP_NAME, `Re-using existing index for ${packId} (v. ${version})... (remove index ${indexPath} to force re-indexing)`)
         // retrieve pack and assets
         const pack = foundry.utils.duplicate(indexData[packId].pack)
         pack.idx = idx,
@@ -120,7 +114,7 @@ export default class MouLocalClient {
       try {
         elements = await p.getDocuments()
       } catch(Error) {
-        console.warn(`Moulinette Compendiums | Unable to fetch documents from compendium ${p.metadata.label}. Skipping...`)
+        MouApplication.logWarn(MouLocalClient.APP_NAME, `Unable to fetch documents from compendium ${p.metadata.label}. Skipping...`)        
         continue
       }
 
@@ -185,11 +179,7 @@ export default class MouLocalClient {
 
     // store index if updated
     if(updated) {
-      await MouFileManager.uploadFile(
-        new File([JSON.stringify(indexData)], MouLocalClient.INDEX_COMPENDIUMS, { type: "application/json", lastModified: new Date().getTime() }), 
-        MouLocalClient.INDEX_COMPENDIUMS, 
-        MOU_DEF_FOLDER, 
-        true)
+      await MouFileManager.storeJSON(indexData, MouLocalClient.INDEX_COMPENDIUMS, MOU_DEF_FOLDER);
     }
 
     console.groupEnd()
@@ -199,4 +189,64 @@ export default class MouLocalClient {
     const filteredPacks = assetsPacks.filter((p) => !(p.publisher in curExclusions && ('*' in curExclusions[p.publisher] || p.name in curExclusions[p.publisher])))
     return { packs: filteredPacks, assets: assets }
   }
+
+
+  static async indexAllLocalAssets(path: string, source: string, reindex = false): Promise<void> {
+    console.log(reindex)
+    const indexPath = `${MOU_DEF_FOLDER}/${MouLocalClient.INDEX_LOCAL_ASSETS}`
+    let indexData = await MouFileManager.loadJSON(indexPath)
+    const indexFolder = `${path}#${source}`
+    if(!(indexFolder in indexData)) indexData[indexFolder] = []
+    const assets = indexData[indexFolder]
+
+    const module = (game as Game).modules.get(MODULE_ID) as MouModule
+    const progressbar = (new MoulinetteProgress((game as Game).i18n.localize("MOU.index_folders")))
+    progressbar.render(true)
+    progressbar.setProgress(1, (game as Game).i18n.format("MOU.index_folders_list", { path }))
+    try {
+      const files = await MouFileManager.scanFolder(source as FilePicker.SourceType, path, module.debug)
+      const images = files.filter(f => MEDIA_IMAGES.includes(f.split(".").pop()?.toLocaleLowerCase() as string))
+      const videos = files.filter(f => MEDIA_VIDEOS.includes(f.split(".").pop()?.toLocaleLowerCase() as string))
+      const audio = files.filter(f => MEDIA_AUDIO.includes(f.split(".").pop()?.toLocaleLowerCase() as string))
+
+      const totalCount = images.length + videos.length + audio.length
+      const imagesMessage = (game as Game).i18n.format("MOU.index_folders_images", { count: images.length })
+      for (let i=0; i<images.length; i++) {
+        if(progressbar.wasCancelled()) break
+        //const img = await MouFileManager.loadImage(images[i])
+        assets.push({ path: images[i] })
+        progressbar.setProgress(i/totalCount, imagesMessage)
+      }
+    } catch(error: any) {
+      ui.notifications?.warn((game as Game).i18n.localize("MOU.error_folder_indexing_failed"))
+      MouApplication.logError(MouLocalClient.APP_NAME, "Folder indexing failed", error)
+    }
+    progressbar.setProgress(100)
+
+    await MouFileManager.storeJSON(indexData, MouLocalClient.INDEX_LOCAL_ASSETS, MOU_DEF_FOLDER);
+  }
+
+
+  static async getAllPacks(): Promise<{name: string, path: string}[]> {
+    const settings = MouApplication.getSettings(SETTINGS_COLLECTION_LOCAL) as AnyDict
+    return settings.folders.map((f : AnyDict) => { return { name: f.name, path: f.path } })
+  }
+
+  static async getAllAssets(): Promise<AnyDict> {
+    const assets = {} as AnyDict
+    const settings = MouApplication.getSettings(SETTINGS_COLLECTION_LOCAL) as AnyDict
+    const indexPath = `${MOU_DEF_FOLDER}/${MouLocalClient.INDEX_LOCAL_ASSETS}`
+    let indexData = await MouFileManager.loadJSON(indexPath)
+    for(const folder of settings.folders) {
+      const folderIdx = `${folder.path}#${folder.source}`
+      if(folderIdx in indexData) {
+        assets[folderIdx] = {
+          name: folder.name,
+          assets: indexData[folderIdx]
+        } 
+      }
+    }
+    return assets
+  }
+  
 }

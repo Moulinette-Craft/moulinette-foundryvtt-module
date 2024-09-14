@@ -22,7 +22,7 @@
     </div>
     <div class="info">
       <div class="source" title="{{a.creator}} - {{a.pack}}" data-creator="{{a.creator}}" data-pack="{{a.pack_id}}">
-        <a class="creator" href>{{a.creator}}</a> - <a class="pack" href>{{a.pack}}</a>
+        {{#if a.creator}}<a class="creator" href>{{a.creator}}</a> - {{/if}}<a class="pack" href>{{a.pack}}</a>
       </div>
       <div class="title">{{a.name}}</div>
     </div>

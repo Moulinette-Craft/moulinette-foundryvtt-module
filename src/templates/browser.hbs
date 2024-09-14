@@ -44,12 +44,14 @@
       <h2 data-id="creator">{{localize "MOU.creator"}} <i class="fa-regular fa-square-{{mouIf filters.prefs.opensections.creator "minus" "plus"}}"></i></h2>
       <div data-id="creator" class="{{#unless filters.prefs.opensections.creator}}collapsed{{/unless}}">
         <div>
+          {{#if filters.creators}}
           <select name="creators" id="creator-select">
             <option value="">--Please choose a creator--</option>
             {{#each filters.creators as |c|}}
               <option value="{{c.id}}" {{#if (eq ../filters.values.creator c.id)}}selected{{/if}}>{{c.name}} ({{prettyNumber c.assetsCount true}})</option>
             {{/each}}
           </select>
+          {{/if}}
           {{#if filters.packs}}
           <select name="packs" id="pack-select">
             <option value="">--Please choose a pack--</option>

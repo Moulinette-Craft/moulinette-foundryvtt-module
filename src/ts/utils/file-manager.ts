@@ -1,5 +1,6 @@
 import MouApplication from "../apps/application";
 import { SETTINGS_S3_BUCKET } from "../constants";
+import { AnyDict } from "../types";
 
 declare var ForgeVTT: any;
 declare var ForgeVTT_FilePicker: any;
@@ -174,4 +175,72 @@ export default class MouFileManager {
     return false
   }
 
+
+  /**
+   * Returns the list of all files in folder (and its subfolders) matching filter
+   */
+  static async scanFolder(source: FilePicker.SourceType, path: string, debug?: boolean): Promise<string[]> {
+    
+    let list = [] as string[]
+    if(debug) MouApplication.logInfo(MouFileManager.APP_NAME, `Assets: scanning ${path} ...`)
+    const base = await FilePicker.browse(source, path, MouFileManager.getOptions());
+    
+    // stop scanning if ignore.info file found
+    if(base.files.find(f => f.endsWith("/ignore.info"))) {
+      if(debug) MouApplication.logInfo(MouFileManager.APP_NAME, `File ignore.info found. Stop scanning ${path}.`)
+      return list;
+    }
+    
+    if(debug) MouApplication.logInfo(MouFileManager.APP_NAME, `Assets: ${base.files.length} assets found`)
+    list.push(...base.files)
+    
+    for(const d of base.dirs) {
+      const subpath = decodeURIComponent(d)
+      // workaround for infinite loop : folder must be a subfolder
+      if( subpath.startsWith(path) ) {
+        const files = await MouFileManager.scanFolder(source, subpath, debug)
+        list.push(...files)
+      } else if(debug) MouApplication.logWarn(MouFileManager.APP_NAME, `Assets: ignoring ${subpath} which is NOT a subfolder of ${path} as expected!`)
+    }
+    return list
+  }
+
+  /**
+   * Downloads the specified JSON file and returns it as data
+   */
+  static async loadJSON(path: string): Promise<AnyDict> {
+    // download index file from URL
+    let indexData = {}
+    const noCache = "?ms=" + new Date().getTime();
+    const response = await fetch(path + noCache, {cache: "no-store"}).catch(function(e) {
+      MouApplication.logError(MouFileManager.APP_NAME, `Exception while downloading index ${path}`, e)
+    });
+    if(response && response.status == 200) {
+      indexData = await response.json();
+    }
+    return indexData
+  }
+
+  /**
+   * Stores provided JSON 
+   */
+  static async storeJSON(data: AnyDict, filename: string, folder: string): Promise<FilePicker.UploadResult | false> {
+    return MouFileManager.uploadFile(
+      new File([JSON.stringify(data)], filename, { type: "application/json", lastModified: new Date().getTime() }), 
+      filename, 
+      folder, 
+      true)
+  }
+
+  /**
+   * Loads an image
+   */
+  static loadImage(src: string): Promise<HTMLImageElement> {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.src = src;
+      img.onload = () => resolve(img);
+      img.onerror = (err) => reject(err);
+    });
+  }
 }

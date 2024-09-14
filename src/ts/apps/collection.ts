@@ -30,8 +30,8 @@ export interface MouCollectionAsset {
   type: number
   format: string
   preview: string
-  creator: string
-  creator_url: string
+  creator: string | null
+  creator_url: string | null
   pack: string
   pack_id: string
   name: string

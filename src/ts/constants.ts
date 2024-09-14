@@ -17,4 +17,9 @@ export const SETTINGS_SESSION_ID = "session_ID"
 export const SETTINGS_USE_FOLDERS = "use_folders"
 export const SETTINGS_S3_BUCKET = "s3_bucket"
 export const SETTINGS_COLLECTION_CLOUD = "cloud_collection"
+export const SETTINGS_COLLECTION_LOCAL = "local_collection"
 export const SETTINGS_DATA_EXCLUSION = "dataExclusions"
+
+export const MEDIA_IMAGES = ["apng", "avif", "bmp", "gif", "jpeg", "png", "svg", "tiff", "webp"]
+export const MEDIA_VIDEOS = ["m4v", "mp4", "ogv", "webm"]
+export const MEDIA_AUDIO = ["aac", "flac", "m4a", "mid", "mp3", "ogg", "opus", "wav", "webm"]

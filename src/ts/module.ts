@@ -6,7 +6,7 @@ import "../styles/style.scss";
 import MouBrowser from "./apps/browser";
 import MouUser from "./apps/user";
 import MouCloudClient from "./clients/moulinette-cloud";
-import { MODULE_ID, SETTINGS_COLLECTION_CLOUD, SETTINGS_DATA_EXCLUSION, SETTINGS_S3_BUCKET, SETTINGS_SESSION_ID, SETTINGS_USE_FOLDERS } from "./constants";
+import { MODULE_ID, SETTINGS_COLLECTION_CLOUD, SETTINGS_COLLECTION_LOCAL, SETTINGS_DATA_EXCLUSION, SETTINGS_S3_BUCKET, SETTINGS_SESSION_ID, SETTINGS_USE_FOLDERS } from "./constants";
 import MouLayer from "./layers/mou-layer";
 import { AnyDict, MouModule } from "./types";
 import MouCache from "./apps/cache";
@@ -16,6 +16,7 @@ import MouCollectionCloud, { CloudMode } from "./collections/collection-cloud";
 import MouEventHandler from "./apps/event-handler";
 import MouHooks from "./utils/hooks";
 import MouCollectionCompendiums from "./collections/collection-compendiums";
+import MouCollectionLocal from "./collections/collection-local-index";
 
 let module: MouModule;
 
@@ -53,6 +54,7 @@ Hooks.once("init", () => {
   });
 
   (game as Game).settings.register(MODULE_ID, SETTINGS_COLLECTION_CLOUD, { scope: "world", config: false, type: Object, default: { mode: CloudMode.ALL } as AnyDict });
+  (game as Game).settings.register(MODULE_ID, SETTINGS_COLLECTION_LOCAL, { scope: "world", config: false, type: Object, default: {} as AnyDict });
 
   const layers = { moulayer: { layerClass: MouLayer, group: "primary" } }
   CONFIG.Canvas.layers = foundry.utils.mergeObject(Canvas.layers, layers);
@@ -80,6 +82,7 @@ Hooks.once("ready", () => {
   // load default collections
   module.collections.push(new MouCollectionCloud())
   module.collections.push(new MouCollectionCompendiums())
+  module.collections.push(new MouCollectionLocal())
   // hooks some FVTT functions
   MouHooks.replaceFromDropData()
 });

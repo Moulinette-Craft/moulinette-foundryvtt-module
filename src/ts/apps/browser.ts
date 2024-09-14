@@ -69,7 +69,7 @@ export default class MouBrowser extends MouApplication {
       this.filters.type = types.length > 0 ? types[0].id : undefined
     }
     const creators = this.filters.type ? await this.collection.getCreators(this.filters.type) : null
-    const packs = this.filters.creator && this.filters.type ? await this.collection.getPacks(this.filters.type, this.filters.creator) : null
+    const packs = this.filters.type ? await this.collection.getPacks(this.filters.type, this.filters.creator ? this.filters.creator : "") : null
     
 
     // split types into 2 lists
@@ -415,7 +415,14 @@ export default class MouBrowser extends MouApplication {
   _onConfigureCollection(event: Event): void {
     event.preventDefault()
     event.stopPropagation();
-    this.collection?.configure(this._callbackAfterConfiguration.bind(this))
+    if(event.currentTarget) {
+      const module = (game as Game).modules.get(MODULE_ID) as MouModule
+      const collectionId = $(event.currentTarget).closest(".action").data("col")
+      const collection = module.collections.find(c => c.getId() == collectionId)
+      if(collection) {
+        collection.configure(this._callbackAfterConfiguration.bind(this))
+      }
+    }
   }
 
   _callbackAfterConfiguration(): void {

@@ -214,8 +214,9 @@ export default class MouCollectionCloud implements MouCollection {
   }
   
   async getPacks(type: MouCollectionAssetTypeEnum, creator: string): Promise<MouCollectionPack[]> {
+    const results = [] as MouCollectionPack[]
+    if(creator.length == 0) return results
     const packs = await MouCloudClient.apiPOST("/packs", { type: type, creator: creator, scope: this.getScope() })
-    const results = []
     for(const p of packs) {
       const pack : MouCollectionPack = {
         id: String(p.pack_ref),

@@ -1,0 +1,44 @@
+<div class="config">
+  <h2>{{localize "MOU.index_sources"}}</h2>
+  <div class="description">{{localize "MOU.description_index_folders"}}</div>
+  <div class="sources">
+    <div class="header">
+      <h3 class="cfg-name">Name</h3>
+      <div class="cfg-path">Path</div>
+      <div class="cfg-source">Source</div>
+      <div class="cfg-assets"># assets</div>
+      <div class="cfg-actions"></div>
+    </div>
+    {{#unless folders}}
+    <div class="cfg-message">
+      <div class="mou-alert mou-alert-warning mou-alert-white rounded">
+        <div class="icon"><i class="fa fa-warning"></i></div>
+        <div class="message">No source configured yet.</div>
+      </div>
+    </div>
+    {{/unless}}
+    {{#if folders}}
+      {{#each folders as |f|}}
+      <div class="cfg-folder" data-idx="{{@index}}">
+        <h3 class="cfg-name">{{f.name}}</h3>
+        <div class="cfg-path">{{f.path}}/</div>
+        <div class="cfg-source">{{f.source}}</div>
+        <div class="cfg-assets">0</div>
+        <div class="cfg-actions">
+          <a data-id="reindex"><i class="fa-solid fa-arrow-rotate-right"></i></a>
+          <a data-id="edit"><i class="fa-solid fa-pen-to-square"></i></a>
+          <a data-id="delete"><i class="fa-solid fa-trash"></i></a>
+        </div>
+      </div>
+      {{/each}}
+    {{/if}}
+  </div>
+  
+  <footer>
+    <div class="actions">
+      <button data-id="add-folder"><i class="fa-solid fa-folder-plus"></i> {{localize "MOU.add_folder"}}</button>
+      <button data-id="export-configuration"><i class="fa-solid fa-file-export"></i> {{localize "MOU.export_configuration"}}</button>
+      <button data-id="import-configuration"><i class="fa-solid fa-file-import"></i> {{localize "MOU.import_configuration"}}</button>
+    </div>
+  </footer>
+</div>

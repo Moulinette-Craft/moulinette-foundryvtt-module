@@ -123,6 +123,7 @@ export default class MouCollectionCompendiums implements MouCollection {
 
   async getPacks(type: MouCollectionAssetTypeEnum, creator: string): Promise<MouCollectionPack[]> {
     const results = [] as MouCollectionPack[]
+    if(creator.length == 0) return results
     for(const pack of Object.values(this.compendiums.packs) as AnyDict[]) {
       // skip non-matching type
       if(MouCollectionAssetTypeEnum[pack.type as keyof typeof MouCollectionAssetTypeEnum] != type) continue;
