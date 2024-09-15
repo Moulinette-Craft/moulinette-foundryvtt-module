@@ -411,11 +411,11 @@ export default class MouBrowser extends MouApplication {
           if(dragImage && dragImage.checkVisibility()) {
             originalEvent.dataTransfer?.setDragImage(this.html?.find(".actionhint .thumbnail").get(0) as Element, 50, 50);  
           }
-          const assetType = MouCollectionAssetTypeEnum[selAsset.type]
-          if(this.collection && (assetType == "Macro" || assetType == "Actor" || assetType == "Item")) {
+          const T = MouCollectionAssetTypeEnum
+          if(this.collection && [T.Actor, T.Audio, T.Image, T.Item, T.Macro].includes(selAsset.type)) {
             const data : MouCollectionDragData = {
               moulinette: { asset: assetId, collection: this.collection?.getId() },
-              type: assetType
+              type: MouCollectionAssetTypeEnum[selAsset.type]
             }
             this.logInfo("DataTransfer", data)
             originalEvent.dataTransfer?.setData('text/plain', JSON.stringify(data));

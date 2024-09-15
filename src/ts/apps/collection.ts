@@ -81,7 +81,7 @@ export interface MouCollectionDragData {
     asset: string,
     collection: string
   },
-  type: "Actor" | "Item" | "Macro"
+  type: string
   uuid?: string
   data?: any
 }
@@ -126,6 +126,9 @@ export interface MouCollection {
 
   /** Fills the data from desired asset */
   fromDropData(assetId: string, data: MouCollectionDragData): Promise<void>
+
+  /** Fills the data from desired asset */
+  dropDataCanvas(canvas: Canvas, data: AnyDict): Promise<void>
 
   /** Must return true if source has configurations/options */
   isConfigurable(): boolean

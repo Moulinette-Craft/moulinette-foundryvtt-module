@@ -496,6 +496,11 @@ export default class MouCollectionCloud implements MouCollection {
     }
   }
 
+  async dropDataCanvas(canvas: Canvas, data: AnyDict): Promise<void> {
+    console.log(canvas, data)
+    throw new Error("Method not implemented.");
+  }
+
   /** Collection Cloud has specific configurations */
   isConfigurable(): boolean {
     return true
@@ -509,4 +514,6 @@ export default class MouCollectionCloud implements MouCollection {
       callback()
     }).render(true)
   }  
+
+  
 }

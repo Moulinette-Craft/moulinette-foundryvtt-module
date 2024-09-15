@@ -211,11 +211,18 @@ export default class MouLocalClient {
 
       const totalCount = images.length + videos.length + audio.length
       const imagesMessage = (game as Game).i18n.format("MOU.index_folders_images", { count: images.length })
+      let currentCount = 0
       for (let i=0; i<images.length; i++) {
         if(progressbar.wasCancelled()) break
         //const img = await MouFileManager.loadImage(images[i])
         assets.push({ path: images[i] })
-        progressbar.setProgress(i/totalCount, imagesMessage)
+        progressbar.setProgress((currentCount+i)/totalCount, imagesMessage)
+      }
+      currentCount = images.length
+      for (let i=0; i<audio.length; i++) {
+        if(progressbar.wasCancelled()) break
+        assets.push({ path: audio[i] })
+        progressbar.setProgress((currentCount+i)/totalCount, imagesMessage)
       }
     } catch(error: any) {
       ui.notifications?.warn((game as Game).i18n.localize("MOU.error_folder_indexing_failed"))

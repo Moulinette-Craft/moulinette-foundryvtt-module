@@ -312,6 +312,11 @@ export default class MouCollectionCompendiums implements MouCollection {
     data.uuid = assetId
   }
 
+  async dropDataCanvas(canvas: Canvas, data: AnyDict): Promise<void> {
+    console.log(canvas, data)
+    throw new Error("Method not implemented.");
+  }
+
   isConfigurable(): boolean {
     return false;
   }

@@ -96,6 +96,8 @@ Hooks.on('getSceneControlButtons', (buttons) => MouHooks.addMoulinetteControls(b
  * Manage canvas drop
  */
 Hooks.on('dropCanvasData', (canvas, data) => {
-  console.log("HERE", canvas, data)
+  if("moulinette" in data && data.moulinette.collection) {
+    module.collections.find(c => c.getId() == data.moulinette.collection)?.dropDataCanvas(canvas, data)
+  }
 });
 

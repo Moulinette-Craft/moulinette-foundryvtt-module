@@ -6,6 +6,7 @@ import MouMediaUtils from "./media-utils";
 export default class MouFoundryUtils {
 
   static FOLDER_MAX_LEVELS = 3
+  static AUDIO_DEFAULT_RADIUS = 10
 
   /**
    * Tries to retrieve image path for the provided FVTT entity
@@ -46,14 +47,17 @@ export default class MouFoundryUtils {
   /**
    * Create a journal article with a single page for an image
    */
-  static async createJournalImage(path: string, folder: string) {
-    if (!(game as Game).user?.isGM) return;
+  static async createJournalImage(path: string, folder: string, renderSheet = true) {
+    if (!(game as Game).user?.isGM) return null;
     const articleName = MouMediaUtils.prettyMediaName(path)
     const folderObj = await MouFoundryUtils.getOrCreateFolder("JournalEntry", folder)
     const json_text = await renderTemplate(`modules/${MODULE_ID}/templates/json/note-image.hbs`, { path: path, folder: folderObj ? `"${folderObj.id}"` : "null", name: articleName })
     const entry = await JournalEntry.create(JSON.parse(json_text))
-    entry?.sheet?.render(true)
+    if(renderSheet) {
+      entry?.sheet?.render(true)
+    }
     ui.journal?.activate()
+    return entry
   }
 
   /**
@@ -186,6 +190,130 @@ export default class MouFoundryUtils {
     } else {
       playlist.updateEmbeddedDocuments("PlaylistSound", [{_id: sound.id, playing: !sound.playing, volume: volume }]);
     }    
+  }
+
+
+  /**
+   * Creates a tile on the scene based on the provided image (path) and position
+   */
+  static async createTile(canvas: Canvas, imgPath: string, point: { x: number, y: number }): Promise<boolean> {
+    const layerTiles = canvas.layers.find(l => l.name == "TilesLayer")
+    const layerMou = canvas.layers.find(l => l.name == "MouLayer")
+
+    if(!canvas.dimensions || !layerTiles || !layerMou) return false
+    // Determine the tile size
+    const data = {} as AnyDict
+    const tex = await loadTexture(imgPath);
+    if(!tex) return false
+    const ratio = canvas.dimensions.size / canvas.dimensions.size;
+    data.width = tex.baseTexture.width * ratio;
+    data.height = tex.baseTexture.height * ratio;
+    data.texture = { src: imgPath }
+
+    // Validate that the drop position is in-bounds and snap to grid
+    if ( !canvas.dimensions.rect.contains(point.x, point.y) ) return false;
+    data.x = point.x - (data.width / 2);
+    data.y = point.y - (data.height / 2);
+    //if ( !event.shiftKey ) mergeObject(data, canvas.grid.getSnappedPosition(data.x, data.y));
+
+    // make sure to always put tiles on top
+    let maxZ = 0
+    // @ts-ignore
+    canvas.tiles.placeables.forEach( t => {
+      if(t.document.sort > maxZ) maxZ = t.document.sort
+    })
+    data.z = maxZ
+
+    // Create the tile as hidden if the ALT key is pressed
+    //if ( event.altKey ) data.hidden = true;
+
+    // Create the Tile
+    let tile : AnyDict;
+    // @ts-ignore
+    data.overhead = ui.controls.controls.find(c => c.layer === "tiles").foreground ?? false;
+    // @ts-ignore
+    tile = (await canvas.scene.createEmbeddedDocuments(Tile.embeddedName, [data], { parent: canvas.scene }))[0]
+    tile = tile._object
+    tile.control() // automatically select dropped tile
+
+    // @ts-ignore
+    if(!layerTiles.active && !layerMou.active) {
+      layerTiles.activate()
+    }
+    return true
+  }
+
+  /**
+   * Creates a note on the scene based on the provided image (path) and position
+   */
+  static async createNoteImage(canvas: Canvas, folder: string, imgPath: string, point: { x: number, y: number }): Promise<boolean> {
+    const layerNotes = canvas.layers.find(l => l.name == "NotesLayer")
+    const layerMou = canvas.layers.find(l => l.name == "MouLayer")
+    
+    if(!canvas.dimensions || !canvas.grid || !layerNotes || !layerMou) return false
+
+    // generate journal
+    const entry = await MouFoundryUtils.createJournalImage(imgPath, folder, false)
+    if(!entry) return false
+    // @ts-ignore
+    const coord = canvas.grid.getSnappedPoint({x: point.x - canvas.grid.sizeX/2, y: point.y - canvas.grid.sizeY/2}, {mode: CONST.GRID_SNAPPING_MODES.VERTEX})
+    // Default Note data
+    const noteData = {
+      entryId: entry.id,
+      // @ts-ignore
+      x: coord.x + canvas.grid.sizeX/2,
+      // @ts-ignore
+      y: coord.y + canvas.grid.sizeY/2,
+      iconSize: 40,
+      textAnchor: CONST.TEXT_ANCHOR_POINTS.BOTTOM,
+      fontSize: 48,
+      fontFamily: CONFIG.defaultFontFamily
+    };
+
+    // Create a NoteConfig sheet instance to finalize the creation
+    // @ts-ignore
+    let note = (await canvas.scene.createEmbeddedDocuments(Note.embeddedName, [noteData], { parent: canvas.scene }))[0]
+    // @ts-ignore
+    note = note._object
+    // @ts-ignore
+    if(!layerNotes.active && !layerMou.active) {
+      layerNotes.activate()
+    }
+
+    // @ts-ignore
+    note.sheet.render(true);
+
+    return true
+  }
+
+
+  /**
+   * Creates an ambient sound on the scene based on the provided audio (path) and position
+   */
+  static async createAmbientAudio(canvas: Canvas, sndPath: string, point: { x: number, y: number }): Promise<boolean> {
+    const layerSounds = canvas.layers.find(l => l.name == "SoundsLayer")
+    const layerMou = canvas.layers.find(l => l.name == "MouLayer")
+    
+    if(!canvas.dimensions || !canvas.grid || !layerSounds || !layerMou) return false
+    
+    // Validate that the drop position is in-bounds and snap to grid
+    if ( !canvas.dimensions.rect.contains(point.x, point.y) ) return false;
+    
+    const soundData = {
+      t: "l",
+      x: point.x,
+      y: point.y,
+      path: sndPath,
+      radius: MouFoundryUtils.AUDIO_DEFAULT_RADIUS,
+      repeat: true,
+      volume: 1
+    }
+    // @ts-ignore
+    const sound = (await canvas.scene.createEmbeddedDocuments("AmbientSound", [soundData], { parent: canvas.scene }))[0]
+    layerSounds.activate();
+    // @ts-ignore
+    sound.sheet.render(true)
+    return true
   }
 
   

@@ -3,18 +3,17 @@ import { MouCollection, MouCollectionAction, MouCollectionActionHint, MouCollect
 import MouLocalClient from "../clients/moulinette-local";
 import { MEDIA_AUDIO, MEDIA_IMAGES } from "../constants";
 import { AnyDict } from "../types";
+import MouFoundryUtils from "../utils/foundry-utils";
 import MouMediaUtils from "../utils/media-utils";
 import LocalCollectionConfig from "./collection-local-index-config";
 
-/*
 enum LocalAssetAction {
   DRAG,                     // drag & drop capability for the asset
   CLIPBOARD,                // copy path to clipboard
-  VIEW,                     // open sheet (without importing)
-  IMPORT,                   // import asset (scenes/...)
+  IMPORT,                   // import asset (audio)
   CREATE_ARTICLE,           // create article from asset
   PREVIEW,                  // preview audio
-}*/
+}
 
 class MouCollectionLocalAsset implements MouCollectionAsset {
   
@@ -42,10 +41,9 @@ class MouCollectionLocalAsset implements MouCollectionAsset {
     } else {
       assetType = MouCollectionAssetTypeEnum.Undefined
     }
-    const thumbnail = assetType == MouCollectionAssetTypeEnum.Image ? data.path : null
     this.id = data.path;
     this.format = "small"
-    this.preview = thumbnail ? thumbnail : "icons/svg/mystery-man.svg ",
+    this.preview = data.path,
     this.creator = null
     this.creator_url = null
     this.pack = pack.name
@@ -66,6 +64,7 @@ export default class MouCollectionLocal implements MouCollection {
 
   static PLAYLIST_NAME = "Moulinette Local"
   
+  private curPreview?: string
   private assets: AnyDict
 
   constructor() {
@@ -84,6 +83,9 @@ export default class MouCollectionLocal implements MouCollection {
     return (game as Game).i18n.localize("MOU.collection_type_local");
   }
 
+  /**
+   * Types are generated based on file extensions
+   */
   async getTypes(): Promise<MouCollectionAssetType[]> {
     const results = [] as MouCollectionAssetType[]
     
@@ -115,6 +117,9 @@ export default class MouCollectionLocal implements MouCollection {
     return results
   }
 
+  /**
+   * Local assets don't have any creator, only packs (sources)
+   */
   async getCreators(): Promise<MouCollectionCreator[]> {
     return [] as MouCollectionCreator[]
   }
@@ -194,24 +199,115 @@ export default class MouCollectionLocal implements MouCollection {
   }
 
   getActions(asset: MouCollectionAsset): MouCollectionAction[] {
-    console.log(asset)
     const actions = [] as MouCollectionAction[]
+    const cAsset = (asset as MouCollectionLocalAsset)
+    const assetType = MouCollectionAssetTypeEnum[asset.type]
+    actions.push({ id: LocalAssetAction.DRAG, drag: true, name: (game as Game).i18n.format("MOU.action_drag", { type: assetType}), icon: "fa-solid fa-hand" })
+    switch(cAsset.type) {
+      case MouCollectionAssetTypeEnum.Image:
+        actions.push({ id: LocalAssetAction.CREATE_ARTICLE, name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
+        break;    
+      case MouCollectionAssetTypeEnum.Audio:
+        actions.push({ id: LocalAssetAction.IMPORT, name: (game as Game).i18n.localize("MOU.action_audio_play"), icon: "fa-solid fa-play-pause" })
+        actions.push({ id: LocalAssetAction.PREVIEW, name: (game as Game).i18n.localize("MOU.action_preview"), icon: "fa-solid fa-headphones" })
+        break;    
+    }
+    actions.push({ id: LocalAssetAction.CLIPBOARD, small: true, name: (game as Game).i18n.localize("MOU.action_clipboard"), icon: "fa-solid fa-clipboard" })
+    
     return actions
   }
 
   getActionHint(asset: MouCollectionAsset, actionId: number): MouCollectionActionHint | null {
     const action = this.getActions(asset).find(a => a.id == actionId)
-    console.log(action)
+    if(!action) return null
+    switch(actionId) {
+      case LocalAssetAction.DRAG:
+        switch(asset.type) {
+          case MouCollectionAssetTypeEnum.Image: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_drag_image") }
+          case MouCollectionAssetTypeEnum.Audio: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_drag_audio") }
+        }
+        break
+      case LocalAssetAction.IMPORT:
+        switch(asset.type) {
+          case MouCollectionAssetTypeEnum.Audio: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_import_audio") }
+        }
+        break
+      case LocalAssetAction.CLIPBOARD:
+        return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_clipboard") }
+      case LocalAssetAction.CREATE_ARTICLE:
+        return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_create_article_asset") }
+      case LocalAssetAction.PREVIEW:
+        switch(asset.type) {
+          case MouCollectionAssetTypeEnum.Audio: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_preview_audio_full") }
+        }
+        break
+    }
     return null
   }
 
   async executeAction(actionId: number, asset: MouCollectionAsset): Promise<void> {
-    const folderPath = `Moulinette/${asset.creator}/${asset.pack}`
-    console.log(folderPath, actionId)
+    const folderPath = `Moulinette/Local Assets/${asset.pack}`
+    switch(actionId) {
+      case LocalAssetAction.DRAG:
+        ui.notifications?.info((game as Game).i18n.localize("MOU.dragdrop_instructions"))
+        break
+      
+      case LocalAssetAction.CLIPBOARD:
+        MouMediaUtils.copyToClipboard(asset.preview)
+        break
+
+      case LocalAssetAction.IMPORT:
+        switch(asset.type) {
+          case MouCollectionAssetTypeEnum.Audio:
+            MouFoundryUtils.playStopSound(asset.preview, MouCollectionLocal.PLAYLIST_NAME);
+        }
+        break
+
+      case LocalAssetAction.CREATE_ARTICLE:
+        switch(asset.type) {
+          case MouCollectionAssetTypeEnum.Image: 
+            MouFoundryUtils.createJournalImage(asset.preview, folderPath);
+            break
+        }
+        break
+      
+      case LocalAssetAction.PREVIEW:
+        switch(asset.type) {
+          case MouCollectionAssetTypeEnum.Audio:
+            const audio_url = asset.preview
+            // assuming there is an audio preview and there is a audio#audiopreview element on the page
+            const audio = $("#audiopreview")[0] as HTMLAudioElement
+            if(this.curPreview == audio_url) {
+              audio.pause()
+              this.curPreview = ""
+            }
+            else {
+              this.curPreview = audio_url
+              audio.src = audio_url
+              audio.play();
+            }
+            break
+        }
+        break
+    }
   }
 
   async fromDropData(assetId: string, data: MouCollectionDragData): Promise<void> {
-    data.uuid = assetId
+    console.log(assetId, data)
+  }
+
+  async dropDataCanvas(canvas: Canvas, data: AnyDict): Promise<void> {
+    const activeLayer = canvas.layers.find((l : AnyDict) => l.active)?.name
+    const position = {x: data.x, y: data.y }
+    if(data.type == "Image") {
+      if(activeLayer == "NotesLayer") {
+        MouFoundryUtils.createNoteImage(canvas, `Moulinette/Local Assets/Dropped`, data.moulinette.asset, position)
+      } else {
+        MouFoundryUtils.createTile(canvas, data.moulinette.asset, position)
+      }
+    } else if(data.type == "Audio") {
+      MouFoundryUtils.createAmbientAudio(canvas, data.moulinette.asset, position)
+    }
   }
 
   isConfigurable(): boolean {
