@@ -243,4 +243,40 @@ export default class MouFileManager {
       img.onerror = (err) => reject(err);
     });
   }
+
+  /**
+   * This function retrieves the longest common base from a list of paths
+   * Ex: 
+   *   "https://assets.forge-vtt.com/bazaar/systems/pf1/assets/fonts/rpgawesome-webfont.svg"
+   *   "https://assets.forge-vtt.com/bazaar/systems/pf1/assets/icons/feats/simple-weapon-proficiency.jpg"
+   * ==> "https://assets.forge-vtt.com/bazaar/systems/pf1/assets/"
+   */
+  static findLongestCommonBase(strList: string[]): string {
+    if(!strList || strList.length < 1) {
+      return ""
+    } else if(strList.length == 1) {
+      return strList[0].substring(0, strList[0].lastIndexOf("/"))
+    }
+
+    let common = null
+    for(const str of strList) {
+      if(common == null) {
+        common = str
+        continue;
+      }
+      let maxCommonChars = common.length
+      for(var i = 0; i < common.length; i++) {
+        if(i >= str.length || common[i] != str[i]) {
+          maxCommonChars = i
+          break
+        }
+      }
+      common = common.substring(0, maxCommonChars)
+    }
+    if(common == null) common = ""
+
+    // only keep path up to folder (don't split path)
+    const idx = common.lastIndexOf("/")
+    return idx > 0 ? common.substring(0, idx) : ""
+  }
 }

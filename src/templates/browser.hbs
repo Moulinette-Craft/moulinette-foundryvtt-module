@@ -41,8 +41,8 @@
         </ul>
       </div>
       
-      <h2 data-id="creator">{{localize "MOU.creator"}} <i class="fa-regular fa-square-{{mouIf filters.prefs.opensections.creator "minus" "plus"}}"></i></h2>
-      <div data-id="creator" class="{{#unless filters.prefs.opensections.creator}}collapsed{{/unless}}">
+      <h2 data-id="packs">{{localize "MOU.packs"}} <i class="fa-regular fa-square-{{mouIf filters.prefs.opensections.packs "minus" "plus"}}"></i></h2>
+      <div data-id="packs" class="packs {{#unless filters.prefs.opensections.packs}}collapsed{{/unless}}">
         <div>
           {{#if filters.creators}}
           <select name="creators" id="creator-select">
@@ -61,6 +61,15 @@
           </select>
           {{/if}}
         </div>
+        {{#if filters.folders}}
+        <div class="folders">
+          <ol>
+          {{#each filters.folders as |f|}}
+          <li {{#if (eq ../filters.values.folder f.id)}}class="selected"{{/if}}><i class="fa-solid fa-folder{{#if (eq ../filters.values.folder f.id)}}-open{{/if}}"></i>&nbsp;<a data-path="{{f.id}}">{{f.name}}</a></li>
+          {{/each}}
+          </ol>
+        </div>
+        {{/if}}
       </div>
     </aside>
     <main class="content">

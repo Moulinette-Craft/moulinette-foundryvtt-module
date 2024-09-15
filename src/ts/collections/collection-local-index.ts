@@ -132,7 +132,10 @@ export default class MouCollectionLocal implements MouCollection {
     return packs;
   }
 
-  async getAssets(filters: MouCollectionFilters, page: number): Promise<MouCollectionAsset[]> {
+  /**
+   * Generates a list of collection assets based on provided filters
+   */
+  private async getAllResults(filters: MouCollectionFilters): Promise<MouCollectionAsset[]> {
     const results = [] as MouCollectionAsset[]
     for(const packId of Object.keys(this.assets)) {
       if(!filters.pack || filters.pack == packId) {
@@ -146,6 +149,8 @@ export default class MouCollectionLocal implements MouCollection {
               if(!MEDIA_AUDIO.includes(a.path.split(".").pop()?.toLocaleLowerCase() as string)) return false
               break
           }
+          // filter by folder
+          if(filters.folder && filters.folder.length > 0 && !a.path.startsWith(filters.folder)) return false
           // filter by search
           if(filters.searchTerms) {
             for(const term of filters.searchTerms.toLocaleLowerCase().split(" ")) {
@@ -161,6 +166,24 @@ export default class MouCollectionLocal implements MouCollection {
         }
       }
     }
+    return results
+  }
+
+  async getFolders(filters: MouCollectionFilters): Promise<string[]> {
+    const folders = new Set<string>()
+    // generate list of folders
+    const results = await this.getAllResults({ type: filters.type, pack: filters.pack })
+    for(const r of results) {
+      const f = r.id.substring(0, r.id.lastIndexOf('/'));
+      if(f.length > 0) {
+        folders.add(f)
+      }
+    }
+    return Array.from(folders.values()).sort((a, b) => a.localeCompare(b))
+  }
+
+  async getAssets(filters: MouCollectionFilters, page: number): Promise<MouCollectionAsset[]> {
+    const results = await this.getAllResults(filters)
     const fromIdx = page * MouBrowser.PAGE_SIZE
     if(fromIdx >= results.length) return []
     return results.slice(fromIdx, fromIdx + MouBrowser.PAGE_SIZE)

@@ -59,7 +59,8 @@ export interface MouCollectionFilters {
   creator?: string,
   pack?: string,
   type?: number,
-  searchTerms?: string
+  searchTerms?: string,
+  folder?: string
 }
 
 export interface MouCollectionAction {
@@ -104,6 +105,9 @@ export interface MouCollection {
 
   /** Returns the list of packs (for a specific type and creator) or empty list (collection doesn't support packs) */
   getPacks(type: MouCollectionAssetTypeEnum, creator: string): Promise<MouCollectionPack[]>
+
+  /** Returns the list of folders */
+  getFolders(filters: MouCollectionFilters): Promise<string[]>
 
   /** Returns random assets from the collection based on filters */
   getAssets(filters: MouCollectionFilters, page: number): Promise<MouCollectionAsset[]>

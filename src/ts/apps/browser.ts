@@ -1,5 +1,6 @@
 import { MODULE_ID } from "../constants";
 import { AnyDict, MouModule } from "../types";
+import MouFileManager from "../utils/file-manager";
 import MouApplication from "./application";
 import { MouCollection, MouCollectionAsset, MouCollectionAssetTypeEnum, MouCollectionDragData, MouCollectionFilters, MouCollectionUtils } from "./collection";
 
@@ -19,7 +20,7 @@ export default class MouBrowser extends MouApplication {
   /* Filter preferences */
   private filters_prefs:AnyDict = {
     visible: true,
-    opensections: { collection: true, asset_type: true, creator: true },
+    opensections: { collection: true, asset_type: true, packs: true },
     collection: "mou-compendiums",
     focus: "search"
   }
@@ -29,7 +30,8 @@ export default class MouBrowser extends MouApplication {
     type: MouCollectionAssetTypeEnum.Actor,
     creator: "",
     pack: "",
-    searchTerms: ""
+    searchTerms: "",
+    folder: ""
   }
 
   override get title(): string {
@@ -70,7 +72,13 @@ export default class MouBrowser extends MouApplication {
     }
     const creators = this.filters.type ? await this.collection.getCreators(this.filters.type) : null
     const packs = this.filters.type ? await this.collection.getPacks(this.filters.type, this.filters.creator ? this.filters.creator : "") : null
-    
+    const folders = await this.collection.getFolders(this.filters);
+
+    // improve folders by removing common path
+    const common = MouFileManager.findLongestCommonBase(folders)
+    const foldersImproved = folders.map(f => {
+      return { id: f, name: common.length > 0 ? f.substring(common.length) : f }
+    })
 
     // split types into 2 lists
     const middleIndex = Math.ceil(typesObj.length/2);
@@ -84,6 +92,7 @@ export default class MouBrowser extends MouApplication {
         values: this.filters,
         creators,
         packs,
+        folders : foldersImproved,
         types1,
         types2
       }
@@ -107,6 +116,9 @@ export default class MouBrowser extends MouApplication {
       .on('scroll', this._onScroll.bind(this))
     html.find(".filters .action a")
       .on("click", this._onConfigureCollection.bind(this));
+    html.find(".filters .folders a")
+      .on("click", this._onChooseFolder.bind(this));
+  
     
     // input triggers searches
     const search = html.find(".search-bar input");
@@ -333,7 +345,8 @@ export default class MouBrowser extends MouApplication {
     event.stopPropagation();
     this.filters.creator = ""
     this.filters.pack = ""
-    this.filters.type = MouCollectionAssetTypeEnum.Map
+    this.filters.type = MouCollectionAssetTypeEnum.Map,
+    this.filters.folder = ""
     this.render()
   }
 
@@ -422,6 +435,16 @@ export default class MouBrowser extends MouApplication {
       if(collection) {
         collection.configure(this._callbackAfterConfiguration.bind(this))
       }
+    }
+  }
+
+  _onChooseFolder(event: Event): void {
+    event.preventDefault()
+    event.stopPropagation();
+    if(event.currentTarget) {
+      const selected = $(event.currentTarget).data("path")
+      this.filters.folder = this.filters.folder == selected ? "" : selected
+      this.render()
     }
   }
 
