@@ -9,10 +9,10 @@ export class MoulinetteProgress extends Application {
   // for some unknown reason, doesn't work if not static
   private static interrupted = false;
 
-  constructor(title: string) {
+  constructor(title: string, progress?: number, description?: string) {
     super({ title: title })
-    this.progress = 0
-    this.description = ""
+    this.progress = progress ? progress : 0
+    this.description = description ? description : ""
     MoulinetteProgress.interrupted = false;
   }
 
@@ -25,6 +25,13 @@ export class MoulinetteProgress extends Application {
       width: 500,
       height: 90
     });
+  }
+
+  override async getData() {
+    return {
+      progress: this.progress,
+      description: this.description
+    };
   }
 
   override activateListeners(html: JQuery<HTMLElement>) {

@@ -1,7 +1,21 @@
 import MouApplication from "../apps/application";
 import MouLocalClient from "../clients/moulinette-local";
-import { MODULE_ID, SETTINGS_COLLECTION_LOCAL } from "../constants";
+import { MODULE_ID, MOU_DEF_FOLDER, SETTINGS_COLLECTION_LOCAL } from "../constants";
 import { AnyDict } from "../types";
+import MouFileManager from "../utils/file-manager";
+import LocalCollectionConfigNewSource from "./collection-local-index-config-source";
+
+export interface LocalCollectionSource {
+  id?: string,
+  name: string | null,
+  path: string | null,
+  source: string | null,
+  assets: number
+  options: {
+    thumbs: boolean,
+    metadata: boolean
+  }
+}
 
 /**
  * This class for configuring local collections
@@ -11,11 +25,13 @@ export default class LocalCollectionConfig extends MouApplication {
   override APP_NAME = "LocalCollectionConfig"
 
   private html?: JQuery<HTMLElement>;
+  private advanced: boolean;
   private callback: Function;
 
   constructor(callback: Function) {
     super();
     this.callback = callback;
+    this.advanced = false;
   }
 
   override get title(): string {
@@ -38,8 +54,11 @@ export default class LocalCollectionConfig extends MouApplication {
     if(settings.folders && settings.folders.length > 0) {
       folders = settings.folders as AnyDict
     }
+    const indexingRequired = folders?.find((f: LocalCollectionSource) => f.assets == 0) != null
     return {
-      folders
+      folders,
+      indexingRequired,
+      advanced: this.advanced
     };
   }
 
@@ -47,12 +66,14 @@ export default class LocalCollectionConfig extends MouApplication {
     super.activateListeners(html);
     html.find(".cfg-actions a").on("click", this._onFolderAction.bind(this))
     html.find("footer button").on("click", this._onAction.bind(this))
+    html.find(".more a").on("click", this._onToggleAvancedOptions.bind(this))
     this.html = html
     console.log(this.html)
   }
 
   async _onFolderAction(event: Event): Promise<void> {
     event.preventDefault();
+    const parent = this
     if(event.currentTarget) {
       const idx = $(event.currentTarget).closest(".cfg-folder").data("idx")
       const actionId = $(event.currentTarget).data("id")
@@ -60,48 +81,122 @@ export default class LocalCollectionConfig extends MouApplication {
       if(actionId && settings.folders && idx >= 0 && idx < settings.folders.length) {
         const folder = settings.folders[idx]
         if(actionId == "delete") {
-          settings.folders.splice(idx, 1)
-          await MouApplication.setSettings(SETTINGS_COLLECTION_LOCAL, settings)
-          this.render()
+          Dialog.confirm({
+            title: (game as Game).i18n.localize("MOU.confirm_delete_source"),
+            content: (game as Game).i18n.format("MOU.confirm_delete_source_note", {folder: folder.name}),
+            yes: async function() {
+              settings.folders.splice(idx, 1)
+              await MouApplication.setSettings(SETTINGS_COLLECTION_LOCAL, settings)
+              parent.render()
+            },
+            no: () => {}
+          });
         } else if (actionId == "reindex") {
           MouLocalClient.indexAllLocalAssets(folder.path, folder.source)
         } else if (actionId == "edit") {
-          console.log("EDIT")
+          const newSourceUI = new LocalCollectionConfigNewSource(this._callbackAfterNewSource.bind(this), folder)
+          newSourceUI.render(true)
         }
       }
     }
   }
   
+  /**
+   * Show/hide advanced options
+   */
+  async _onToggleAvancedOptions(event: Event): Promise<void> {
+    event.preventDefault();
+    event.stopPropagation();
+    this.advanced = !this.advanced
+    this.render()
+  }
+
   async _onAction(event: Event): Promise<void> {
     event.preventDefault();
+    const parent = this
     if(event.currentTarget) {
-      const parent = this
       const button = $(event.currentTarget)
       if(button.data("id") == "add-folder") {
-        new FilePicker({
-          type: "folder",
-          // @ts-ignore
-          callback: async (path, picker) => {
-            const folder = {
-              path: path,
-              source: picker.activeSource
+        const newSourceUI = new LocalCollectionConfigNewSource(this._callbackAfterNewSource.bind(this))
+        newSourceUI.render(true)
+      } else if(button.data("id") == "index-folders") {
+        const settings = MouApplication.getSettings(SETTINGS_COLLECTION_LOCAL) as AnyDict
+        if(settings.folders) {
+          for(const folder of settings.folders) {
+            const source = (folder as LocalCollectionSource)
+            if(source.assets == 0 && source.path && source.source) {
+              await MouLocalClient.indexAllLocalAssets(source.path, source.source, this._callbackAfterIndexing.bind(this))
+              this.render()
             }
+          }
+        }
+      } else if(button.data("id") == "delete-index") {
+        Dialog.confirm({
+          title: (game as Game).i18n.localize("MOU.confirm_delete_index"),
+          content: (game as Game).i18n.localize("MOU.confirm_delete_index_note"),
+          yes: async function() {
+            await MouFileManager.storeJSON({}, MouLocalClient.INDEX_LOCAL_ASSETS, MOU_DEF_FOLDER)
             const settings = MouApplication.getSettings(SETTINGS_COLLECTION_LOCAL) as AnyDict
-            if(!settings.folders) {
-              settings.folders = [folder]
-            } else {
-              settings.folders.push(folder)
+            if(settings.folders) {
+              for(const folder of settings.folders) {
+                (folder as LocalCollectionSource).assets = 0
+              }
+              await MouApplication.setSettings(SETTINGS_COLLECTION_LOCAL, settings)
             }
-            await MouApplication.setSettings(SETTINGS_COLLECTION_LOCAL, settings)
+            ui.notifications?.info((game as Game).i18n.localize("MOU.index_deleted"))
             parent.render()
           },
-        // @ts-ignore
-        }).browse()
+          no: () => {}
+        });
       }
     }
   }
 
-  
+  /**
+   * When source modified or added, this method stores the settings and updates itself
+   */
+  _callbackAfterNewSource(source: LocalCollectionSource): void {
+    const parent = this
+    
+    if(!source) return;
+    const settings = MouApplication.getSettings(SETTINGS_COLLECTION_LOCAL) as AnyDict
+    if(source.id && settings.folders) {
+      for(let i=0; i<settings.folders.length; i++) {
+        if(settings.folders[i].id == source.id) {
+          settings.folders[i] = source
+        }
+      }
+    }
+    else {
+      source.id = foundry.utils.randomID(10)
+      if(!settings.folders) {
+        settings.folders = [source]
+      } else {
+        settings.folders.push(source)
+      }
+    }
+    MouApplication.setSettings(SETTINGS_COLLECTION_LOCAL, settings).then(() => {
+      parent.render()
+    })
+  }
+
+  /**
+   * This method is called after indexing completes
+   * Updates the number of assets
+   */
+  _callbackAfterIndexing(path: string, source: string, assetsCount: number): void {
+    const parent = this
+    const settings = MouApplication.getSettings(SETTINGS_COLLECTION_LOCAL) as AnyDict
+    if(settings.folders) {
+      const folder : LocalCollectionSource = settings.folders.find((f: LocalCollectionSource) => f.path == path && f.source == source)
+      if(folder) {
+        folder.assets = assetsCount
+        ui.notifications?.info((game as Game).i18n.format("MOU.index_completed", {path: path}))
+        this.advanced = false
+        MouApplication.setSettings(SETTINGS_COLLECTION_LOCAL, settings).then(() => parent.render())
+      }
+    }
+  }
 
   override async close(options?: Application.CloseOptions): Promise<void> {
     super.close(options)

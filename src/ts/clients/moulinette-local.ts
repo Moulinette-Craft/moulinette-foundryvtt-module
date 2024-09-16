@@ -3,12 +3,14 @@ import { MoulinetteProgress } from "../apps/progressbar";
 import { MEDIA_AUDIO, MEDIA_IMAGES, MEDIA_VIDEOS, MODULE_ID, MOU_DEF_FOLDER, SETTINGS_COLLECTION_LOCAL } from "../constants";
 import { AnyDict, MouModule } from "../types";
 import MouFileManager from "../utils/file-manager";
+import MouMediaUtils from "../utils/media-utils";
 
 export default class MouLocalClient {
 
   static APP_NAME = "MouLocalClient"
   static INDEX_COMPENDIUMS = "index-compendiums.json"
   static INDEX_LOCAL_ASSETS = "index-localassets.json"
+  static LOOP_PROCESS_ASSETS = 100 // number of assets to process before updating
 
   /**
    * Returns a thumbnail for this entry (from compendium)
@@ -50,7 +52,6 @@ export default class MouLocalClient {
     let idx = 0
     let processed = 0
     
-    console.log("HERE")
     const progressbar = (new MoulinetteProgress((game as Game).i18n.localize("MOU.index_compendiums")))
     progressbar.render(true)
 
@@ -191,8 +192,7 @@ export default class MouLocalClient {
   }
 
 
-  static async indexAllLocalAssets(path: string, source: string, reindex = false): Promise<void> {
-    console.log(reindex)
+  static async indexAllLocalAssets(path: string, source: string, callbackOnComplete?: Function): Promise<void> {
     const indexPath = `${MOU_DEF_FOLDER}/${MouLocalClient.INDEX_LOCAL_ASSETS}`
     let indexData = await MouFileManager.loadJSON(indexPath)
     const indexFolder = `${path}#${source}`
@@ -200,37 +200,65 @@ export default class MouLocalClient {
     const assets = indexData[indexFolder]
 
     const module = (game as Game).modules.get(MODULE_ID) as MouModule
-    const progressbar = (new MoulinetteProgress((game as Game).i18n.localize("MOU.index_folders")))
+    const progressbar = (new MoulinetteProgress((game as Game).i18n.localize("MOU.index_folders"), 5, (game as Game).i18n.format("MOU.index_folders_list", { path })))
     progressbar.render(true)
-    progressbar.setProgress(1, (game as Game).i18n.format("MOU.index_folders_list", { path }))
+    
     try {
       const files = await MouFileManager.scanFolder(source as FilePicker.SourceType, path, module.debug)
-      const images = files.filter(f => MEDIA_IMAGES.includes(f.split(".").pop()?.toLocaleLowerCase() as string))
-      const videos = files.filter(f => MEDIA_VIDEOS.includes(f.split(".").pop()?.toLocaleLowerCase() as string))
-      const audio = files.filter(f => MEDIA_AUDIO.includes(f.split(".").pop()?.toLocaleLowerCase() as string))
-
-      const totalCount = images.length + videos.length + audio.length
-      const imagesMessage = (game as Game).i18n.format("MOU.index_folders_images", { count: images.length })
-      let currentCount = 0
-      for (let i=0; i<images.length; i++) {
-        if(progressbar.wasCancelled()) break
-        //const img = await MouFileManager.loadImage(images[i])
-        assets.push({ path: images[i] })
-        progressbar.setProgress((currentCount+i)/totalCount, imagesMessage)
-      }
-      currentCount = images.length
-      for (let i=0; i<audio.length; i++) {
-        if(progressbar.wasCancelled()) break
-        assets.push({ path: audio[i] })
-        progressbar.setProgress((currentCount+i)/totalCount, imagesMessage)
-      }
+      
+      let i = 0;
+      let assetsCount = 0;
+      (function loop() {
+        try {
+          while(true) {
+            const ext = files[i].split(".").pop()?.toLocaleLowerCase() as string
+            if(MEDIA_IMAGES.includes(ext)) {
+              assets.push({ path: files[i] })
+              assetsCount++
+            } else if(MEDIA_VIDEOS.includes(ext)) {
+              assets.push({ path: files[i] })
+              assetsCount++
+            } else if (MEDIA_AUDIO.includes(ext)) {
+              assets.push({ path: files[i] })
+              assetsCount++
+            }
+            i++;
+            if (i >= files.length) break
+            if (i % MouLocalClient.LOOP_PROCESS_ASSETS == 0) {
+              const message = (game as Game).i18n.format("MOU.index_folders_assets", { 
+                index: MouMediaUtils.prettyNumber(i, true), 
+                count: MouMediaUtils.prettyNumber(files.length, true) 
+              })
+              progressbar.setProgress(100*i/files.length, message)
+              break
+            }
+          }
+          if (i < files.length) {
+            setTimeout(loop, 0);
+          } else {
+            // completed!
+            progressbar.setProgress(100)
+            MouFileManager.storeJSON(indexData, MouLocalClient.INDEX_LOCAL_ASSETS, MOU_DEF_FOLDER).then(() => {
+              if(callbackOnComplete) {
+                callbackOnComplete(path, source, assetsCount)
+              }
+            })
+          }
+        } catch(error: any) {
+          ui.notifications?.warn((game as Game).i18n.localize("MOU.error_folder_indexing_failed"))
+          MouApplication.logError(MouLocalClient.APP_NAME, "Folder indexing failed", error)
+          progressbar.close()
+          MouFileManager.storeJSON(indexData, MouLocalClient.INDEX_LOCAL_ASSETS, MOU_DEF_FOLDER).then(() => {
+            console.log("failed")
+          })
+        }
+      })();
+     
     } catch(error: any) {
       ui.notifications?.warn((game as Game).i18n.localize("MOU.error_folder_indexing_failed"))
       MouApplication.logError(MouLocalClient.APP_NAME, "Folder indexing failed", error)
+      progressbar.close()
     }
-    progressbar.setProgress(100)
-
-    await MouFileManager.storeJSON(indexData, MouLocalClient.INDEX_LOCAL_ASSETS, MOU_DEF_FOLDER);
   }
 
 

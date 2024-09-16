@@ -1,7 +1,23 @@
-#mou-local-config {
+#mou-local-config, #mou-local-config-source {
 
   .description {
     font-style: italic;
+  }
+
+  .config button  {
+    flex: 2;
+  }
+
+  .more {
+    text-align: right;
+    width: 100%;
+    margin-top: 5px;
+  }
+
+  .path {
+    color: green;
+    font-family: 'Courier New', Courier, monospace;
+    text-align: end;
   }
 
   .sources {
@@ -58,7 +74,7 @@
     }
 
     .cfg-source, .cfg-assets {
-      width: 50px;
+      width: 60px;
       text-align: center;
     }
 
