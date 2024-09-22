@@ -4,7 +4,7 @@ import MouFileManager from "../utils/file-manager";
 import MouMediaUtils from "../utils/media-utils";
 
 import { MouCollection, MouCollectionAction, MouCollectionActionHint, MouCollectionAsset, MouCollectionAssetMeta, MouCollectionAssetType, MouCollectionAssetTypeEnum, MouCollectionCreator, MouCollectionDragData, MouCollectionFilters, MouCollectionPack } from "../apps/collection";
-import { MOU_DEF_FOLDER, MOU_STORAGE_PUB, SETTINGS_COLLECTION_CLOUD, SETTINGS_SESSION_ID } from "../constants";
+import MouConfig, { MOU_STORAGE_PUB, SETTINGS_COLLECTION_CLOUD, SETTINGS_SESSION_ID } from "../constants";
 import { AnyDict } from "../types";
 import MouFoundryUtils from "../utils/foundry-utils";
 import CloudCollectionConfig from "./collection-cloud-config";
@@ -358,7 +358,7 @@ export default class MouCollectionCloud implements MouCollection {
       throw new Error("Invalid BaseURL?")
     }
     const folderPath = asset.base_url.substring(MouCloudClient.AZURE_BASEURL.length)
-    const targetPath = `${MOU_DEF_FOLDER}/assets/${folderPath}`
+    const targetPath = `${MouConfig.MOU_DEF_FOLDER}/assets/${folderPath}`
 
     // FVTT entity
     if(asset.filepath.endsWith(".json")) {

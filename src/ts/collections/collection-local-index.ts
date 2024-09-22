@@ -1,7 +1,7 @@
 import MouBrowser from "../apps/browser";
 import { MouCollection, MouCollectionAction, MouCollectionActionHint, MouCollectionAsset, MouCollectionAssetMeta, MouCollectionAssetType, MouCollectionAssetTypeEnum, MouCollectionCreator, MouCollectionDragData, MouCollectionFilters, MouCollectionPack } from "../apps/collection";
 import MouLocalClient from "../clients/moulinette-local";
-import { MEDIA_AUDIO, MEDIA_IMAGES } from "../constants";
+import MouConfig from "../constants";
 import { AnyDict } from "../types";
 import MouFoundryUtils from "../utils/foundry-utils";
 import MouMediaUtils from "../utils/media-utils";
@@ -34,16 +34,17 @@ class MouCollectionLocalAsset implements MouCollectionAsset {
   
   constructor(data: AnyDict, pack: AnyDict) {
     let assetType : MouCollectionAssetTypeEnum
-    if(MEDIA_IMAGES.includes(data.path.split(".").pop()?.toLocaleLowerCase() as string)) {
+    if(MouConfig.MEDIA_IMAGES.includes(data.path.split(".").pop()?.toLocaleLowerCase() as string)) {
       assetType = MouCollectionAssetTypeEnum.Image
-    } else if (MEDIA_AUDIO.includes(data.path.split(".").pop()?.toLocaleLowerCase() as string)) {
+    } else if (MouConfig.MEDIA_AUDIO.includes(data.path.split(".").pop()?.toLocaleLowerCase() as string)) {
       assetType = MouCollectionAssetTypeEnum.Audio
     } else {
       assetType = MouCollectionAssetTypeEnum.Undefined
     }
+    const thumbPath = `${MouConfig.MOU_DEF_THUMBS}/` + data.path.substring(0, data.path.lastIndexOf(".")) + ".webp"
     this.id = data.path;
     this.format = "small"
-    this.preview = data.path,
+    this.preview = pack.options && pack.options.thumbs ? thumbPath : data.path,
     this.creator = null
     this.creator_url = null
     this.pack = pack.name
@@ -93,10 +94,10 @@ export default class MouCollectionLocal implements MouCollection {
     const audio = [] as AnyDict[]
     for(const pack of Object.values(this.assets)) {
       for(const a of pack.assets) {
-        if(MEDIA_IMAGES.includes(a.path.split(".").pop()?.toLocaleLowerCase() as string)) {
+        if(MouConfig.MEDIA_IMAGES.includes(a.path.split(".").pop()?.toLocaleLowerCase() as string)) {
           images.push(a)
         }
-        else if(MEDIA_AUDIO.includes(a.path.split(".").pop()?.toLocaleLowerCase() as string)) {
+        else if(MouConfig.MEDIA_AUDIO.includes(a.path.split(".").pop()?.toLocaleLowerCase() as string)) {
           audio.push(a)
         }
       }
@@ -148,10 +149,10 @@ export default class MouCollectionLocal implements MouCollection {
           // filter by type
           switch(filters.type) {
             case MouCollectionAssetTypeEnum.Image:
-              if(!MEDIA_IMAGES.includes(a.path.split(".").pop()?.toLocaleLowerCase() as string)) return false
+              if(!MouConfig.MEDIA_IMAGES.includes(a.path.split(".").pop()?.toLocaleLowerCase() as string)) return false
               break
             case MouCollectionAssetTypeEnum.Audio:
-              if(!MEDIA_AUDIO.includes(a.path.split(".").pop()?.toLocaleLowerCase() as string)) return false
+              if(!MouConfig.MEDIA_AUDIO.includes(a.path.split(".").pop()?.toLocaleLowerCase() as string)) return false
               break
           }
           // filter by folder

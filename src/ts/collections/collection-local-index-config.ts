@@ -1,6 +1,6 @@
 import MouApplication from "../apps/application";
 import MouLocalClient from "../clients/moulinette-local";
-import { MODULE_ID, MOU_DEF_FOLDER, SETTINGS_COLLECTION_LOCAL } from "../constants";
+import MouConfig, { MODULE_ID, SETTINGS_COLLECTION_LOCAL } from "../constants";
 import { AnyDict } from "../types";
 import MouFileManager from "../utils/file-manager";
 import LocalCollectionConfigNewSource from "./collection-local-index-config-source";
@@ -92,7 +92,7 @@ export default class LocalCollectionConfig extends MouApplication {
             no: () => {}
           });
         } else if (actionId == "reindex") {
-          MouLocalClient.indexAllLocalAssets(folder.path, folder.source)
+          MouLocalClient.indexAllLocalAssets(folder.path, folder.source, undefined, folder.options)
         } else if (actionId == "edit") {
           const newSourceUI = new LocalCollectionConfigNewSource(this._callbackAfterNewSource.bind(this), folder)
           newSourceUI.render(true)
@@ -125,7 +125,8 @@ export default class LocalCollectionConfig extends MouApplication {
           for(const folder of settings.folders) {
             const source = (folder as LocalCollectionSource)
             if(source.assets == 0 && source.path && source.source) {
-              await MouLocalClient.indexAllLocalAssets(source.path, source.source, this._callbackAfterIndexing.bind(this))
+              console.log(source)
+              await MouLocalClient.indexAllLocalAssets(source.path, source.source, this._callbackAfterIndexing.bind(this), source.options)
               this.render()
             }
           }
@@ -135,7 +136,7 @@ export default class LocalCollectionConfig extends MouApplication {
           title: (game as Game).i18n.localize("MOU.confirm_delete_index"),
           content: (game as Game).i18n.localize("MOU.confirm_delete_index_note"),
           yes: async function() {
-            await MouFileManager.storeJSON({}, MouLocalClient.INDEX_LOCAL_ASSETS, MOU_DEF_FOLDER)
+            await MouFileManager.storeJSON({}, MouLocalClient.INDEX_LOCAL_ASSETS, MouConfig.MOU_DEF_FOLDER)
             const settings = MouApplication.getSettings(SETTINGS_COLLECTION_LOCAL) as AnyDict
             if(settings.folders) {
               for(const folder of settings.folders) {

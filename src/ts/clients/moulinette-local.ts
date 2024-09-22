@@ -1,6 +1,6 @@
 import MouApplication from "../apps/application";
 import { MoulinetteProgress } from "../apps/progressbar";
-import { MEDIA_AUDIO, MEDIA_IMAGES, MEDIA_VIDEOS, MODULE_ID, MOU_DEF_FOLDER, SETTINGS_COLLECTION_LOCAL } from "../constants";
+import MouConfig, { MODULE_ID, SETTINGS_COLLECTION_LOCAL } from "../constants";
 import { AnyDict, MouModule } from "../types";
 import MouFileManager from "../utils/file-manager";
 import MouMediaUtils from "../utils/media-utils";
@@ -42,7 +42,7 @@ export default class MouLocalClient {
     MouApplication.logInfo(MouLocalClient.APP_NAME, "Indexing all active compendiums in world...")
     const _game = game as Game
 
-    const indexPath = `${MOU_DEF_FOLDER}/${MouLocalClient.INDEX_COMPENDIUMS}`
+    const indexPath = `${MouConfig.MOU_DEF_FOLDER}/${MouLocalClient.INDEX_COMPENDIUMS}`
     let indexData = await MouFileManager.loadJSON(indexPath)
     
     // read all compendiums 
@@ -180,7 +180,7 @@ export default class MouLocalClient {
 
     // store index if updated
     if(updated) {
-      await MouFileManager.storeJSON(indexData, MouLocalClient.INDEX_COMPENDIUMS, MOU_DEF_FOLDER);
+      await MouFileManager.storeJSON(indexData, MouLocalClient.INDEX_COMPENDIUMS, MouConfig.MOU_DEF_FOLDER);
     }
 
     console.groupEnd()
@@ -192,8 +192,8 @@ export default class MouLocalClient {
   }
 
 
-  static async indexAllLocalAssets(path: string, source: string, callbackOnComplete?: Function): Promise<void> {
-    const indexPath = `${MOU_DEF_FOLDER}/${MouLocalClient.INDEX_LOCAL_ASSETS}`
+  static async indexAllLocalAssets(path: string, source: string, callbackOnComplete?: Function, options?: { metadata: boolean, thumbs: boolean }): Promise<void> {
+    const indexPath = `${MouConfig.MOU_DEF_FOLDER}/${MouLocalClient.INDEX_LOCAL_ASSETS}`
     let indexData = await MouFileManager.loadJSON(indexPath)
     const indexFolder = `${path}#${source}`
     if(!(indexFolder in indexData)) indexData[indexFolder] = []
@@ -208,17 +208,26 @@ export default class MouLocalClient {
       
       let i = 0;
       let assetsCount = 0;
-      (function loop() {
+      (async function loop() {
         try {
           while(true) {
-            const ext = files[i].split(".").pop()?.toLocaleLowerCase() as string
-            if(MEDIA_IMAGES.includes(ext)) {
+            const filepath = decodeURI(files[i])
+            const ext = filepath.split(".").pop()?.toLocaleLowerCase() as string
+            if(MouConfig.MEDIA_IMAGES.includes(ext)) {
+              assets.push({ path: filepath })
+              assetsCount++
+              if(options && options.thumbs) {
+                const paths = await MouFileManager.getMediaPaths(filepath, source)
+                const thumbFilename = paths.filename.substring(0, paths.filename.lastIndexOf(".")) + ".webp"
+                const generated = await MouFileManager.generateThumbnail(filepath, thumbFilename, `${MouConfig.MOU_DEF_THUMBS}/${paths.folder}`)
+                if(generated && module.debug) {
+                  MouApplication.logDebug(MouLocalClient.APP_NAME, `Thumbnail generated for ${filepath}`)
+                }
+              }
+            } else if(MouConfig.MEDIA_VIDEOS.includes(ext)) {
               assets.push({ path: files[i] })
               assetsCount++
-            } else if(MEDIA_VIDEOS.includes(ext)) {
-              assets.push({ path: files[i] })
-              assetsCount++
-            } else if (MEDIA_AUDIO.includes(ext)) {
+            } else if (MouConfig.MEDIA_AUDIO.includes(ext)) {
               assets.push({ path: files[i] })
               assetsCount++
             }
@@ -234,11 +243,11 @@ export default class MouLocalClient {
             }
           }
           if (i < files.length) {
-            setTimeout(loop, 0);
+            setTimeout(await loop, 0);
           } else {
             // completed!
             progressbar.setProgress(100)
-            MouFileManager.storeJSON(indexData, MouLocalClient.INDEX_LOCAL_ASSETS, MOU_DEF_FOLDER).then(() => {
+            MouFileManager.storeJSON(indexData, MouLocalClient.INDEX_LOCAL_ASSETS, MouConfig.MOU_DEF_FOLDER).then(() => {
               if(callbackOnComplete) {
                 callbackOnComplete(path, source, assetsCount)
               }
@@ -248,7 +257,7 @@ export default class MouLocalClient {
           ui.notifications?.warn((game as Game).i18n.localize("MOU.error_folder_indexing_failed"))
           MouApplication.logError(MouLocalClient.APP_NAME, "Folder indexing failed", error)
           progressbar.close()
-          MouFileManager.storeJSON(indexData, MouLocalClient.INDEX_LOCAL_ASSETS, MOU_DEF_FOLDER).then(() => {
+          MouFileManager.storeJSON(indexData, MouLocalClient.INDEX_LOCAL_ASSETS, MouConfig.MOU_DEF_FOLDER).then(() => {
             console.log("failed")
           })
         }
@@ -270,14 +279,15 @@ export default class MouLocalClient {
   static async getAllAssets(): Promise<AnyDict> {
     const assets = {} as AnyDict
     const settings = MouApplication.getSettings(SETTINGS_COLLECTION_LOCAL) as AnyDict
-    const indexPath = `${MOU_DEF_FOLDER}/${MouLocalClient.INDEX_LOCAL_ASSETS}`
+    const indexPath = `${MouConfig.MOU_DEF_FOLDER}/${MouLocalClient.INDEX_LOCAL_ASSETS}`
     let indexData = await MouFileManager.loadJSON(indexPath)
     for(const folder of settings.folders) {
       const folderIdx = `${folder.path}#${folder.source}`
       if(folderIdx in indexData) {
         assets[folderIdx] = {
           name: folder.name,
-          assets: indexData[folderIdx]
+          assets: indexData[folderIdx],
+          options: folder.options
         } 
       }
     }

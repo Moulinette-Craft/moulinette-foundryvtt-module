@@ -2,6 +2,7 @@ import MouApplication from "../apps/application";
 import { SETTINGS_S3_BUCKET } from "../constants";
 import { AnyDict } from "../types";
 
+declare var ForgeAPI: any;
 declare var ForgeVTT: any;
 declare var ForgeVTT_FilePicker: any;
 
@@ -9,6 +10,12 @@ export default class MouFileManager {
 
   static APP_NAME = "MouFileManager"
   static RETRIES = 2
+
+  /** Keeps S3 BaseURL in cache to avoid multiple API calls */
+  private static _cachedS3BaseURL = null as string | null;
+  
+  /** Keeps files from last browsed folder in cache. Indexing processes 1 folder at a time */
+  private static _cachedLastFolderFiles = null as { folder: string, files: string[]} | null;
 
   /**
    * Detects which source to use (depending if server si Forge or local)
@@ -37,6 +44,52 @@ export default class MouFileManager {
       options.bucket = bucket
     }
     return options;
+  }
+
+  /**
+   * Returns the base URL of FVTT hosting server
+   */
+  static async getBaseURL(source? : string): Promise<string | null> {
+    const bucket = MouApplication.getSettings(SETTINGS_S3_BUCKET) as string
+
+    // Support for S3
+    if((!source || source == "s3") && bucket && bucket.length > 0 && bucket != "null") {
+      // check if already in cache
+      if(MouFileManager._cachedS3BaseURL) {
+        return MouFileManager._cachedS3BaseURL
+      }
+
+      let root = await FilePicker.browse(MouFileManager.getSource(), "", MouFileManager.getOptions());
+      let baseURL = null
+      
+      // Workaround - Moulinette requires 1 file to fetch base URL of S3 storage
+      if(root.files.length == 0) {
+        await FilePicker.upload("s3", "", new File(["Do NOT delete. Required by Moulinette"], "mtte.txt"), MouFileManager.getOptions())
+        root = await FilePicker.browse(MouFileManager.getSource(), "", MouFileManager.getOptions());
+      }
+      if(root.files.length > 0) {
+        const file = root.files[0]
+        baseURL = file.substring(0, file.lastIndexOf("/") + 1)
+        // keep in cache (avoid API call to S3)
+        MouFileManager._cachedS3BaseURL = baseURL
+      }
+      return baseURL
+    } 
+
+    // Support for The Forge
+    // #40 : Non-host GMs can't use Moulinette for games hosted on The Forge
+    // https://github.com/SvenWerlen/moulinette-core/issues/40
+    if (typeof ForgeVTT !== "undefined" && ForgeVTT.usingTheForge) {
+      if (!source || source == "forgevtt")  {
+        const theForgeAssetsLibraryUserPath = ForgeVTT.ASSETS_LIBRARY_URL_PREFIX + (await ForgeAPI.getUserId() || "user");
+        return theForgeAssetsLibraryUserPath ? theForgeAssetsLibraryUserPath + "/" : "";
+      }
+      else if(source == "forge-bazaar") {
+        return ForgeVTT.ASSETS_LIBRARY_URL_PREFIX + "bazaar/assets/"
+      }
+    }
+
+    return null;
   }
 
   /**
@@ -118,6 +171,28 @@ export default class MouFileManager {
       return res.text()
     }
     return ""
+  }
+
+  /**
+   * Returns true if file already exists
+   * Keeps last browsed folder in cache (optimization)
+   */
+  static async fileExists(folder: string, filename: string): Promise<boolean> {
+    let files = [] as string[]
+    const path = `${folder}/${filename}`
+    if(MouFileManager._cachedLastFolderFiles && MouFileManager._cachedLastFolderFiles.folder == folder) {
+      files = MouFileManager._cachedLastFolderFiles.files
+    } else {
+      try {
+        const browse = await FilePicker.browse(MouFileManager.getSource(), folder);
+        files = browse.files.map(f => decodeURIComponent(f))  
+      } catch(e) { console.error("HERE", e) }
+      MouFileManager._cachedLastFolderFiles = {
+        folder: folder,
+        files: files
+      }
+    }
+    return files.includes(path)
   }
 
   /**
@@ -278,5 +353,49 @@ export default class MouFileManager {
     // only keep path up to folder (don't split path)
     const idx = common.lastIndexOf("/")
     return idx > 0 ? common.substring(0, idx) : ""
+  }
+
+  /**
+   * Returns the folder path and media filename
+   * For S3, The Forge and host servers, removes the base URL, keeping URI only
+   */
+  static async getMediaPaths(path: string, source?: string) : Promise<{ filename: string, folder: string }> {
+    let mediaPath = path.split("?")[0]
+    const baseURL = await MouFileManager.getBaseURL(source)
+    // remove host full URL from image path (for S3)
+    if(baseURL && mediaPath.startsWith(baseURL)) {
+      mediaPath = mediaPath.substring(baseURL.length)
+    }
+    const lastSlash = mediaPath.lastIndexOf("/")
+    return {
+      filename: lastSlash > 0 ? mediaPath.substring(lastSlash +1) : mediaPath,
+      folder: lastSlash > 0 ? mediaPath.substring(0, lastSlash) : ""
+    }
+  }
+
+  /**
+   * 
+   * @param url generates a thumbnail 
+   */
+  static async generateThumbnail(url: string, filename: string, folder: string, options?: { width: number, height: number }): Promise<boolean> {
+    // check if thumbnail already exists
+    if(await MouFileManager.fileExists(folder, filename)) {
+      return false;
+    }
+    const thumb = await ImageHelper.createThumbnail(url, { width: options ? options.width : 200, height: options ? options.width : 200, center: true, format: "image/webp"})
+    // convert to file
+    const res = await fetch(thumb.thumb);
+    const buf = await res.arrayBuffer();
+    const thumbFile = new File([buf], filename, { type: "image/webp" })
+    await MouFileManager.uploadFile(thumbFile, filename, folder, true)
+    
+    // clear cache to avoid (or mitigate) memory leaks
+    // @ts-ignore
+    for(const key of PIXI.Assets.cache._cacheMap.keys()) {
+      // @ts-ignore
+      await PIXI.Assets.unload(key)
+    }
+
+    return true
   }
 }
