@@ -200,7 +200,7 @@ export default class MouLocalClient {
     const assets = indexData[indexFolder]
 
     const module = (game as Game).modules.get(MODULE_ID) as MouModule
-    const progressbar = (new MoulinetteProgress((game as Game).i18n.localize("MOU.index_folders"), 5, (game as Game).i18n.format("MOU.index_folders_list", { path })))
+    const progressbar = (new MoulinetteProgress((game as Game).i18n.localize("MOU.index_folders"), 1, (game as Game).i18n.format("MOU.index_folders_list", { path })))
     progressbar.render(true)
     
     try {

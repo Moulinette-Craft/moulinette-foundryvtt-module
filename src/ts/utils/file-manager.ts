@@ -374,8 +374,8 @@ export default class MouFileManager {
   }
 
   /**
-   * 
-   * @param url generates a thumbnail 
+   * Generates a thumbnail based on the given URL, and stores it as filename in specified folder
+   * Returns false if the file already existed
    */
   static async generateThumbnail(url: string, filename: string, folder: string, options?: { width: number, height: number }): Promise<boolean> {
     // check if thumbnail already exists
