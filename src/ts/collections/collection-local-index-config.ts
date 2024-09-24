@@ -43,7 +43,7 @@ export default class LocalCollectionConfig extends MouApplication {
       id: "mou-local-config",
       classes: ["mou"],
       template: `modules/${MODULE_ID}/templates/config-local-collection.hbs`,
-      width: 600,
+      width: 800,
       height: "auto"
     }) as ApplicationOptions;
   }
@@ -92,7 +92,7 @@ export default class LocalCollectionConfig extends MouApplication {
             no: () => {}
           });
         } else if (actionId == "reindex") {
-          MouLocalClient.indexAllLocalAssets(folder.path, folder.source, undefined, folder.options)
+          MouLocalClient.indexAllLocalAssets(folder.path, folder.source, this._callbackAfterIndexing.bind(parent), folder.options)
         } else if (actionId == "edit") {
           const newSourceUI = new LocalCollectionConfigNewSource(this._callbackAfterNewSource.bind(this), folder)
           newSourceUI.render(true)

@@ -197,7 +197,8 @@ export default class MouLocalClient {
     let indexData = await MouFileManager.loadJSON(indexPath)
     const indexFolder = `${path}#${source}`
     if(!(indexFolder in indexData)) indexData[indexFolder] = []
-    const assets = indexData[indexFolder]
+    const oldAssets = indexData[indexFolder]
+    const assets = indexData[indexFolder] = [] as AnyDict
 
     const module = (game as Game).modules.get(MODULE_ID) as MouModule
     const progressbar = (new MoulinetteProgress((game as Game).i18n.localize("MOU.index_folders"), 1, (game as Game).i18n.format("MOU.index_folders_list", { path })))
@@ -211,19 +212,36 @@ export default class MouLocalClient {
       (async function loop() {
         try {
           while(true) {
-            const filepath = decodeURI(files[i])
-            const ext = filepath.split(".").pop()?.toLocaleLowerCase() as string
+            const fileURL = decodeURI(files[i])
+            const ext = fileURL.split(".").pop()?.toLocaleLowerCase() as string
             if(MouConfig.MEDIA_IMAGES.includes(ext)) {
-              assets.push({ path: filepath })
+              const fileData = { path: fileURL } as AnyDict
               assetsCount++
+              // generating image thumbnails
               if(options && options.thumbs) {
-                const paths = await MouFileManager.getMediaPaths(filepath, source)
+                const paths = await MouFileManager.getMediaPaths(fileURL, source)
                 const thumbFilename = paths.filename.substring(0, paths.filename.lastIndexOf(".")) + ".webp"
-                const generated = await MouFileManager.generateThumbnail(filepath, thumbFilename, `${MouConfig.MOU_DEF_THUMBS}/${paths.folder}`)
+                const generated = await MouFileManager.generateThumbnail(fileURL, thumbFilename, `${MouConfig.MOU_DEF_THUMBS}/${paths.folder}`)
                 if(generated && module.debug) {
-                  MouApplication.logDebug(MouLocalClient.APP_NAME, `Thumbnail generated for ${filepath}`)
+                  MouApplication.logDebug(MouLocalClient.APP_NAME, `Thumbnail generated for ${fileURL}`)
                 }
               }
+              // retrieving metadata for images (ie width & height)
+              if(options && options?.metadata) {
+                const existing = oldAssets.find((a: AnyDict) => a.path = fileURL)
+                if(existing && existing.width && existing.height) {
+                  fileData.width = existing.width
+                  fileData.height = existing.height
+                }
+                else {
+                  const meta = await MouMediaUtils.getMetadataFromImage(fileURL)
+                  if(meta) {
+                    fileData.width = meta.width
+                    fileData.height = meta.height
+                  }
+                }
+              }
+              assets.push(fileData)
             } else if(MouConfig.MEDIA_VIDEOS.includes(ext)) {
               assets.push({ path: files[i] })
               assetsCount++

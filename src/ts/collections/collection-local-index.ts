@@ -35,7 +35,11 @@ class MouCollectionLocalAsset implements MouCollectionAsset {
   constructor(data: AnyDict, pack: AnyDict) {
     let assetType : MouCollectionAssetTypeEnum
     if(MouConfig.MEDIA_IMAGES.includes(data.path.split(".").pop()?.toLocaleLowerCase() as string)) {
-      assetType = MouCollectionAssetTypeEnum.Image
+      if(data.width && data.height && data.width >= MouConfig.MEDIA_MAP_THRESHOLD && data.height >= MouConfig.MEDIA_MAP_THRESHOLD) {
+        assetType = MouCollectionAssetTypeEnum.Map
+      } else {
+        assetType = MouCollectionAssetTypeEnum.Image
+      }
     } else if (MouConfig.MEDIA_AUDIO.includes(data.path.split(".").pop()?.toLocaleLowerCase() as string)) {
       assetType = MouCollectionAssetTypeEnum.Audio
     } else {
@@ -43,7 +47,7 @@ class MouCollectionLocalAsset implements MouCollectionAsset {
     }
     const thumbPath = `${MouConfig.MOU_DEF_THUMBS}/` + data.path.substring(0, data.path.lastIndexOf(".")) + ".webp"
     this.id = data.path;
-    this.format = "small"
+    this.format = assetType == MouCollectionAssetTypeEnum.Map ? "large" : "small"
     this.preview = pack.options && pack.options.thumbs ? thumbPath : data.path,
     this.creator = null
     this.creator_url = null
@@ -52,7 +56,7 @@ class MouCollectionLocalAsset implements MouCollectionAsset {
     this.name = MouMediaUtils.prettyMediaName(data.path)
     this.type = assetType
     this.meta = []
-    this.draggable = true
+    this.draggable = assetType != MouCollectionAssetTypeEnum.Map
     this.icon = MouMediaUtils.getIcon(assetType)
     this.icons = []
     this.flags = {}
@@ -77,7 +81,16 @@ export default class MouCollectionLocal implements MouCollection {
   }
 
   async initialize(): Promise<void> {
-    this.assets = await MouLocalClient.getAllAssets()
+    const assets = await MouLocalClient.getAllAssets()
+    for(const packId of Object.keys(assets)) {
+      const results = [] as MouCollectionAsset[]
+      // replace raw assets by MouCollectionAsset
+      for(const a of assets[packId].assets) {
+        results.push(new MouCollectionLocalAsset(a, assets[packId]))
+      }
+      assets[packId].assets = results
+    }
+    this.assets = assets
   }
 
   getName(): string {
@@ -90,31 +103,17 @@ export default class MouCollectionLocal implements MouCollection {
   async getTypes(): Promise<MouCollectionAssetType[]> {
     const results = [] as MouCollectionAssetType[]
     
-    const images = []  as AnyDict[]
-    const audio = [] as AnyDict[]
+    let images = 0
+    let maps = 0
+    let audio = 0
     for(const pack of Object.values(this.assets)) {
-      for(const a of pack.assets) {
-        if(MouConfig.MEDIA_IMAGES.includes(a.path.split(".").pop()?.toLocaleLowerCase() as string)) {
-          images.push(a)
-        }
-        else if(MouConfig.MEDIA_AUDIO.includes(a.path.split(".").pop()?.toLocaleLowerCase() as string)) {
-          audio.push(a)
-        }
-      }
+      images += pack.assets.filter((a: MouCollectionLocalAsset) => a.type == MouCollectionAssetTypeEnum.Image).length
+      maps += pack.assets.filter((a: MouCollectionLocalAsset) => a.type == MouCollectionAssetTypeEnum.Map).length
+      audio += pack.assets.filter((a: MouCollectionLocalAsset) => a.type == MouCollectionAssetTypeEnum.Audio).length
     }
-    //const videos = this.assets.filter(a => MEDIA_VIDEOS.includes(a.path.split(".").pop()?.toLocaleLowerCase() as string))
-    if(images.length > 0) {
-      results.push({
-        id: MouCollectionAssetTypeEnum.Image,
-        assetsCount: images.length
-      })
-    }
-    if(audio.length > 0) {
-      results.push({
-        id: MouCollectionAssetTypeEnum.Audio,
-        assetsCount: audio.length
-      })
-    }
+    results.push({ id: MouCollectionAssetTypeEnum.Image, assetsCount: images })
+    results.push({ id: MouCollectionAssetTypeEnum.Map, assetsCount: maps })
+    results.push({ id: MouCollectionAssetTypeEnum.Audio, assetsCount: audio })
     return results
   }
 
@@ -125,14 +124,14 @@ export default class MouCollectionLocal implements MouCollection {
     return [] as MouCollectionCreator[]
   }
 
-  async getPacks(): Promise<MouCollectionPack[]> {
+  async getPacks(type: MouCollectionAssetTypeEnum): Promise<MouCollectionPack[]> {
     const packs = [] as MouCollectionPack[]
     for(const packId of Object.keys(this.assets)) {
       const pack = this.assets[packId]
       packs.push({
         id: packId,
         name: pack.name,
-        assetsCount: pack.assets.length
+        assetsCount: pack.assets.filter((a: MouCollectionLocalAsset) => a.type == type).length
       })
     }
     return packs;
@@ -145,37 +144,29 @@ export default class MouCollectionLocal implements MouCollection {
     const results = [] as MouCollectionAsset[]
     for(const packId of Object.keys(this.assets)) {
       if(!filters.pack || filters.pack == packId) {
-        const assets = this.assets[packId].assets.filter((a : AnyDict) => {
+        const assets = this.assets[packId].assets.filter((a : MouCollectionLocalAsset) => {
           // filter by type
-          switch(filters.type) {
-            case MouCollectionAssetTypeEnum.Image:
-              if(!MouConfig.MEDIA_IMAGES.includes(a.path.split(".").pop()?.toLocaleLowerCase() as string)) return false
-              break
-            case MouCollectionAssetTypeEnum.Audio:
-              if(!MouConfig.MEDIA_AUDIO.includes(a.path.split(".").pop()?.toLocaleLowerCase() as string)) return false
-              break
-          }
+          if(filters.type != a.type) return false
           // filter by folder
-          if(filters.folder && filters.folder.length > 0 && !a.path.startsWith(filters.folder)) return false
+          if(filters.folder && filters.folder.length > 0 && !a.id.startsWith(filters.folder)) return false
           // filter by search
           if(filters.searchTerms) {
             for(const term of filters.searchTerms.toLocaleLowerCase().split(" ")) {
-              if(a.path.toLocaleLowerCase().indexOf(term) < 0) {
+              if(a.id.toLocaleLowerCase().indexOf(term) < 0) {
                 return false
               }
             }
           }
           return true
         })
-        for(const a of assets) {
-          results.push(new MouCollectionLocalAsset(a, this.assets[packId]))
-        }
+        results.push(...assets)
       }
     }
     return results
   }
 
   async getFolders(filters: MouCollectionFilters): Promise<string[]> {
+    if(!filters.pack) return []
     const folders = new Set<string>()
     // generate list of folders
     const results = await this.getAllResults({ type: filters.type, pack: filters.pack })

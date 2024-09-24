@@ -6,6 +6,7 @@
       <h3 class="cfg-name">{{localize "MOU.name"}}</h3>
       <div class="cfg-path">{{localize "MOU.path"}}</div>
       <div class="cfg-source">{{localize "MOU.source"}}</div>
+      <div class="cfg-source">{{localize "MOU.options"}}</div>
       <div class="cfg-assets">{{localize "MOU.assets_count"}}</div>
       <div class="cfg-actions"></div>
     </div>
@@ -23,6 +24,10 @@
         <h3 class="cfg-name">{{f.name}}</h3>
         <div class="cfg-path">{{f.path}}/</div>
         <div class="cfg-source">{{f.source}}</div>
+        <div class="cfg-source">
+          {{#if f.options.thumbs}}<i class="fa-regular fa-image" title="{{localize "MOU.source_generate_thumbnails"}}"></i>{{/if}}
+          {{#if f.options.metadata}}<i class="fa-regular fa-file-circle-info" title="{{localize "MOU.source_generate_metadata"}}"></i>{{/if}}
+        </div>
         <div class="cfg-assets">{{prettyNumber f.assets true}}</div>
         <div class="cfg-actions">
           <a data-id="reindex"><i class="fa-solid fa-arrow-rotate-right"></i></a>

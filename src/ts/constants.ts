@@ -28,4 +28,7 @@ export default class MouConfig {
   static MEDIA_IMAGES = ["apng", "avif", "bmp", "gif", "jpeg", "jpg", "png", "svg", "tiff", "webp"]
   static MEDIA_VIDEOS = ["m4v", "mp4", "ogv", "webm"]
   static MEDIA_AUDIO = ["aac", "flac", "m4a", "mid", "mp3", "ogg", "opus", "wav", "webm"]
+
+  // starting from which dimension, image is considered a map
+  static MEDIA_MAP_THRESHOLD = 1000
 }
