@@ -148,6 +148,9 @@ export default class MouBrowser extends MouApplication {
     if(this.page < 0 || !this.collection) return
     const assets = await this.collection.getAssets(this.filters, this.page)
     if(assets.length == 0) {
+      if(this.page == 0) {
+        this.html?.find(".content").append(await renderTemplate(`modules/${MODULE_ID}/templates/browser-nomatch.hbs`, {}))
+      }
       this.page = -1
       this.logInfo("No more content!")
       return

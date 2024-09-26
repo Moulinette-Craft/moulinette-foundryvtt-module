@@ -187,6 +187,11 @@
       flex-direction: row;
       overflow-x: hidden;
       
+      .noresult {
+        padding: 20px;
+        width: 100%;
+      }
+
       .block {
         position: relative;
         display: flex;

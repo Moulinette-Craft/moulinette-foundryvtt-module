@@ -91,8 +91,10 @@ export default class LocalCollectionConfig extends MouApplication {
             },
             no: () => {}
           });
-        } else if (actionId == "reindex") {
+        } else if (actionId == "scan") {
           MouLocalClient.indexAllLocalAssets(folder.path, folder.source, this._callbackAfterIndexing.bind(parent), folder.options)
+        } else if (actionId == "reindex") {
+          MouLocalClient.indexAllLocalAssets(folder.path, folder.source, this._callbackAfterIndexing.bind(parent), folder.options, true)
         } else if (actionId == "edit") {
           const newSourceUI = new LocalCollectionConfigNewSource(this._callbackAfterNewSource.bind(this), folder)
           newSourceUI.render(true)

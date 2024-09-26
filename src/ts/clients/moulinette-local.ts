@@ -192,12 +192,12 @@ export default class MouLocalClient {
   }
 
 
-  static async indexAllLocalAssets(path: string, source: string, callbackOnComplete?: Function, options?: { metadata: boolean, thumbs: boolean }): Promise<void> {
+  static async indexAllLocalAssets(path: string, source: string, callbackOnComplete?: Function, options?: { metadata: boolean, thumbs: boolean }, force: boolean = false): Promise<void> {
     const indexPath = `${MouConfig.MOU_DEF_FOLDER}/${MouLocalClient.INDEX_LOCAL_ASSETS}`
     let indexData = await MouFileManager.loadJSON(indexPath)
     const indexFolder = `${path}#${source}`
     if(!(indexFolder in indexData)) indexData[indexFolder] = []
-    const oldAssets = indexData[indexFolder]
+    const oldAssets = force ? [] : indexData[indexFolder]
     const assets = indexData[indexFolder] = [] as AnyDict
 
     const module = (game as Game).modules.get(MODULE_ID) as MouModule
@@ -214,8 +214,8 @@ export default class MouLocalClient {
           while(true) {
             const fileURL = decodeURI(files[i])
             const ext = fileURL.split(".").pop()?.toLocaleLowerCase() as string
+            const fileData = { path: fileURL } as AnyDict
             if(MouConfig.MEDIA_IMAGES.includes(ext)) {
-              const fileData = { path: fileURL } as AnyDict
               assetsCount++
               // generating image thumbnails
               if(options && options.thumbs) {
@@ -243,11 +243,24 @@ export default class MouLocalClient {
               }
               assets.push(fileData)
             } else if(MouConfig.MEDIA_VIDEOS.includes(ext)) {
-              assets.push({ path: files[i] })
+              assets.push(fileData)
               assetsCount++
             } else if (MouConfig.MEDIA_AUDIO.includes(ext)) {
-              assets.push({ path: files[i] })
               assetsCount++
+
+              // retrieving metadata for audio (ie sound duration)
+              if(options && options?.metadata) {
+                const existing = oldAssets.find((a: AnyDict) => a.path = fileURL)
+                if(existing && existing.duration) {
+                  fileData.duration = existing.duration
+                } else {
+                  const meta = await MouMediaUtils.getMetadataFromAudio(fileURL)
+                  if(meta) {
+                    fileData.duration = meta.duration
+                  }
+                }
+                assets.push(fileData)
+              }
             }
             i++;
             if (i >= files.length) break

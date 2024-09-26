@@ -8,7 +8,7 @@
       <div class="cfg-source">{{localize "MOU.source"}}</div>
       <div class="cfg-source">{{localize "MOU.options"}}</div>
       <div class="cfg-assets">{{localize "MOU.assets_count"}}</div>
-      <div class="cfg-actions"></div>
+      <div class="cfg-actions">{{localize "MOU.actions"}}</div>
     </div>
     {{#unless folders}}
     <div class="cfg-message">
@@ -30,9 +30,10 @@
         </div>
         <div class="cfg-assets">{{prettyNumber f.assets true}}</div>
         <div class="cfg-actions">
-          <a data-id="reindex"><i class="fa-solid fa-arrow-rotate-right"></i></a>
-          <a data-id="edit"><i class="fa-solid fa-pen-to-square"></i></a>
-          <a data-id="delete"><i class="fa-solid fa-trash"></i></a>
+          <a data-id="scan" title="{{localize "MOU.scan_hint"}}"><i class="fa-regular fa-folder-magnifying-glass fa-lg"></i></a>
+          <a data-id="reindex" title="{{localize "MOU.reindex_hint"}}"><i class="fa-solid fa-arrow-rotate-right"></i></a>
+          <a data-id="edit" title="{{localize "MOU.edit_hint"}}"><i class="fa-solid fa-pen-to-square"></i></a>
+          <a data-id="delete" title="{{localize "MOU.delete_hint"}}"><i class="fa-solid fa-trash"></i></a>
         </div>
       </div>
       {{/each}}

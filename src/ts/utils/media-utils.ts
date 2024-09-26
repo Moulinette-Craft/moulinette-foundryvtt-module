@@ -58,15 +58,15 @@ export default class MouMediaUtils {
   /** Generates a human readable duration **/
   static prettyDuration(seconds: number) {
     seconds = Math.round(seconds)
-    let minutes = Math.floor(seconds / 60);
-    let hours = Math.floor(seconds / 3600);
-    seconds = seconds % 60;
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = seconds % 60;
     
     // Format MM:SS for duration less than 1 hour
     if (hours === 0) {
-      return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+      return `${minutes}:${seconds < 10 ? '0' : ''}${remainingSeconds}`;
     } else {
-      return `${hours}:${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+      return `${hours}:${minutes < 10 ? '0' : ''}${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
     }
   }
 
@@ -112,4 +112,18 @@ export default class MouMediaUtils {
       img.src = url;
     });
   } 
+
+  /**
+   * Returns metadata for provided audio (as URL)
+   */
+  static async getMetadataFromAudio(url: string): Promise<{ duration: number }> {
+    return new Promise((resolve, reject) => {
+      const audio = new Audio();
+      audio.onloadedmetadata = () => {
+        resolve({ duration: Math.round(audio.duration) }); // Durée en secondes
+      };
+      audio.onerror = reject;
+      audio.src = url;
+    });
+  }
 }

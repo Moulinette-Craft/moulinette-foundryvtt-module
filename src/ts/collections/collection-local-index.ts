@@ -60,6 +60,21 @@ class MouCollectionLocalAsset implements MouCollectionAsset {
     this.icon = MouMediaUtils.getIcon(assetType)
     this.icons = []
     this.flags = {}
+
+    if(data.width && data.height && data.width) {
+      this.meta.push({ 
+        icon: "fa-regular fa-expand-wide", 
+        text: `${data.width} x ${data.height}`,
+        hint: (game as Game).i18n.localize("MOU.meta_media_size")
+      })
+    }
+    if(data.duration) {
+      this.meta.push({ 
+        icon: "fa-regular fa-stopwatch", 
+        text: MouMediaUtils.prettyDuration(data.duration),
+        hint: (game as Game).i18n.localize("MOU.meta_audio_duration")
+      })
+    }
   }
 }
 
@@ -245,20 +260,20 @@ export default class MouCollectionLocal implements MouCollection {
         break
       
       case LocalAssetAction.CLIPBOARD:
-        MouMediaUtils.copyToClipboard(asset.preview)
+        MouMediaUtils.copyToClipboard(asset.id)
         break
 
       case LocalAssetAction.IMPORT:
         switch(asset.type) {
           case MouCollectionAssetTypeEnum.Audio:
-            MouFoundryUtils.playStopSound(asset.preview, MouCollectionLocal.PLAYLIST_NAME);
+            MouFoundryUtils.playStopSound(asset.id, MouCollectionLocal.PLAYLIST_NAME);
         }
         break
 
       case LocalAssetAction.CREATE_ARTICLE:
         switch(asset.type) {
           case MouCollectionAssetTypeEnum.Image: 
-            MouFoundryUtils.createJournalImage(asset.preview, folderPath);
+            MouFoundryUtils.createJournalImage(asset.id, folderPath);
             break
         }
         break
@@ -266,7 +281,7 @@ export default class MouCollectionLocal implements MouCollection {
       case LocalAssetAction.PREVIEW:
         switch(asset.type) {
           case MouCollectionAssetTypeEnum.Audio:
-            const audio_url = asset.preview
+            const audio_url = asset.id
             // assuming there is an audio preview and there is a audio#audiopreview element on the page
             const audio = $("#audiopreview")[0] as HTMLAudioElement
             if(this.curPreview == audio_url) {
