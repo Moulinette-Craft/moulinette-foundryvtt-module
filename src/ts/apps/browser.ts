@@ -71,7 +71,7 @@ export default class MouBrowser extends MouApplication {
       this.filters.type = types.length > 0 ? types[0].id : undefined
     }
     const creators = this.filters.type ? await this.collection.getCreators(this.filters.type) : null
-    const packs = this.filters.type ? await this.collection.getPacks(this.filters.type, this.filters.creator ? this.filters.creator : "") : null
+    let packs = this.filters.type ? await this.collection.getPacks(this.filters.type, this.filters.creator ? this.filters.creator : "") : null
     const folders = await this.collection.getFolders(this.filters);
 
     // improve folders by removing common path
@@ -79,6 +79,12 @@ export default class MouBrowser extends MouApplication {
     const foldersImproved = folders.map(f => {
       return { id: f, name: common.length > 0 ? f.substring(common.length) : f }
     })
+
+    // sort and filter packs
+    if(packs) {
+      packs.sort((a, b) => a.name.toLocaleLowerCase().localeCompare(b.name.toLocaleLowerCase()))
+      packs = packs.filter(p => p.assetsCount > 0)
+    }
 
     // split types into 2 lists
     const middleIndex = Math.ceil(typesObj.length/2);

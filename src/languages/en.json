@@ -73,6 +73,7 @@
   "MOU.error_source_name": "Please enter a name for the source.",
   "MOU.export_configuration": "Export config",
   "MOU.folder": "Folder",
+  "MOU.help": "Help",
   "MOU.import_configuration": "Import config",
   "MOU.index_compendiums": "Compendiums indexing",
   "MOU.index_completed": "'{path}' successfully indexed!",
@@ -162,6 +163,5 @@
   "MOU.your_gifts": "Your gifts",
   "MOU.your_subs_discord": "Your roles (Discord)",
   "MOU.your_subs_patreon": "Your subscriptions (Patreon)",
-  "MOU.help": "Help",
   "ZMOU": ""
 }
