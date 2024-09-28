@@ -1,5 +1,5 @@
 import MouApplication from "../apps/application";
-import { MODULE_ID, SETTINGS_USE_FOLDERS } from "../constants";
+import MouConfig, { MODULE_ID, SETTINGS_USE_FOLDERS } from "../constants";
 import { AnyDict } from "../types";
 import MouMediaUtils from "./media-utils";
 
@@ -12,7 +12,7 @@ export default class MouFoundryUtils {
    * Tries to retrieve image path for the provided FVTT entity
    */
   static getImagePathFromEntity(entity: AnyDict): string | null {
-    if("img" in entity && entity.img.length > 0) {
+    if("img" in entity && entity.img && entity.img.length > 0) {
       return entity.img
     } else if("background" in entity && "src" in entity.background && entity.background.src.length > 0) {
       return entity.background.src
@@ -52,10 +52,13 @@ export default class MouFoundryUtils {
     const articleName = MouMediaUtils.prettyMediaName(path)
     const folderObj = await MouFoundryUtils.getOrCreateFolder("JournalEntry", folder)
     let json_text
-    if(path.endsWith(".webm") || path.endsWith(".mp4")) {
+    // get extension from path 
+    const ext = path.split('.').pop() || "unknown"
+    console.log(ext)
+    if(MouConfig.MEDIA_VIDEOS.includes(ext)) {
       json_text = await renderTemplate(`modules/${MODULE_ID}/templates/json/note-video.hbs`, { path: path, folder: folderObj ? `"${folderObj.id}"` : "null", name: articleName })
     }
-    else if(path.endsWith(".webp")) {
+    else if(MouConfig.MEDIA_IMAGES.includes(ext)) {
       json_text = await renderTemplate(`modules/${MODULE_ID}/templates/json/note-image.hbs`, { path: path, folder: folderObj ? `"${folderObj.id}"` : "null", name: articleName })
     } else {
       return ui.notifications?.error((game as Game).i18n.format("MOU.error_create_journal_format"))
@@ -177,7 +180,7 @@ export default class MouFoundryUtils {
     }
     if(!playlist) return
     // get sound
-    let sound = playlist.sounds.find( s => s.path == decodeURI(path))
+    let sound = playlist.sounds.find( s => s.path == MouMediaUtils.getCleanURI(path))
     if(!sound) {
       const name = MouMediaUtils.prettyMediaName(path)
       const soundData = (await playlist.createEmbeddedDocuments("PlaylistSound", [{name: name, path: path, volume: volume}], {}))[0]

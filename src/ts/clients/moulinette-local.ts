@@ -232,7 +232,8 @@ export default class MouLocalClient {
       (async function loop() {
         try {
           while(true) {
-            const fileURL = decodeURI(files[i])
+            const srcUrl = files[i]
+            const fileURL = MouMediaUtils.getCleanURI(files[i])
             const ext = fileURL.split(".").pop()?.toLocaleLowerCase() as string
             const fileData = { path: fileURL } as AnyDict
             if(MouConfig.MEDIA_IMAGES.includes(ext) || MouConfig.MEDIA_VIDEOS.includes(ext)) {
@@ -241,7 +242,7 @@ export default class MouLocalClient {
               if(options && options.thumbs) {
                 const paths = await MouFileManager.getMediaPaths(fileURL, source)
                 const thumbFilename = paths.filename.substring(0, paths.filename.lastIndexOf(".")) + ".webp"
-                const generated = await MouFileManager.generateThumbnail(fileURL, thumbFilename, `${MouConfig.MOU_DEF_THUMBS}/${paths.folder}`)
+                const generated = await MouFileManager.generateThumbnail(srcUrl, thumbFilename, `${MouConfig.MOU_DEF_THUMBS}/${paths.folder}`)
                 if(generated && module.debug) {
                   MouApplication.logDebug(MouLocalClient.APP_NAME, `Thumbnail generated for ${fileURL}`)
                 }
@@ -254,7 +255,7 @@ export default class MouLocalClient {
                   fileData.height = existing.height
                 }
                 else {
-                  const meta = await MouMediaUtils.getMetadataFromMedia(fileURL)
+                  const meta = await MouMediaUtils.getMetadataFromMedia(srcUrl)
                   if(meta) {
                     fileData.width = meta.width
                     fileData.height = meta.height
@@ -271,7 +272,7 @@ export default class MouLocalClient {
                 if(existing && existing.duration) {
                   fileData.duration = existing.duration
                 } else {
-                  const meta = await MouMediaUtils.getMetadataFromAudio(fileURL)
+                  const meta = await MouMediaUtils.getMetadataFromAudio(srcUrl)
                   if(meta) {
                     fileData.duration = meta.duration
                   }
@@ -293,29 +294,25 @@ export default class MouLocalClient {
           if (i < files.length) {
             setTimeout(await loop, 0);
           } else {
-            // completed!
             progressbar.setProgress(100)
-            MouFileManager.storeJSON(indexData, MouLocalClient.INDEX_LOCAL_ASSETS, MouConfig.MOU_DEF_FOLDER).then(() => {
-              if(callbackOnComplete) {
-                callbackOnComplete(path, source, assetsCount)
-              }
-            })
+            await MouFileManager.storeJSON(indexData, MouLocalClient.INDEX_LOCAL_ASSETS, MouConfig.MOU_DEF_FOLDER)
+            if(callbackOnComplete) {
+              await callbackOnComplete(path, source, assetsCount)
+            }
           }
         } catch(error: any) {
           ui.notifications?.warn((game as Game).i18n.localize("MOU.error_folder_indexing_failed"))
           MouApplication.logError(MouLocalClient.APP_NAME, "Folder indexing failed", error)
-          progressbar.close()
-          MouFileManager.storeJSON(indexData, MouLocalClient.INDEX_LOCAL_ASSETS, MouConfig.MOU_DEF_FOLDER).then(() => {
-            console.log("failed")
-          })
+          MouFileManager.storeJSON(indexData, MouLocalClient.INDEX_LOCAL_ASSETS, MouConfig.MOU_DEF_FOLDER)
         }
       })();
      
     } catch(error: any) {
       ui.notifications?.warn((game as Game).i18n.localize("MOU.error_folder_indexing_failed"))
       MouApplication.logError(MouLocalClient.APP_NAME, "Folder indexing failed", error)
-      progressbar.close()
     }
+    // close progressbar
+    progressbar.close
   }
 
 

@@ -18,11 +18,12 @@ enum LocalAssetAction {
 class MouCollectionLocalAsset implements MouCollectionAsset {
   
   id: string;
+  url: string;
   type: number;
   format: string;
-  preview: string;
+  previewUrl: string;
   creator: string | null;
-  creator_url: string | null;
+  creatorUrl: string | null;
   pack: string;
   pack_id: string;
   name: string;
@@ -33,7 +34,7 @@ class MouCollectionLocalAsset implements MouCollectionAsset {
   animated: boolean;
   flags: AnyDict;
   
-  constructor(data: AnyDict, pack: AnyDict) {
+  constructor(data: AnyDict, pack: AnyDict, idx: number) {
     let assetType : MouCollectionAssetTypeEnum
     this.animated = false
     if(MouConfig.MEDIA_IMAGES.includes(data.path.split(".").pop()?.toLocaleLowerCase() as string)) {
@@ -55,11 +56,12 @@ class MouCollectionLocalAsset implements MouCollectionAsset {
       assetType = MouCollectionAssetTypeEnum.Undefined
     }
     const thumbPath = `${MouConfig.MOU_DEF_THUMBS}/` + data.path.substring(0, data.path.lastIndexOf(".")) + ".webp"
-    this.id = data.path;
+    this.id = String(idx)
+    this.url = MouMediaUtils.encodeURL(data.path);
     this.format = assetType == MouCollectionAssetTypeEnum.Map ? "large" : "small"
-    this.preview = pack.options && pack.options.thumbs ? thumbPath : data.path,
+    this.previewUrl = MouMediaUtils.encodeURL(pack.options && pack.options.thumbs ? thumbPath : data.path),
     this.creator = null
-    this.creator_url = null
+    this.creatorUrl = null
     this.pack = pack.name
     this.pack_id = pack.id
     this.name = MouMediaUtils.prettyMediaName(data.path)
@@ -106,15 +108,31 @@ export default class MouCollectionLocal implements MouCollection {
 
   async initialize(): Promise<void> {
     const assets = await MouLocalClient.getAllAssets()
+    let idx = 0
     for(const packId of Object.keys(assets)) {
       const results = [] as MouCollectionAsset[]
       // replace raw assets by MouCollectionAsset
       for(const a of assets[packId].assets) {
-        results.push(new MouCollectionLocalAsset(a, assets[packId]))
+        results.push(new MouCollectionLocalAsset(a, assets[packId], ++idx))
       }
       assets[packId].assets = results
     }
     this.assets = assets
+  }
+
+
+  /**
+   * Retrieves an asset by its unique identifier.
+   *
+   * @param id - The unique identifier of the asset to retrieve.
+   * @returns The asset if found, otherwise `null`.
+   */
+  getAssetById(id: string): MouCollectionAsset | null {
+    for(const packId of Object.keys(this.assets)) {
+      const asset = this.assets[packId].assets.find((a: MouCollectionLocalAsset) => a.id == id)
+      if(asset) return asset
+    }
+    return null
   }
 
   getName(): string {
@@ -274,26 +292,25 @@ export default class MouCollectionLocal implements MouCollection {
         break
       
       case LocalAssetAction.CLIPBOARD:
-        MouMediaUtils.copyToClipboard(asset.id)
+        MouMediaUtils.copyToClipboard(asset.url)
         break
 
       case LocalAssetAction.IMPORT:
         switch(asset.type) {
           case MouCollectionAssetTypeEnum.Map:
-            MouFoundryUtils.importSceneFromMap(asset.id, folderPath)
+            MouFoundryUtils.importSceneFromMap(asset.url, folderPath)
             break
           case MouCollectionAssetTypeEnum.Audio:
-            MouFoundryUtils.playStopSound(asset.id, MouCollectionLocal.PLAYLIST_NAME);
+            MouFoundryUtils.playStopSound(asset.url, MouCollectionLocal.PLAYLIST_NAME);
             break
         }
         break
 
       case LocalAssetAction.CREATE_ARTICLE:
-        console.log(asset.type)
         switch(asset.type) {
           case MouCollectionAssetTypeEnum.Map: 
           case MouCollectionAssetTypeEnum.Image: 
-            MouFoundryUtils.createJournalImageOrVideo(asset.id, folderPath);
+            MouFoundryUtils.createJournalImageOrVideo(asset.url, folderPath);
             break
         }
         break
@@ -301,7 +318,7 @@ export default class MouCollectionLocal implements MouCollection {
       case LocalAssetAction.PREVIEW:
         switch(asset.type) {
           case MouCollectionAssetTypeEnum.Audio:
-            const audio_url = asset.id
+            const audio_url = asset.url
             // assuming there is an audio preview and there is a audio#audiopreview element on the page
             const audio = $("#audiopreview")[0] as HTMLAudioElement
             if(this.curPreview == audio_url) {
@@ -326,14 +343,16 @@ export default class MouCollectionLocal implements MouCollection {
   async dropDataCanvas(canvas: Canvas, data: AnyDict): Promise<void> {
     const activeLayer = canvas.layers.find((l : AnyDict) => l.active)?.name
     const position = {x: data.x, y: data.y }
+    const asset = this.getAssetById(data.moulinette.asset)
+    if(!asset) return
     if(data.type == "Image") {
       if(activeLayer == "NotesLayer") {
-        MouFoundryUtils.createNoteImage(canvas, `Moulinette/Local Assets/Dropped`, data.moulinette.asset, position)
+        MouFoundryUtils.createNoteImage(canvas, `Moulinette/Local Assets/Dropped`, asset.url, position)
       } else {
-        MouFoundryUtils.createTile(canvas, data.moulinette.asset, position)
+        MouFoundryUtils.createTile(canvas, asset.url, position)
       }
     } else if(data.type == "Audio") {
-      MouFoundryUtils.createAmbientAudio(canvas, data.moulinette.asset, position)
+      MouFoundryUtils.createAmbientAudio(canvas, asset.url, position)
     }
   }
 

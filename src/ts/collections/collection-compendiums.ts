@@ -18,11 +18,12 @@ enum CompendiumAssetAction {
 class MouCollectionCompendiumAsset implements MouCollectionAsset {
   
   id: string;
+  url: string;
   type: number;
   format: string;
-  preview: string;
+  previewUrl: string;
   creator: string;
-  creator_url: string;
+  creatorUrl: string;
   pack: string;
   pack_id: string;
   name: string;
@@ -36,10 +37,11 @@ class MouCollectionCompendiumAsset implements MouCollectionAsset {
     const assetType = MouCollectionAssetTypeEnum[pack.type as keyof typeof MouCollectionAssetTypeEnum]
     const thumbnail = MouLocalClient.getThumbnail(data, data.type)
     this.id = data.id;
+    this.url = MouFoundryUtils.getImagePathFromEntity(data) || "";
     this.format = [MouCollectionAssetTypeEnum.Scene, MouCollectionAssetTypeEnum.Map].includes(assetType) ? "large" : "small"
-    this.preview = thumbnail ? thumbnail : "icons/svg/mystery-man.svg ",
+    this.previewUrl = thumbnail ? thumbnail : "icons/svg/mystery-man.svg ",
     this.creator = pack.publisher
-    this.creator_url = ""
+    this.creatorUrl = ""
     this.pack = pack.name
     this.pack_id = pack.packId
     this.name = data.name
@@ -264,7 +266,7 @@ export default class MouCollectionCompendiums implements MouCollection {
         break
       
       case CompendiumAssetAction.CLIPBOARD:
-        MouMediaUtils.copyToClipboard(asset.preview)
+        MouMediaUtils.copyToClipboard(asset.url)
         break
 
       case CompendiumAssetAction.VIEW:
@@ -301,7 +303,7 @@ export default class MouCollectionCompendiums implements MouCollection {
             MouFoundryUtils.createJournalImageFromEntity(data, folderPath); 
             break
           case MouCollectionAssetTypeEnum.Image: 
-            MouFoundryUtils.createJournalImageOrVideo(asset.preview, folderPath);
+            MouFoundryUtils.createJournalImageOrVideo(asset.url, folderPath);
             break
         }
         break

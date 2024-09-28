@@ -24,7 +24,7 @@ export default class LocalCollectionConfig extends MouApplication {
  
   override APP_NAME = "LocalCollectionConfig"
 
-  private html?: JQuery<HTMLElement>;
+  //private html?: JQuery<HTMLElement>;
   private advanced: boolean;
   private callback: Function;
 
@@ -67,8 +67,7 @@ export default class LocalCollectionConfig extends MouApplication {
     html.find(".cfg-actions a").on("click", this._onFolderAction.bind(this))
     html.find("footer button").on("click", this._onAction.bind(this))
     html.find(".more a").on("click", this._onToggleAvancedOptions.bind(this))
-    this.html = html
-    console.log(this.html)
+    //this.html = html
   }
 
   async _onFolderAction(event: Event): Promise<void> {
@@ -127,11 +126,10 @@ export default class LocalCollectionConfig extends MouApplication {
           for(const folder of settings.folders) {
             const source = (folder as LocalCollectionSource)
             if(source.assets == 0 && source.path && source.source) {
-              console.log(source)
               await MouLocalClient.indexAllLocalAssets(source.path, source.source, this._callbackAfterIndexing.bind(this), source.options)
-              this.render()
             }
           }
+          this.render()
         }
       } else if(button.data("id") == "delete-index") {
         Dialog.confirm({
@@ -187,8 +185,7 @@ export default class LocalCollectionConfig extends MouApplication {
    * This method is called after indexing completes
    * Updates the number of assets
    */
-  _callbackAfterIndexing(path: string, source: string, assetsCount: number): void {
-    const parent = this
+  async _callbackAfterIndexing(path: string, source: string, assetsCount: number): Promise<void> {
     const settings = MouApplication.getSettings(SETTINGS_COLLECTION_LOCAL) as AnyDict
     if(settings.folders) {
       const folder : LocalCollectionSource = settings.folders.find((f: LocalCollectionSource) => f.path == path && f.source == source)
@@ -196,7 +193,8 @@ export default class LocalCollectionConfig extends MouApplication {
         folder.assets = assetsCount
         ui.notifications?.info((game as Game).i18n.format("MOU.index_completed", {path: path}))
         this.advanced = false
-        MouApplication.setSettings(SETTINGS_COLLECTION_LOCAL, settings).then(() => parent.render())
+        await MouApplication.setSettings(SETTINGS_COLLECTION_LOCAL, settings)
+        this.render()
       }
     }
   }

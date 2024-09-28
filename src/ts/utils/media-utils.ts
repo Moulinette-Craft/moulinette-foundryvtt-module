@@ -6,6 +6,33 @@ import { MouCollectionAssetTypeEnum } from "../apps/collection";
 export default class MouMediaUtils {
 
   /**
+   * Decodes a given URI string. If the decoding process fails, it returns the original URI.
+   *
+   * @remarks URI might be encoded or not. It typically fails if URI is not encoded and contains a % character.
+   * 
+   * @param uri - The URI string to be decoded.
+   * @returns The decoded URI string, or the original URI if decoding fails.
+   */
+  static getCleanURI(uri: string) {
+    try {
+      return decodeURIComponent(uri);
+    } catch (e) {
+      return uri;
+    }
+  }
+
+  /**
+   * Encodes a URL by replacing each instance of certain characters by one, two, three, or four escape sequences representing the UTF-8 encoding of the character.
+   *
+   * @param uri - The URI to be encoded.
+   * @returns The encoded URI.
+   */
+  static encodeURL(url: string) {
+    if(url.startsWith("https")) return url
+    return encodeURIComponent(url)
+  }
+
+  /**
    * Extracts the file extension from a given file path.
    * 
    * @param filepath - The full path of the media file.
@@ -27,13 +54,14 @@ export default class MouMediaUtils {
    * @returns A prettified version of the media file name. If the filename cannot be determined, returns the original file path.
    */
   static prettyMediaName(filepath: string) {
-    const basepath = MouMediaUtils.getBasePath(decodeURI(filepath))
+    const cleanPath = MouMediaUtils.getCleanURI(filepath)
+    const basepath = MouMediaUtils.getBasePath(cleanPath)
     let name = basepath.split("/").pop()                  // keep filename only (not entire path)
     name = name?.replace(/[-_]/g, " ")                    // replace _ and - by spaces
     name = name?.split(' ')                               // capitalize the first letter of each word
       .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(' ');
-    return name ? name : decodeURI(filepath)
+    return name ? name : cleanPath
   }
 
   

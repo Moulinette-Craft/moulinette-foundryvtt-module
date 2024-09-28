@@ -22,7 +22,7 @@ export class MoulinetteProgress extends Application {
       classes: ["mou"],
       title: (game as Game).i18n.localize("MOU.progressbar"),
       template: `modules/${MODULE_ID}/templates/progressbar.hbs`,
-      width: 500,
+      width: 600,
       height: 90
     });
   }
@@ -51,12 +51,12 @@ export class MoulinetteProgress extends Application {
    * @param {0-100} progress value (pourcentage)
    */
   setProgress(progress: number, description?: string) {
-    if(MoulinetteProgress.interrupted) throw new Error("Interrupted!")
-    progress = Math.round(progress)
+    if(MoulinetteProgress.interrupted) throw new Error(`Interrupted! ${this.progress}%`)
     // close window if progress is 100%
-    if(progress == 100) {
+    if(progress === 100) {
       setTimeout(() => this.close(), 1000);
     }
+    progress = Math.round(progress)
     if(!this.html) return
     // don't update if not necessary
     if(progress >= 0 && progress <= 100) {
@@ -73,8 +73,11 @@ export class MoulinetteProgress extends Application {
   }
 
   override async close(options?: Application.CloseOptions): Promise<void> {
-    MoulinetteProgress.interrupted = true
-    super.close(options)
+    if(this.progress < 100) {
+      MoulinetteProgress.interrupted = true
+    }
+    
+    await super.close(options)
   }
 
 }

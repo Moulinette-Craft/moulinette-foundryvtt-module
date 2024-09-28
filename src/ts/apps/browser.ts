@@ -59,7 +59,6 @@ export default class MouBrowser extends MouApplication {
     if(!this.collection) {
       throw new Error(`${this.APP_NAME} | Collection ${this.filters_prefs.collection} couldn't be found!`);
     }
-
     await this.collection.initialize()
 
     this.page = 0
@@ -162,7 +161,13 @@ export default class MouBrowser extends MouApplication {
   /** Load more assets and activate events */
   async loadMoreAssets() {
     if(this.page < 0 || !this.collection) return
-    const assets = await this.collection.getAssets(this.filters, this.page)
+    let assets: MouCollectionAsset[] = [];
+    try {
+      assets = await this.collection.getAssets(this.filters, this.page);
+    } catch (error) {
+      this.logError("Error loading assets:", error)
+      ui.notifications?.error((game as Game).i18n.localize("MOU.errorLoadingAssets"));
+    }
     if(assets.length == 0) {
       if(this.page == 0) {
         this.html?.find(".content").append(await renderTemplate(`modules/${MODULE_ID}/templates/browser-nomatch.hbs`, {}))
@@ -389,7 +394,7 @@ export default class MouBrowser extends MouApplication {
       if(!hint) return;
       actionHint.find("h3").html(hint.name)
       actionHint.find(".description").html(hint.description)
-      actionHint.find(".thumbnail").css("background-image", `url('${selAsset.preview}')`)
+      actionHint.find(".thumbnail").css("background-image", `url('${selAsset.previewUrl}')`)
       // Show hint (to the right if enough space, otherwise to the left)
       let posTop = 0
       let posLeft = 0
@@ -428,7 +433,7 @@ export default class MouBrowser extends MouApplication {
       const assetId = target.closest(".asset").data("id")
       const selAsset = this.currentAssets.find((a) => a.id == assetId)
       if(selAsset) {
-        if(selAsset.preview) {
+        if(selAsset.previewUrl) {
           // @ts-ignore
           const originalEvent = event.originalEvent as DragEvent;
           const dragImage = this.html?.find(".actionhint .thumbnail").get(0)

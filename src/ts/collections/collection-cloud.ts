@@ -33,12 +33,13 @@ enum CloudAssetAction {
 class MouCollectionCloudAsset implements MouCollectionAsset {
   
   id: string;
+  url: string;
   type: number;
   format: string;
-  preview: string;
+  previewUrl: string;
   background_color: string;
   creator: string;
-  creator_url: string;
+  creatorUrl: string;
   pack: string;
   pack_id: string;
   name: string;
@@ -55,10 +56,11 @@ class MouCollectionCloudAsset implements MouCollectionAsset {
     this.id = data._id;
     this.format = [MouCollectionAssetTypeEnum.Scene, MouCollectionAssetTypeEnum.Map].includes(data.type) ? "large" : "small"
     const basePath = MouMediaUtils.getBasePath(data.filepath)
-    this.preview = `${MOU_STORAGE_PUB}${data.pack.creator_ref}/${data.pack.path}/${basePath}.${data.type == MouCollectionAssetTypeEnum.Audio ? "ogg" : "webp"}`
+    this.url = data.filepath
+    this.previewUrl = `${MOU_STORAGE_PUB}${data.pack.creator_ref}/${data.pack.path}/${basePath}.${data.type == MouCollectionAssetTypeEnum.Audio ? "ogg" : "webp"}`
     this.background_color = [MouCollectionAssetTypeEnum.Scene, MouCollectionAssetTypeEnum.Map].includes(data.type) ? data.main_color : null
     this.creator = data.pack.creator
-    this.creator_url = data.creator_url
+    this.creatorUrl = data.creator_url
     this.pack = data.pack.name
     this.pack_id = data.pack_ref
     this.name = MouMediaUtils.prettyMediaName(data.filepath)
@@ -447,10 +449,10 @@ export default class MouCollectionCloud implements MouCollection {
       case CloudAssetAction.PREVIEW:
         switch(asset.type) {
           case MouCollectionAssetTypeEnum.Audio:
-            const audio_url = selAsset.preview
+            const audio_url = selAsset.previewUrl
             // assuming there is an audio preview and there is a audio#audiopreview element on the page
             const audio = $("#audiopreview")[0] as HTMLAudioElement
-            if(decodeURI(audio.src) != decodeURI(audio_url)) {
+            if(MouMediaUtils.getCleanURI(audio.src) != MouMediaUtils.getCleanURI(audio_url)) {
               audio.pause()
               audio.src = audio_url
             }
@@ -468,7 +470,7 @@ export default class MouCollectionCloud implements MouCollection {
         const cAsset = (asset as MouCollectionCloudAsset)
         if(cAsset.cloud_type == CloudAssetType.PREVIEW) {
         } else {
-          var win = window.open(cAsset.creator_url, '_blank');
+          var win = window.open(cAsset.creatorUrl, '_blank');
           if (win) { 
             win.focus();
           }

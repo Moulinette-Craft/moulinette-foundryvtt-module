@@ -15,11 +15,11 @@
     <div class="preview" {{#if a.background_color}}style="background-color: #{{a.background_color}}"{{/if}}>
       {{#if a.animated}}
         <div class="video">
-          <video autoplay loop muted><source src="{{a.preview}}"></video>
+          <video autoplay loop muted><source src="{{a.previewUrl}}"></video>
         </div>
       {{/if}}
       {{#unless a.animated}}
-        <img src="{{a.preview}}" onerror="this.src='{{../MOU_DEF_NOTHUMB}}'"/>
+        <img src="{{a.previewUrl}}" onerror="this.src='{{../MOU_DEF_NOTHUMB}}'"/>
       {{/unless}}
       {{#if a.icons}}
       <ul class="icons">

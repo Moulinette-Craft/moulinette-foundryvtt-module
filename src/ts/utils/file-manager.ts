@@ -1,6 +1,7 @@
 import MouApplication from "../apps/application";
 import { SETTINGS_S3_BUCKET } from "../constants";
 import { AnyDict } from "../types";
+import MouMediaUtils from "./media-utils";
 
 declare var ForgeAPI: any;
 declare var ForgeVTT: any;
@@ -106,8 +107,8 @@ export default class MouFileManager {
       if(f.length == 0) continue
       const parentFolder = await FilePicker.browse(source, curFolder, MouFileManager.getOptions());
       curFolder += (curFolder.length > 0 ? "/" : "" ) + f
-      const dirs = parentFolder.dirs.map(d => decodeURIComponent(d))
-      if (!dirs.includes(decodeURIComponent(curFolder))) {
+      const dirs = parentFolder.dirs.map(d => MouMediaUtils.getCleanURI(d))
+      if (!dirs.includes(MouMediaUtils.getCleanURI(curFolder))) {
         try {
           MouApplication.logInfo(MouFileManager.APP_NAME, `Create folder ${curFolder}`)
           await FilePicker.createDirectory(source, curFolder, MouFileManager.getOptions());
@@ -128,7 +129,7 @@ export default class MouFileManager {
     // check if file already exist
     //const baseURL = await MoulinetteFileUtil.getBaseURL();
     let base = await FilePicker.browse(source, folderPath, MouFileManager.getOptions());
-    let exist = base.files.filter(f => decodeURIComponent(f) == `${folderPath}/${filename}`)
+    let exist = base.files.filter(f => MouMediaUtils.getCleanURI(f) == `${folderPath}/${filename}`)
     //if(exist.length > 0 && !overwrite) return { path: `${baseURL}${folderPath}/${filename}` };
     if(exist.length > 0 && !overwrite) {
       MouApplication.logInfo(MouFileManager.APP_NAME, `File ${folderPath}/${filename} already exists. Upoad skipped!`)
@@ -185,8 +186,8 @@ export default class MouFileManager {
     } else {
       try {
         const browse = await FilePicker.browse(MouFileManager.getSource(), folder);
-        files = browse.files.map(f => decodeURIComponent(f))  
-      } catch(e) { console.error("HERE", e) }
+        files = browse.files.map(f => MouMediaUtils.getCleanURI(f))  
+      } catch(e) { }
       MouFileManager._cachedLastFolderFiles = {
         folder: folder,
         files: files
@@ -204,8 +205,8 @@ export default class MouFileManager {
    */
   static async downloadFile(uri: string, packPath: string, folder: string, force=false): Promise<FilePicker.UploadResult | false> {
 
-    folder = decodeURIComponent(folder)
-    const filepath = decodeURI(uri.split("?")[0])
+    folder = MouMediaUtils.getCleanURI(folder)
+    const filepath = MouMediaUtils.getCleanURI(uri.split("?")[0])
     const filename  = filepath.substring(filepath.lastIndexOf("/")+1)  // Broken Tower_2.webm (from above example)
     const relFolder = filepath.substring(0, filepath.lastIndexOf("/")) // animated (from above example)
     const targetFolder = folder + (folder.endsWith("/") ? "" : "/") + relFolder 
@@ -214,7 +215,7 @@ export default class MouFileManager {
     // check if file already downloaded
     await MouFileManager.createFolderRecursive(targetFolder)
     const browse = await FilePicker.browse(MouFileManager.getSource(), targetFolder);
-    const files = browse.files.map(f => decodeURIComponent(f))
+    const files = browse.files.map(f => MouMediaUtils.getCleanURI(f))
     const path = `${targetFolder}/${filename}`
     if(!force && files.includes(path)) {
       MouApplication.logInfo(MouFileManager.APP_NAME, `File ${path} already exists. Download skipped!`)
@@ -270,7 +271,7 @@ export default class MouFileManager {
     list.push(...base.files)
     
     for(const d of base.dirs) {
-      const subpath = decodeURIComponent(d)
+      const subpath = MouMediaUtils.getCleanURI(d)
       // workaround for infinite loop : folder must be a subfolder
       if( subpath.startsWith(path) ) {
         const files = await MouFileManager.scanFolder(source, subpath, debug)

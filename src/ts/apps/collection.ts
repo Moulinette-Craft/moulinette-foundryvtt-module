@@ -26,21 +26,22 @@ export interface MouCollectionAssetMeta {
 }
 
 export interface MouCollectionAsset {
-  id: string
-  type: number
-  format: string
-  preview: string
-  creator: string | null
-  creator_url: string | null
-  pack: string
-  pack_id: string
-  name: string
-  meta: MouCollectionAssetMeta[]
-  icon: string | null, // Font Awesome icon representing the asset
-  icons?: {descr: string, icon: string}[]
-  background_color?: string,
-  draggable?: boolean,
-  flags: AnyDict
+  id: string                              // asset unique identifier
+  url: string                             // asset's full url
+  previewUrl: string                      // asset's preview url
+  type: number                            // asset type
+  format: string                          // asset format (small, large)
+  creator: string | null                  // asset creator
+  creatorUrl: string | null               // asset creator url
+  pack: string                            // asset pack
+  pack_id: string                         // asset pack id
+  name: string                            // asset name
+  meta: MouCollectionAssetMeta[]          // asset metadata
+  icon: string | null,                    // FA icon representing the asset
+  icons?: {descr: string, icon: string}[] // additional icons
+  background_color?: string,              // background color
+  draggable?: boolean,                    // is draggable
+  flags: AnyDict                          // asset flags (e.g. is hasAudioPreview)
 }
 
 export interface MouCollectionCreator {
