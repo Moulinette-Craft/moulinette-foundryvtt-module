@@ -52,10 +52,6 @@ export class MoulinetteProgress extends Application {
    */
   setProgress(progress: number, description?: string) {
     if(MoulinetteProgress.interrupted) throw new Error(`Interrupted! ${this.progress}%`)
-    // close window if progress is 100%
-    if(progress === 100) {
-      setTimeout(() => this.close(), 1000);
-    }
     progress = Math.round(progress)
     if(!this.html) return
     // don't update if not necessary

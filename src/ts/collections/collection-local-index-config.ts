@@ -27,11 +27,13 @@ export default class LocalCollectionConfig extends MouApplication {
   //private html?: JQuery<HTMLElement>;
   private advanced: boolean;
   private callback: Function;
+  private indexAll: boolean;
 
   constructor(callback: Function) {
     super();
     this.callback = callback;
     this.advanced = false;
+    this.indexAll = false
   }
 
   override get title(): string {
@@ -112,6 +114,36 @@ export default class LocalCollectionConfig extends MouApplication {
     this.render()
   }
 
+  
+  /**
+   * Indexes the next folder in the local collection settings that has not yet been indexed.
+   * 
+   * This method retrieves the local collection settings and iterates through the folders.
+   * If a folder has not been indexed (i.e., `assets` is 0) and has a valid path and source,
+   * it triggers the indexing process for that folder using `MouLocalClient.indexAllLocalAssets`.
+   * 
+   * @remarks
+   * The indexing process is asynchronous and uses a callback function `_callbackAfterIndexing`
+   * to handle post-indexing operations. If indexAll is set to true, `_callbackAfterIndexing` will
+   * trigger the indexing of the next folder in the collection.
+   * 
+   * @returns {void}
+   */
+  indexNextFolder(): void {
+    const settings = MouApplication.getSettings(SETTINGS_COLLECTION_LOCAL) as AnyDict
+    if(settings.folders) {
+      for(const folder of settings.folders) {
+        const source = (folder as LocalCollectionSource)
+        if(source.assets == 0 && source.path && source.source) {
+          MouLocalClient.indexAllLocalAssets(source.path, source.source, this._callbackAfterIndexing.bind(this), source.options)
+          return
+        }
+      }
+    }
+    this.indexAll = false;
+    this.render()
+  }
+
   async _onAction(event: Event): Promise<void> {
     event.preventDefault();
     const parent = this
@@ -121,16 +153,8 @@ export default class LocalCollectionConfig extends MouApplication {
         const newSourceUI = new LocalCollectionConfigNewSource(this._callbackAfterNewSource.bind(this))
         newSourceUI.render(true)
       } else if(button.data("id") == "index-folders") {
-        const settings = MouApplication.getSettings(SETTINGS_COLLECTION_LOCAL) as AnyDict
-        if(settings.folders) {
-          for(const folder of settings.folders) {
-            const source = (folder as LocalCollectionSource)
-            if(source.assets == 0 && source.path && source.source) {
-              await MouLocalClient.indexAllLocalAssets(source.path, source.source, this._callbackAfterIndexing.bind(this), source.options)
-            }
-          }
-          this.render()
-        }
+        this.indexAll = true
+        this.indexNextFolder()
       } else if(button.data("id") == "delete-index") {
         Dialog.confirm({
           title: (game as Game).i18n.localize("MOU.confirm_delete_index"),
@@ -194,7 +218,11 @@ export default class LocalCollectionConfig extends MouApplication {
         ui.notifications?.info((game as Game).i18n.format("MOU.index_completed", {path: path}))
         this.advanced = false
         await MouApplication.setSettings(SETTINGS_COLLECTION_LOCAL, settings)
-        this.render()
+        if(this.indexAll) {
+          this.indexNextFolder()
+        } else {
+          this.render()
+        }
       }
     }
   }

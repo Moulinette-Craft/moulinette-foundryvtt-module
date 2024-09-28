@@ -38,14 +38,14 @@ class MouCollectionLocalAsset implements MouCollectionAsset {
     let assetType : MouCollectionAssetTypeEnum
     this.animated = false
     if(MouConfig.MEDIA_IMAGES.includes(data.path.split(".").pop()?.toLocaleLowerCase() as string)) {
-      if(data.width && data.height && data.width >= MouConfig.MEDIA_MAP_THRESHOLD && data.height >= MouConfig.MEDIA_MAP_THRESHOLD) {
+      if(MouMediaUtils.isMap(data.width, data.height)) {
         assetType = MouCollectionAssetTypeEnum.Map
       } else {
         assetType = MouCollectionAssetTypeEnum.Image
       }
     } else if (MouConfig.MEDIA_VIDEOS.includes(data.path.split(".").pop()?.toLocaleLowerCase() as string)) {
       this.animated = !(pack.options && pack.options.thumbs)
-      if(data.width && data.height && data.width >= MouConfig.MEDIA_MAP_THRESHOLD && data.height >= MouConfig.MEDIA_MAP_THRESHOLD) {
+      if(MouMediaUtils.isMap(data.width, data.height)) {
         assetType = MouCollectionAssetTypeEnum.Map
       } else {
         assetType = MouCollectionAssetTypeEnum.Image

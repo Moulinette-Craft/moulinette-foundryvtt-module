@@ -1,4 +1,5 @@
 import { MouCollectionAssetTypeEnum } from "../apps/collection";
+import MouConfig from "../constants";
 
 /**
  * A utility class for working with media files.
@@ -233,5 +234,17 @@ export default class MouMediaUtils {
       audio.onerror = reject;
       audio.src = url;
     });
+  }
+
+  
+  /**
+   * Determines if the given dimensions correspond to a map.
+   *
+   * @param width - The width of the media.
+   * @param height - The height of the media.
+   * @returns `true` if the dimensions indicate a map, `false` otherwise.
+   */
+  static isMap(width: number, height: number) {
+    return width != height && width >= MouConfig.MEDIA_MAP_THRESHOLD && height >= MouConfig.MEDIA_MAP_THRESHOLD
   }
 }

@@ -295,6 +295,7 @@ export default class MouLocalClient {
             setTimeout(await loop, 0);
           } else {
             progressbar.setProgress(100)
+            await progressbar.close()
             await MouFileManager.storeJSON(indexData, MouLocalClient.INDEX_LOCAL_ASSETS, MouConfig.MOU_DEF_FOLDER)
             if(callbackOnComplete) {
               await callbackOnComplete(path, source, assetsCount)
@@ -304,15 +305,15 @@ export default class MouLocalClient {
           ui.notifications?.warn((game as Game).i18n.localize("MOU.error_folder_indexing_failed"))
           MouApplication.logError(MouLocalClient.APP_NAME, "Folder indexing failed", error)
           MouFileManager.storeJSON(indexData, MouLocalClient.INDEX_LOCAL_ASSETS, MouConfig.MOU_DEF_FOLDER)
+          await progressbar.close()
         }
       })();
      
     } catch(error: any) {
       ui.notifications?.warn((game as Game).i18n.localize("MOU.error_folder_indexing_failed"))
       MouApplication.logError(MouLocalClient.APP_NAME, "Folder indexing failed", error)
-    }
-    // close progressbar
-    progressbar.close
+      await progressbar.close()
+    }    
   }
 
 

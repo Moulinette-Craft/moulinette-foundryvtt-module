@@ -101,6 +101,12 @@ export default class MouCollectionCompendiums implements MouCollection {
     return results
   }
 
+  /**
+   * Retrieves a list of creators for a given asset type from the compendiums.
+   *
+   * @param {MouCollectionAssetTypeEnum} type - The type of asset to filter creators by.
+   * @returns {Promise<MouCollectionCreator[]>} A promise that resolves to an array of creators with their respective asset counts.
+   */
   async getCreators(type: MouCollectionAssetTypeEnum): Promise<MouCollectionCreator[]> {
     const creators = {} as AnyDict
     for(const pack of Object.values(this.compendiums.packs) as AnyDict[]) {
@@ -178,6 +184,12 @@ export default class MouCollectionCompendiums implements MouCollection {
     throw new Error("Method not implemented." + filters);
   }
 
+  /**
+   * Generates a list of actions available for a given collection asset.
+   *
+   * @param asset - The collection asset for which actions are to be generated.
+   * @returns An array of actions that can be performed on the given asset.
+   */
   getActions(asset: MouCollectionAsset): MouCollectionAction[] {
     const actions = [] as MouCollectionAction[]
     const cAsset = (asset as MouCollectionCompendiumAsset)

@@ -6,7 +6,7 @@ import "../styles/style.scss";
 import MouBrowser from "./apps/browser";
 import MouUser from "./apps/user";
 import MouCloudClient from "./clients/moulinette-cloud";
-import { MODULE_ID, SETTINGS_COLLECTION_CLOUD, SETTINGS_COLLECTION_LOCAL, SETTINGS_DATA_EXCLUSION, SETTINGS_S3_BUCKET, SETTINGS_SESSION_ID, SETTINGS_USE_FOLDERS } from "./constants";
+import MouConfig, { MODULE_ID, SETTINGS_COLLECTION_CLOUD, SETTINGS_COLLECTION_LOCAL, SETTINGS_DATA_EXCLUSION, SETTINGS_S3_BUCKET, SETTINGS_SESSION_ID, SETTINGS_USE_FOLDERS } from "./constants";
 import MouLayer from "./layers/mou-layer";
 import { AnyDict, MouModule } from "./types";
 import MouCache from "./apps/cache";
@@ -83,6 +83,8 @@ Hooks.once("ready", () => {
   module.collections.push(new MouCollectionCloud())
   module.collections.push(new MouCollectionCompendiums())
   module.collections.push(new MouCollectionLocal())
+  // make config available
+  module.configs = MouConfig
   // hooks some FVTT functions
   MouHooks.replaceFromDropData()
 });
