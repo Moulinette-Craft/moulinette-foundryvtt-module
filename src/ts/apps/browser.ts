@@ -140,6 +140,16 @@ export default class MouBrowser extends MouApplication {
       default:
     }
 
+    const header = html.closest(".window-app").find(".window-header")
+    const help = header.find(".help")
+    if(help.length == 0) {
+      const helpHTML = $(`<a class="help"><i class="fa-solid fa-up-right-from-square"></i> ${(game as Game).i18n.localize("MOU.help")}</a>`);
+      header.find(".close").before(helpHTML)
+      header.find(".help").on("click", () => {
+        window.open("https://assets.moulinette.cloud/docs", "_blank")
+      })
+    }
+
     this.loadMoreAssets()
   }
 
@@ -174,11 +184,11 @@ export default class MouBrowser extends MouApplication {
     }
     // activate listeners
     this.html?.find(".asset").off()
-    this.html?.find(".asset").on("mouseenter", () => this._onShowMenu.bind(this));
-    this.html?.find(".asset").on("mouseleave", () => this._onHideMenu.bind(this));
-    this.html?.find(".asset a.creator").on("click", () => this._onClickAssetCreator.bind(this));
-    this.html?.find(".asset a.pack").on("click", () => this._onClickAssetPack.bind(this));
-    this.html?.find(".asset.draggable").on("dragstart", () => this._onDragStart.bind(this));
+    this.html?.find(".asset").on("mouseenter", this._onShowMenu.bind(this));
+    this.html?.find(".asset").on("mouseleave", this._onHideMenu.bind(this));
+    this.html?.find(".asset a.creator").on("click", this._onClickAssetCreator.bind(this));
+    this.html?.find(".asset a.pack").on("click", this._onClickAssetPack.bind(this));
+    this.html?.find(".asset.draggable").on("dragstart", this._onDragStart.bind(this));
     this.html?.find(".asset video source").on('error', function() {
       const img = new Image();
       img.src = MouConfig.MOU_DEF_NOTHUMB;

@@ -417,7 +417,7 @@ export default class MouCollectionCloud implements MouCollection {
               break
             case MouCollectionAssetTypeEnum.Map: 
             case MouCollectionAssetTypeEnum.Image: 
-              MouFoundryUtils.createJournalImage(resultArticle.path, folderPath);
+              MouFoundryUtils.createJournalImageOrVideo(resultArticle.path, folderPath);
               break
           }
         }

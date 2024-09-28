@@ -223,6 +223,10 @@ export default class MouCollectionLocal implements MouCollection {
       case MouCollectionAssetTypeEnum.Image:
         actions.push({ id: LocalAssetAction.CREATE_ARTICLE, name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
         break;    
+      case MouCollectionAssetTypeEnum.Map:
+        actions.push({ id: LocalAssetAction.IMPORT, name: (game as Game).i18n.format("MOU.action_import", { type: assetType}), icon: "fa-solid fa-file-import" })
+        actions.push({ id: LocalAssetAction.CREATE_ARTICLE, name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
+        break;    
       case MouCollectionAssetTypeEnum.Audio:
         actions.push({ id: LocalAssetAction.IMPORT, name: (game as Game).i18n.localize("MOU.action_audio_play"), icon: "fa-solid fa-play-pause" })
         actions.push({ id: LocalAssetAction.PREVIEW, name: (game as Game).i18n.localize("MOU.action_preview"), icon: "fa-solid fa-headphones" })
@@ -245,6 +249,7 @@ export default class MouCollectionLocal implements MouCollection {
         break
       case LocalAssetAction.IMPORT:
         switch(asset.type) {
+          case MouCollectionAssetTypeEnum.Map: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_import_image") }
           case MouCollectionAssetTypeEnum.Audio: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_import_audio") }
         }
         break
@@ -274,15 +279,21 @@ export default class MouCollectionLocal implements MouCollection {
 
       case LocalAssetAction.IMPORT:
         switch(asset.type) {
+          case MouCollectionAssetTypeEnum.Map:
+            MouFoundryUtils.importSceneFromMap(asset.id, folderPath)
+            break
           case MouCollectionAssetTypeEnum.Audio:
             MouFoundryUtils.playStopSound(asset.id, MouCollectionLocal.PLAYLIST_NAME);
+            break
         }
         break
 
       case LocalAssetAction.CREATE_ARTICLE:
+        console.log(asset.type)
         switch(asset.type) {
+          case MouCollectionAssetTypeEnum.Map: 
           case MouCollectionAssetTypeEnum.Image: 
-            MouFoundryUtils.createJournalImage(asset.id, folderPath);
+            MouFoundryUtils.createJournalImageOrVideo(asset.id, folderPath);
             break
         }
         break

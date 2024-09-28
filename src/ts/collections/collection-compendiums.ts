@@ -301,7 +301,7 @@ export default class MouCollectionCompendiums implements MouCollection {
             MouFoundryUtils.createJournalImageFromEntity(data, folderPath); 
             break
           case MouCollectionAssetTypeEnum.Image: 
-            MouFoundryUtils.createJournalImage(asset.preview, folderPath);
+            MouFoundryUtils.createJournalImageOrVideo(asset.preview, folderPath);
             break
         }
         break

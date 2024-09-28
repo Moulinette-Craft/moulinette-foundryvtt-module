@@ -47,11 +47,19 @@ export default class MouFoundryUtils {
   /**
    * Create a journal article with a single page for an image
    */
-  static async createJournalImage(path: string, folder: string, renderSheet = true) {
+  static async createJournalImageOrVideo(path: string, folder: string, renderSheet = true) {
     if (!(game as Game).user?.isGM) return null;
     const articleName = MouMediaUtils.prettyMediaName(path)
     const folderObj = await MouFoundryUtils.getOrCreateFolder("JournalEntry", folder)
-    const json_text = await renderTemplate(`modules/${MODULE_ID}/templates/json/note-image.hbs`, { path: path, folder: folderObj ? `"${folderObj.id}"` : "null", name: articleName })
+    let json_text
+    if(path.endsWith(".webm") || path.endsWith(".mp4")) {
+      json_text = await renderTemplate(`modules/${MODULE_ID}/templates/json/note-video.hbs`, { path: path, folder: folderObj ? `"${folderObj.id}"` : "null", name: articleName })
+    }
+    else if(path.endsWith(".webp")) {
+      json_text = await renderTemplate(`modules/${MODULE_ID}/templates/json/note-image.hbs`, { path: path, folder: folderObj ? `"${folderObj.id}"` : "null", name: articleName })
+    } else {
+      return ui.notifications?.error((game as Game).i18n.format("MOU.error_create_journal_format"))
+    }
     const entry = await JournalEntry.create(JSON.parse(json_text))
     if(renderSheet) {
       entry?.sheet?.render(true)
@@ -67,20 +75,7 @@ export default class MouFoundryUtils {
     if (!(game as Game).user?.isGM) return;
     const path = MouFoundryUtils.getImagePathFromEntity(entity)
     if(path) {
-      const articleName = MouMediaUtils.prettyMediaName(path)
-      const folderObj = await MouFoundryUtils.getOrCreateFolder("JournalEntry", folder)
-      let json_text
-      if(path.endsWith(".webm") || path.endsWith(".mp4")) {
-        json_text = await renderTemplate(`modules/${MODULE_ID}/templates/json/note-video.hbs`, { path: path, folder: folderObj ? `"${folderObj.id}"` : "null", name: articleName })
-      }
-      else if(path.endsWith(".webp")) {
-        json_text = await renderTemplate(`modules/${MODULE_ID}/templates/json/note-image.hbs`, { path: path, folder: folderObj ? `"${folderObj.id}"` : "null", name: articleName })
-      } else {
-        return ui.notifications?.error((game as Game).i18n.format("MOU.error_create_journal_format"))
-      }
-      const entry = await JournalEntry.create(JSON.parse(json_text))
-      entry?.sheet?.render(true)
-      ui.journal?.activate()
+      await MouFoundryUtils.createJournalImageOrVideo(path, folder, true)
     } else {
       ui.notifications?.error((game as Game).i18n.localize("MOU.error_create_journal_path"))
     }
@@ -253,7 +248,7 @@ export default class MouFoundryUtils {
     if(!canvas.dimensions || !canvas.grid || !layerNotes || !layerMou) return false
 
     // generate journal
-    const entry = await MouFoundryUtils.createJournalImage(imgPath, folder, false)
+    const entry = await MouFoundryUtils.createJournalImageOrVideo(imgPath, folder, false)
     if(!entry) return false
     // @ts-ignore
     const coord = canvas.grid.getSnappedPoint({x: point.x - canvas.grid.sizeX/2, y: point.y - canvas.grid.sizeY/2}, {mode: CONST.GRID_SNAPPING_MODES.VERTEX})
