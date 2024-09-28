@@ -52,6 +52,7 @@ export default defineConfig({
       targets: [
         { src: "src/languages", dest: "dist" },
         { src: "src/templates", dest: "dist" },
+        { src: "src/img", dest: "dist" },
       ],
       hook: "writeBundle",
     }),
