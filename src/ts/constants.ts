@@ -24,6 +24,7 @@ export default class MouConfig {
   
   static MOU_DEF_FOLDER = "moulinette-v2"
   static MOU_DEF_THUMBS = `${MouConfig.MOU_DEF_FOLDER}/thumbs`
+  static MOU_DEF_NOTHUMB = 'modules/moulinette/img/no-photo.webp'
 
   static MEDIA_IMAGES = ["apng", "avif", "bmp", "gif", "jpeg", "jpg", "png", "svg", "tiff", "webp"]
   static MEDIA_VIDEOS = ["m4v", "mp4", "ogv", "webm"]

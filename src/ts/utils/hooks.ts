@@ -3,10 +3,21 @@ import { MouModule } from "../types";
 
 declare var libWrapper: any;
 
+/**
+ * Moulinette hooks
+ */
 export default class MouHooks {
 
+  
   /**
-   * Add Moulinette scene control (buttons on the left)
+   * Adds custom Moulinette controls to the scene controls.
+   * 
+   * @param {SceneControl[]} buttons - The array of scene control buttons to which the Moulinette controls will be added.
+   * 
+   * This method checks if the current user is a GM (Game Master). If so, it creates a new control tool for Moulinette,
+   * including an icon, layer, name, title, and tools. The tools include an action to open the Moulinette browser and 
+   * an authentication status indicator. The authentication status tool's icon changes based on whether the user is 
+   * authenticated.
    */
   static addMoulinetteControls(buttons: SceneControl[]) {
     const module = (game as Game).modules.get(MODULE_ID) as MouModule;
@@ -41,8 +52,19 @@ export default class MouHooks {
     }
   }
 
+  
   /**
-   * Replaces fromDropData methods for Item, Macro and JournalEntry
+   * Replaces the default Foundry VTT implementation for handling drop data for various entities (Actors, Items, Macros, JournalEntries)
+   * with custom logic provided by the Moulinette module. This method checks if the `libWrapper` library is available and uses it to
+   * register the custom logic. If `libWrapper` is not available, it directly overrides the `fromDropData` method of the respective entities.
+   *
+   * The custom logic involves invoking the `handleDragAndDrop` method of the `eventHandler` in the Moulinette module.
+   *
+   * @remarks
+   * This method is intended to be called during the initialization phase of the Moulinette module to ensure that the custom drop handling
+   * logic is in place before any drag-and-drop operations occur.
+   *
+   * @throws {Error} If the `game` object or the Moulinette module is not available.
    */
   static replaceFromDropData()  {
 

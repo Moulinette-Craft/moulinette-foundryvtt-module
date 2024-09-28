@@ -1,13 +1,31 @@
 import { MouCollectionAssetTypeEnum } from "../apps/collection";
 
+/**
+ * A utility class for working with media files.
+ */
 export default class MouMediaUtils {
 
-  /** Returns the base path (URL without extension) of an asset (path) */
+  /**
+   * Extracts the file extension from a given file path.
+   * 
+   * @param filepath - The full path of the media file.
+   * @returns The file extension of the media file.
+   */
   static getBasePath(filepath: string) {
     return filepath.replace(/\.[^/.]+$/, "")
   }
 
-  /** Generates pretty name based of filepath **/
+  /**
+   * Generates a human-readable name from a given file path.
+   * 
+   * This function performs the following transformations:
+   * 1. Extracts the filename from the full file path.
+   * 2. Replaces underscores and hyphens with spaces.
+   * 3. Capitalizes the first letter of each word.
+   * 
+   * @param filepath - The full path of the media file.
+   * @returns A prettified version of the media file name. If the filename cannot be determined, returns the original file path.
+   */
   static prettyMediaName(filepath: string) {
     const basepath = MouMediaUtils.getBasePath(decodeURI(filepath))
     let name = basepath.split("/").pop()                  // keep filename only (not entire path)
@@ -18,7 +36,14 @@ export default class MouMediaUtils {
     return name ? name : decodeURI(filepath)
   }
 
-  /** Generates a human readable filesize **/
+  
+  /**
+   * Converts a filesize in bytes to a human-readable string with appropriate units (B, KB, MB).
+   *
+   * @param filesize - The size of the file in bytes.
+   * @param decimals - The number of decimal places to include in the formatted string. Defaults to 1.
+   * @returns A string representing the filesize in a human-readable format.
+   */
   static prettyFilesize(filesize : number, decimals = 1) {
     if(filesize < 1024) {
       return `${filesize.toLocaleString()} B`
@@ -39,7 +64,16 @@ export default class MouMediaUtils {
     }
   }
 
-  /** Generates a human readable number **/
+  
+  /**
+   * Formats a number into a more readable string representation.
+   * 
+   * @param number - The number to format.
+   * @param full - If true, returns the full number with commas as thousand separators.
+   *               If false, returns a shortened version with 'K' for thousands and 'M' for millions.
+   * 
+   * @returns A string representing the formatted number.
+   */
   static prettyNumber(number : number, full: boolean) {
     if(full) {
       return number.toLocaleString()
@@ -55,7 +89,15 @@ export default class MouMediaUtils {
     }
   }
 
-  /** Generates a human readable duration **/
+  /**
+   * Converts a duration in seconds to a human-readable string format.
+   * 
+   * The format will be `MM:SS` if the duration is less than an hour,
+   * and `HH:MM:SS` if the duration is an hour or more.
+   * 
+   * @param seconds - The duration in seconds to be converted.
+   * @returns A string representing the formatted duration.
+   */
   static prettyDuration(seconds: number) {
     seconds = Math.round(seconds)
     const hours = Math.floor(seconds / 3600);
@@ -70,7 +112,22 @@ export default class MouMediaUtils {
     }
   }
 
-  /** Copies data (string) to clipboard */
+  /**
+   * Copies the provided string data to the clipboard.
+   * 
+   * @param data - The string data to be copied to the clipboard.
+   * 
+   * @remarks
+   * This method uses the `navigator.clipboard.writeText` API to copy the text to the clipboard.
+   * If the copy operation is successful, a success notification is displayed.
+   * If the copy operation fails, a warning notification is displayed.
+   * 
+   * @example
+   * ```typescript
+   * const text = "Hello, World!";
+   * copyToClipboard(text);
+   * ```
+   */
   static copyToClipboard(data: string) {
     if(data) {
       navigator.clipboard.writeText(data).then(() => {
@@ -82,7 +139,12 @@ export default class MouMediaUtils {
     }
   }
 
-  /** Returs the FA icon representing the asset type */
+  /**
+   * Returns the appropriate Font Awesome icon class for a given asset type.
+   * 
+   * @param type - The type of the asset.
+   * @returns The Font Awesome icon class for the given asset type.
+   */
   static getIcon(type: MouCollectionAssetTypeEnum): string | null {
     switch(type) {
       case MouCollectionAssetTypeEnum.Actor: return "fa-solid fa-user";
@@ -100,21 +162,39 @@ export default class MouMediaUtils {
   }
 
   /**
-   * Returns metadata from provided image (as URL)
+   * Returns the appropriate color for a given asset type.
+   * 
+   * @param type - The type of the asset.
+   * @returns The color for the given asset type.
    */
-  static async getMetadataFromImage(url: string): Promise<{ width: number, height: number }> {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      img.onload = () => {
-        resolve({ width: img.width, height: img.height });
-      };
-      img.onerror = reject;
-      img.src = url;
-    });
+  static async getMetadataFromMedia(url: string): Promise<{ width: number, height: number }> {
+    if(url.endsWith(".mp4") || url.endsWith(".webm")) {
+      return new Promise((resolve, reject) => {
+        const video = document.createElement('video');
+        video.onloadedmetadata = () => {
+          resolve({ width: video.videoWidth, height: video.videoHeight });
+        };
+        video.onerror = reject;
+        video.src = url;
+      });
+    }
+    else {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+          resolve({ width: img.width, height: img.height });
+        };
+        img.onerror = reject;
+        img.src = url;
+      });
+    }
   } 
 
   /**
-   * Returns metadata for provided audio (as URL)
+   * Returns the appropriate color for a given asset type.
+   * 
+   * @param type - The type of the asset.
+   * @returns The color for the given asset type.
    */
   static async getMetadataFromAudio(url: string): Promise<{ duration: number }> {
     return new Promise((resolve, reject) => {

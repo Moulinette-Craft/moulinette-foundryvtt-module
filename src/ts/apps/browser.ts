@@ -1,4 +1,4 @@
-import { MODULE_ID } from "../constants";
+import MouConfig, { MODULE_ID } from "../constants";
 import { AnyDict, MouModule } from "../types";
 import MouFileManager from "../utils/file-manager";
 import MouApplication from "./application";
@@ -164,21 +164,27 @@ export default class MouBrowser extends MouApplication {
         case MouCollectionAssetTypeEnum.Macro: 
         case MouCollectionAssetTypeEnum.Playlist: 
         case MouCollectionAssetTypeEnum.Audio: 
-          html = await renderTemplate(`modules/${MODULE_ID}/templates/browser-assets-rows.hbs`, { assets, index })
+          html = await renderTemplate(`modules/${MODULE_ID}/templates/browser-assets-rows.hbs`, { MOU_DEF_NOTHUMB: MouConfig.MOU_DEF_NOTHUMB, assets, index })
           break
         default:
-          html = await renderTemplate(`modules/${MODULE_ID}/templates/browser-assets-blocks.hbs`, { assets, index })
+          html = await renderTemplate(`modules/${MODULE_ID}/templates/browser-assets-blocks.hbs`, { MOU_DEF_NOTHUMB: MouConfig.MOU_DEF_NOTHUMB, assets, index })
       }
       this.html?.find(".content").append(html)
       Array.prototype.push.apply(this.currentAssets, assets);
     }
     // activate listeners
     this.html?.find(".asset").off()
-    this.html?.find(".asset").on("mouseenter", this._onShowMenu.bind(this));
-    this.html?.find(".asset").on("mouseleave", this._onHideMenu.bind(this));
-    this.html?.find(".asset a.creator").on("click", this._onClickAssetCreator.bind(this));
-    this.html?.find(".asset a.pack").on("click", this._onClickAssetPack.bind(this));
-    this.html?.find(".asset.draggable").on("dragstart", this._onDragStart.bind(this));
+    this.html?.find(".asset").on("mouseenter", () => this._onShowMenu.bind(this));
+    this.html?.find(".asset").on("mouseleave", () => this._onHideMenu.bind(this));
+    this.html?.find(".asset a.creator").on("click", () => this._onClickAssetCreator.bind(this));
+    this.html?.find(".asset a.pack").on("click", () => this._onClickAssetPack.bind(this));
+    this.html?.find(".asset.draggable").on("dragstart", () => this._onDragStart.bind(this));
+    this.html?.find(".asset video source").on('error', function() {
+      const img = new Image();
+      img.src = MouConfig.MOU_DEF_NOTHUMB;
+      img.classList.add("fallback-image");
+      $(this).closest("video").replaceWith(img);
+    });
   }
 
   /** Extend/collapse filter section */

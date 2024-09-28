@@ -30,11 +30,20 @@ class MouCollectionLocalAsset implements MouCollectionAsset {
   icon: string | null;
   icons?: {descr: string, icon: string}[];
   draggable?: boolean;
+  animated: boolean;
   flags: AnyDict;
   
   constructor(data: AnyDict, pack: AnyDict) {
     let assetType : MouCollectionAssetTypeEnum
+    this.animated = false
     if(MouConfig.MEDIA_IMAGES.includes(data.path.split(".").pop()?.toLocaleLowerCase() as string)) {
+      if(data.width && data.height && data.width >= MouConfig.MEDIA_MAP_THRESHOLD && data.height >= MouConfig.MEDIA_MAP_THRESHOLD) {
+        assetType = MouCollectionAssetTypeEnum.Map
+      } else {
+        assetType = MouCollectionAssetTypeEnum.Image
+      }
+    } else if (MouConfig.MEDIA_VIDEOS.includes(data.path.split(".").pop()?.toLocaleLowerCase() as string)) {
+      this.animated = !(pack.options && pack.options.thumbs)
       if(data.width && data.height && data.width >= MouConfig.MEDIA_MAP_THRESHOLD && data.height >= MouConfig.MEDIA_MAP_THRESHOLD) {
         assetType = MouCollectionAssetTypeEnum.Map
       } else {

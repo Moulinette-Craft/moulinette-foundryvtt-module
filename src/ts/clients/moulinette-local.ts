@@ -30,12 +30,20 @@ export default class MouLocalClient {
     return MouLocalClient.generateFoldersPath(folder.folder) + folder.name + "/"
   }
 
+
   /**
-   * This function browses all compendiums and index all the content
-   * - Indices are kept in a file {MOU_DEF_FOLDER}/index-compendiums.json
-   * - Automatically updates indices of existing compendiums for which the version doesn't match
-   * - Index is shared among all worlds of the installation
-   * Returns the index based on enabled compendiums
+   * Indexes all active compendiums in the world.
+   * 
+   * @param {boolean} [reindex=false] - If true, forces re-indexing of all compendiums even if they are already indexed.
+   * @returns {Promise<{packs: any[], assets: any[]}>} - An object containing the indexed packs and assets.
+   * 
+   * @remarks
+   * This function reads all active compendiums in the world and indexes their contents. It supports reusing existing index 
+   * data if the compendium version has not changed, unless reindexing is forced. The function also handles different types 
+   * of compendiums (system, module, world) and applies exclusions based on user settings. Indices are kept in a file 
+   * {MOU_DEF_FOLDER}/index-compendiums.json.
+   * 
+   * @throws Will log a warning if unable to fetch documents from a compendium.
    */
   static async indexAllCompendiums(reindex = false) {
 
@@ -192,6 +200,18 @@ export default class MouLocalClient {
   }
 
 
+  /**
+   * Indexes all local assets in the specified path and updates the index data.
+   * 
+   * @param path - The path to the folder containing the assets.
+   * @param source - The source type for the FilePicker.
+   * @param callbackOnComplete - Optional callback function to be called upon completion.
+   * @param options - Optional settings for indexing:
+   *   - metadata: Whether to retrieve metadata for the assets.
+   *   - thumbs: Whether to generate thumbnails for image assets.
+   * @param force - Whether to force re-indexing of assets, ignoring old data.
+   * @returns A promise that resolves when the indexing is complete.
+   */
   static async indexAllLocalAssets(path: string, source: string, callbackOnComplete?: Function, options?: { metadata: boolean, thumbs: boolean }, force: boolean = false): Promise<void> {
     const indexPath = `${MouConfig.MOU_DEF_FOLDER}/${MouLocalClient.INDEX_LOCAL_ASSETS}`
     let indexData = await MouFileManager.loadJSON(indexPath)
@@ -215,7 +235,7 @@ export default class MouLocalClient {
             const fileURL = decodeURI(files[i])
             const ext = fileURL.split(".").pop()?.toLocaleLowerCase() as string
             const fileData = { path: fileURL } as AnyDict
-            if(MouConfig.MEDIA_IMAGES.includes(ext)) {
+            if(MouConfig.MEDIA_IMAGES.includes(ext) || MouConfig.MEDIA_VIDEOS.includes(ext)) {
               assetsCount++
               // generating image thumbnails
               if(options && options.thumbs) {
@@ -234,7 +254,7 @@ export default class MouLocalClient {
                   fileData.height = existing.height
                 }
                 else {
-                  const meta = await MouMediaUtils.getMetadataFromImage(fileURL)
+                  const meta = await MouMediaUtils.getMetadataFromMedia(fileURL)
                   if(meta) {
                     fileData.width = meta.width
                     fileData.height = meta.height
@@ -242,9 +262,6 @@ export default class MouLocalClient {
                 }
               }
               assets.push(fileData)
-            } else if(MouConfig.MEDIA_VIDEOS.includes(ext)) {
-              assets.push(fileData)
-              assetsCount++
             } else if (MouConfig.MEDIA_AUDIO.includes(ext)) {
               assetsCount++
 
@@ -302,11 +319,26 @@ export default class MouLocalClient {
   }
 
 
+  /**
+   * Retrieves all packs from the local settings.
+   *
+   * @returns {Promise<{name: string, path: string}[]>} A promise that resolves to an array of objects,
+   * each containing the name and path of a pack.
+   */
   static async getAllPacks(): Promise<{name: string, path: string}[]> {
     const settings = MouApplication.getSettings(SETTINGS_COLLECTION_LOCAL) as AnyDict
     return settings.folders.map((f : AnyDict) => { return { name: f.name, path: f.path } })
   }
 
+
+  /**
+   * Retrieves all assets from the local settings and index data.
+   *
+   * @returns {Promise<AnyDict>} A promise that resolves to a dictionary of assets.
+   *
+   * The returned dictionary contains asset information indexed by folder paths and sources.
+   * Each entry includes the folder name, the assets within the folder, and any additional options.
+   */
   static async getAllAssets(): Promise<AnyDict> {
     const assets = {} as AnyDict
     const settings = MouApplication.getSettings(SETTINGS_COLLECTION_LOCAL) as AnyDict

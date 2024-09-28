@@ -13,7 +13,14 @@
     <div class="overlay"></div>
     <div class="menu"></div>
     <div class="preview" {{#if a.background_color}}style="background-color: #{{a.background_color}}"{{/if}}>
-      <img src="{{a.preview}}"/>
+      {{#if a.animated}}
+        <div class="video">
+          <video autoplay loop muted><source src="{{a.preview}}"></video>
+        </div>
+      {{/if}}
+      {{#unless a.animated}}
+        <img src="{{a.preview}}" onerror="this.src='{{../MOU_DEF_NOTHUMB}}'"/>
+      {{/unless}}
       {{#if a.icons}}
       <ul class="icons">
         {{#each a.icons as |i|}}<li title="{{i.descr}}"><i class="{{i.icon}}"></i></li>{{/each}}
