@@ -1,7 +1,7 @@
-import MouApplication from "../apps/application";
-import { MODULE_ID, SETTINGS_COLLECTION_CLOUD } from "../constants";
-import { AnyDict } from "../types";
-import { CloudMode } from "./collection-cloud";
+import MouApplication from "../../apps/application";
+import { MODULE_ID, SETTINGS_COLLECTION_CLOUD } from "../../constants";
+import { AnyDict } from "../../types";
+import { CloudMode } from "./../collection-cloud";
 
 /**
  * This class for configuring cloud collection

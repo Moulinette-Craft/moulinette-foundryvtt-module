@@ -1,8 +1,10 @@
 import MouApplication from "../apps/application";
 import { MoulinetteProgress } from "../apps/progressbar";
+import { CollectionCompendiumsUtils } from "../collections/config/collection-compendiums-utils";
 import MouConfig, { MODULE_ID, SETTINGS_COLLECTION_LOCAL } from "../constants";
 import { AnyDict, MouModule } from "../types";
 import MouFileManager from "../utils/file-manager";
+import MouFoundryUtils from "../utils/foundry-utils";
 import MouMediaUtils from "../utils/media-utils";
 
 export default class MouLocalClient {
@@ -11,16 +13,6 @@ export default class MouLocalClient {
   static INDEX_COMPENDIUMS = "index-compendiums.json"
   static INDEX_LOCAL_ASSETS = "index-localassets.json"
   static LOOP_PROCESS_ASSETS = 100 // number of assets to process before updating
-
-  /**
-   * Returns a thumbnail for this entry (from compendium)
-   */
-  static getThumbnail(entry: AnyDict, type: string) {
-    if(type == "Scene") {
-      return entry.thumb
-    }
-    return entry.img
-  }
 
   /**
    * Recursively build the folder path
@@ -58,20 +50,18 @@ export default class MouLocalClient {
     const assetsPacks = []
     const assets = []
     let idx = 0
-    //let processed = 0
+    let processed = 0
     
-    //const progressbar = (new MoulinetteProgress((game as Game).i18n.localize("MOU.index_compendiums")))
-    //progressbar.render(true)
+    const progressbar = (new MoulinetteProgress((game as Game).i18n.localize("MOU.index_compendiums")))
+    progressbar.render(true)
 
-    for(const p of _game.packs) {
-      //progressbar.setProgress(Math.round((idx / (game as Game).packs.size)*100), (game as Game).i18n.format("MOU.indexing", { count: processed++ }))
+    for(const p of _game.packs as any) {
+      progressbar.setProgress(Math.round((idx / (game as Game).packs.size)*100), (game as Game).i18n.format("MOU.indexing", { count: processed++ }))
     
-      // @ts-ignore check permission 
       if(!p.testUserPermission(_game.user, "OBSERVER")) {
         continue;
       }
       
-      // @ts-ignore
       let packId = p.metadata.id
       if(packId.startsWith("world.moulinette")) {
         continue;
@@ -80,27 +70,21 @@ export default class MouLocalClient {
       let version = null
       // retrieve creator/publisher
       let creatorName = "??"
-      // @ts-ignore compendium from system => creator = name of the system
+      // compendium from system => creator = name of the system
       if(p.metadata.packageType == "system") {
-        // @ts-ignore
-        version = _game.system.version
-        // @ts-ignore
-        creatorName = game.system.title
+        version = (_game.system as AnyDict).version
+        creatorName = (_game.system as AnyDict).title
       }
-      // @ts-ignore compendium from module => creator = title of the module
+      // compendium from module => creator = title of the module
       else if(p.metadata.packageType == "module") {
-        // @ts-ignore
-        const module = game.modules.get(p.metadata.packageName)
+        const module = _game.modules.get(p.metadata.packageName) as AnyDict
         creatorName = module.title
         version = module.version
       }
       // compendium from world => creator = title of the world
-      // @ts-ignore
       else if(p.metadata.packageType == "world") {
-        // @ts-ignore
-        creatorName = game.world.title
-        // @ts-ignore
-        packId = game.world.id + "." + packId // distinguish two same packs in different worlds
+        creatorName = (_game.world as AnyDict).title
+        packId = (_game.world as AnyDict).id + "." + packId // distinguish two same packs in different worlds
       }
 
       // check if already in index data (world compendiums must always re-indexed because they have no version)
@@ -128,7 +112,6 @@ export default class MouLocalClient {
       }
 
       const packData = {
-        // @ts-ignore
         packId: p.metadata.id,
         publisher: creatorName,
         name: p.metadata.label,
@@ -139,7 +122,6 @@ export default class MouLocalClient {
       }
 
       // store in index (if not local)
-      // @ts-ignore
       if(p.metadata.packageType != "world") {
         indexData[packId] = {
           version: version,
@@ -151,29 +133,24 @@ export default class MouLocalClient {
       packData.idx = idx
       assetsPacks.push(packData)
 
-      // @ts-ignore retrieve all folders to build path
+      // retrieve all folders to build path
       const folder = MouLocalClient.generateFoldersPath(p.folder)
 
       // read all assets
       for(const el of elements) {
-        /*
-        const entry = {
-          type: packData.type,
-          // @ts-ignore
-          system: game.system.id,
-          //meta: MouLocalClient.generateMetaFromLocal(el, packData.type)
-        }*/
         const asset = { 
-          // @ts-ignore
           id: el.uuid,
-          img : MouLocalClient.getThumbnail(el, packData.type),
+          img : MouFoundryUtils.getThumbnail(el, packData.type),
           filename: folder, // use for folder path
           name: el.name,
-          //infos: MoulinetteCompendiumsUtil.getAdditionalInfo(el, packData.type)
-          //infos: MouLocalClient.getAdditionalInfoFromMeta(entry),
+          data: {
+            type: packData.type,
+            system: _game.system.id,
+            meta: CollectionCompendiumsUtils.generateMetaFromLocal(el, packData.type)
+          },
           pack: 0
         }
-        // @ts-ignore store in index (if not local)
+        // store in index (except local)
         if(p.metadata.packageType != "world") {
           indexData[packId].assets.push(foundry.utils.duplicate(asset))
         }
@@ -184,14 +161,13 @@ export default class MouLocalClient {
       idx++;
     }
 
-    //progressbar.setProgress(100, (game as Game).i18n.format("MOU.indexing", { count: processed++ }))
+    progressbar.setProgress(100, (game as Game).i18n.format("MOU.indexing", { count: processed++ }))
+    setTimeout(() => progressbar.close(), 1000);
 
     // store index if updated
     if(updated) {
       await MouFileManager.storeJSON(indexData, MouLocalClient.INDEX_COMPENDIUMS, MouConfig.MOU_DEF_FOLDER);
     }
-
-    console.groupEnd()
 
     // apply exclusions
     const curExclusions = MouApplication.getSettings("dataExclusions") as AnyDict

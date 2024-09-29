@@ -1,9 +1,13 @@
-import MouApplication from "../apps/application";
-import { MODULE_ID } from "../constants";
+import MouApplication from "../../apps/application";
+import { MODULE_ID } from "../../constants";
+import MouMediaUtils from "../../utils/media-utils";
 import { LocalCollectionSource } from "./collection-local-index-config";
 
 /**
- * This class for configuring local collections
+ * This class is responsible for configuring local collections.
+ * It extends the MouApplication class and provides functionality
+ * to manage the configuration of local collection sources, including
+ * setting the source path, name, and options such as thumbnails and metadata.
  */
 export default class LocalCollectionConfigNewSource extends MouApplication {
  
@@ -32,6 +36,12 @@ export default class LocalCollectionConfigNewSource extends MouApplication {
     }
   }
 
+  /**
+   * Retrieves the localized title for the local collection configuration source.
+   *
+   * @override
+   * @returns {string} The localized title string.
+   */
   override get title(): string {
     return (game as Game).i18n.localize("MOU.localcollection_config_source");
   }
@@ -59,6 +69,18 @@ export default class LocalCollectionConfigNewSource extends MouApplication {
     //this.html = html
   }
 
+  /**
+   * Handles action events triggered by user interactions.
+   * 
+   * @param event - The event object representing the user interaction.
+   * 
+   * This method performs different actions based on the data-id attribute of the event's current target:
+   * - "folder": Opens a FilePicker to select a folder and updates the source path, source, and name.
+   * - "save": Validates the source name and path, then calls the callback function with the source and closes the dialog.
+   * - "cancel": Closes the dialog without performing any action.
+   * 
+   * If the source name or path is invalid when attempting to save, an error notification is displayed.
+   */
   _onAction(event: Event): void {
     event.preventDefault();
     if(event.currentTarget) {
@@ -71,6 +93,7 @@ export default class LocalCollectionConfigNewSource extends MouApplication {
           callback: async (path, picker) => {
             parent.source.path = path
             parent.source.source = picker.activeSource
+            parent.source.name = MouMediaUtils.prettyMediaName(path.split("/").pop())
             parent.render()
           },
         // @ts-ignore
@@ -86,6 +109,11 @@ export default class LocalCollectionConfigNewSource extends MouApplication {
     }
   }
 
+  /**
+   * Handles the input change event for the collection local index configuration source.
+   * 
+   * @param event - The input change event.
+   */
   _onInputChange(event: Event): void {
     event.preventDefault();
     if(event.currentTarget) {

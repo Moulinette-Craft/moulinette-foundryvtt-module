@@ -5,6 +5,7 @@ import MouLocalClient from "../clients/moulinette-local";
 import { AnyDict } from "../types";
 import MouFoundryUtils from "../utils/foundry-utils";
 import MouMediaUtils from "../utils/media-utils";
+import { CollectionCompendiumsUtils } from "./config/collection-compendiums-utils";
 
 enum CompendiumAssetAction {
   DRAG,                     // drag & drop capability for the asset
@@ -35,7 +36,7 @@ class MouCollectionCompendiumAsset implements MouCollectionAsset {
   
   constructor(data: AnyDict, pack: AnyDict) {
     const assetType = MouCollectionAssetTypeEnum[pack.type as keyof typeof MouCollectionAssetTypeEnum]
-    const thumbnail = MouLocalClient.getThumbnail(data, data.type)
+    const thumbnail = MouFoundryUtils.getThumbnail(data, data.type)
     this.id = data.id;
     this.url = MouFoundryUtils.getImagePathFromEntity(data) || "";
     this.format = [MouCollectionAssetTypeEnum.Scene, MouCollectionAssetTypeEnum.Map].includes(assetType) ? "large" : "small"
@@ -51,6 +52,25 @@ class MouCollectionCompendiumAsset implements MouCollectionAsset {
     this.icon = MouMediaUtils.getIcon(assetType)
     this.icons = []
     this.flags = {}
+    
+    if(data.data && data.data.meta) {
+      const infos = CollectionCompendiumsUtils.getInformationFromMeta(data.data)
+      if(infos) {
+        for(const meta of infos.meta) {
+          this.meta.push({
+            icon: meta.icon,
+            text: meta.label,
+            hint: "?"
+          })
+        }
+        for(const flag of infos.flags) {
+          this.icons.push({
+            descr: flag.label,
+            icon: flag.img
+          })
+        }
+      }
+    }
   }
 }
 
@@ -61,6 +81,7 @@ export default class MouCollectionCompendiums implements MouCollection {
   static PLAYLIST_NAME = "Moulinette Compendiums"
 
   private compendiums: AnyDict
+  private filteredAssets: any;
 
   constructor() {
     this.compendiums = {}
@@ -82,6 +103,7 @@ export default class MouCollectionCompendiums implements MouCollection {
 
   async getTypes(): Promise<MouCollectionAssetType[]> {
     const types = {} as AnyDict
+    console.log(this.compendiums.packs)
     for(const pack of Object.values(this.compendiums.packs) as AnyDict[]) {
       if(pack.type in types) {
         types[pack.type] += pack.count
@@ -151,35 +173,59 @@ export default class MouCollectionCompendiums implements MouCollection {
     return [] as string[]
   }
 
-  async getAssetsCount(filters: MouCollectionFilters): Promise<number> {
-    console.log(filters)
-    return 0
+  /**
+   * Retrieves the count of filtered assets.
+   *
+   * @returns {Promise<number>} A promise that resolves to the number of filtered assets.
+   */
+  async getAssetsCount(): Promise<number> {
+    return this.filteredAssets ? this.filteredAssets.length : 0
   }
 
+  /**
+   * Retrieves a list of assets based on the provided filters and pagination.
+   *
+   * @param {MouCollectionFilters} filters - The filters to apply when searching for assets.
+   * @param {number} page - The page number to retrieve, used for pagination.
+   * @returns {Promise<MouCollectionAsset[]>} A promise that resolves to an array of assets matching the filters.
+   *
+   * The function performs the following steps:
+   * 1. Initializes an empty results array.
+   * 2. If the page is 0 or there are no cached filtered assets, it filters the compendium packs and assets based on the provided filters.
+   * 3. Applies search terms, pack, type, and creator filters to the compendium packs.
+   * 4. Filters the assets based on the filtered packs and search terms.
+   * 5. Caches the filtered assets.
+   * 6. Slices the filtered assets for the current page and pushes them to the results array.
+   * 7. Returns the results array.
+   */
   async getAssets(filters: MouCollectionFilters, page: number): Promise<MouCollectionAsset[]> {
     const results = [] as MouCollectionAsset[]
-    const searchTerms = filters.searchTerms && filters.searchTerms.length >= 3 ? filters.searchTerms.split(" ") : []
-    const packs = this.compendiums.packs.filter((p: AnyDict) => {
-      // apply pack filter
-      if(filters.pack && p.packId != filters.pack) return false
-      // apply type filter
-      if(MouCollectionAssetTypeEnum[p.type as keyof typeof MouCollectionAssetTypeEnum] != filters.type) return false;
-      // apply creator filter
-      if(filters.creator && filters.creator.length > 0 && p.publisher != filters.creator) return false
-      return true
-    })
-    const packIdx = packs.map((p: AnyDict) => p.idx)
-    const filteredAssets = this.compendiums.assets.filter((a: AnyDict) => {
-      // apply filters
-      for(const term of searchTerms) {
-        if(a.name.toLowerCase().indexOf(term.toLowerCase()) < 0) return false
-      }
-      return packIdx.includes(a.pack)
-    })
-
+    
+    // Search all assets that match the provided filters
+    if(page == 0 || !this.filteredAssets) {
+      const searchTerms = filters.searchTerms && filters.searchTerms.length >= 3 ? filters.searchTerms.split(" ") : []
+      const packs = this.compendiums.packs.filter((p: AnyDict) => {
+        // apply pack filter
+        if(filters.pack && p.packId != filters.pack) return false
+        // apply type filter
+        if(MouCollectionAssetTypeEnum[p.type as keyof typeof MouCollectionAssetTypeEnum] != filters.type) return false;
+        // apply creator filter
+        if(filters.creator && filters.creator.length > 0 && p.publisher != filters.creator) return false
+        return true
+      })
+      const packIdx = packs.map((p: AnyDict) => p.idx)
+      this.filteredAssets = this.compendiums.assets.filter((a: AnyDict) => {
+        // apply filters
+        for(const term of searchTerms) {
+          if(a.name.toLowerCase().indexOf(term.toLowerCase()) < 0) return false
+        }
+        return packIdx.includes(a.pack)
+      })
+    }
+  
     const fromIdx = page * MouBrowser.PAGE_SIZE
-    if(fromIdx >= filteredAssets.length) return []
-    for(const data of filteredAssets.slice(fromIdx, fromIdx + MouBrowser.PAGE_SIZE)) {
+    if(fromIdx >= this.filteredAssets.length) return []
+    for(const data of this.filteredAssets.slice(fromIdx, fromIdx + MouBrowser.PAGE_SIZE)) {
       results.push(new MouCollectionCompendiumAsset(data, this.compendiums.packs[data.pack]))
     }
     return results
@@ -213,6 +259,9 @@ export default class MouCollectionCompendiums implements MouCollection {
         actions.push({ id: CompendiumAssetAction.CREATE_ARTICLE, name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
         actions.push({ id: CompendiumAssetAction.VIEW, small: true, name: (game as Game).i18n.localize("MOU.action_view"), icon: "fa-solid fa-eye" })
         break;    
+      case MouCollectionAssetTypeEnum.RollTable:
+        actions.push({ id: CompendiumAssetAction.IMPORT, name: (game as Game).i18n.format("MOU.action_import", { type: assetType}), icon: "fa-solid fa-file-import" })
+        break;
       case MouCollectionAssetTypeEnum.JournalEntry:
       case MouCollectionAssetTypeEnum.Macro:
         actions.push({ id: CompendiumAssetAction.DRAG, drag: true, name: (game as Game).i18n.format("MOU.action_drag", { type: assetType}), icon: "fa-solid fa-hand" })
@@ -258,6 +307,7 @@ export default class MouCollectionCompendiums implements MouCollection {
           case MouCollectionAssetTypeEnum.Actor: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_import_asset") }
           case MouCollectionAssetTypeEnum.Image: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_import_image") }
           case MouCollectionAssetTypeEnum.Audio: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_import_audio") }
+          case MouCollectionAssetTypeEnum.RollTable: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_import_rolltable") }
         }
         break
       case CompendiumAssetAction.CLIPBOARD:
@@ -299,11 +349,10 @@ export default class MouCollectionCompendiums implements MouCollection {
         const pack = (game as Game).packs.get(asset.pack_id)
         const collection = (game as Game).collections.get(MouCollectionAssetTypeEnum[asset.type]);
         if(pack && collection && id) {  
-          const document = await collection.importFromCompendium(pack, id, {}, { renderSheet: true})
+          const document = await collection.importFromCompendium(pack, id, {}, { renderSheet: true}) as any
           const folder = await MouFoundryUtils.getOrCreateFolder(MouCollectionAssetTypeEnum[asset.type] as foundry.CONST.FOLDER_DOCUMENT_TYPES, folderPath)
           // move entity into right folder
           if(document && folder) {
-            // @ts-ignore
             document.update({ folder: folder.id })
           }
         } else {

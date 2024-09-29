@@ -27,7 +27,7 @@ export default class MouHooks {
         activeTool: "",
         icon: "fa-solid fa-photo-film-music",
         layer: "moulayer",
-        name: "moulinette",
+        name: "moucontrols",
         title: (game as Game).i18n.localize("MOU.user_authenticated"),
         tools: [{ 
           name: "actions", 

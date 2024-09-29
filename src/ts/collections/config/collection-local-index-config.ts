@@ -1,8 +1,8 @@
-import MouApplication from "../apps/application";
-import MouLocalClient from "../clients/moulinette-local";
-import MouConfig, { MODULE_ID, SETTINGS_COLLECTION_LOCAL } from "../constants";
-import { AnyDict } from "../types";
-import MouFileManager from "../utils/file-manager";
+import MouApplication from "../../apps/application";
+import MouLocalClient from "../../clients/moulinette-local";
+import MouConfig, { MODULE_ID, SETTINGS_COLLECTION_LOCAL } from "../../constants";
+import { AnyDict } from "../../types";
+import MouFileManager from "../../utils/file-manager";
 import LocalCollectionConfigNewSource from "./collection-local-index-config-source";
 
 export interface LocalCollectionSource {

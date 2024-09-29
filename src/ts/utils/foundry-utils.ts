@@ -8,6 +8,21 @@ export default class MouFoundryUtils {
   static FOLDER_MAX_LEVELS = 3
   static AUDIO_DEFAULT_RADIUS = 10
 
+  
+  /**
+   * Retrieves the thumbnail image for a given entry based on its type.
+   *
+   * @param entry - The entry object containing image data.
+   * @param type - The type of the entry (e.g., "Scene").
+   * @returns The thumbnail image URL if the type is "Scene", otherwise the main image URL.
+   */
+  static getThumbnail(entry: AnyDict, type: string) {
+    if(type == "Scene") {
+      return entry.thumb
+    }
+    return entry.img
+  }
+
   /**
    * Tries to retrieve image path for the provided FVTT entity
    */
@@ -314,6 +329,44 @@ export default class MouFoundryUtils {
     return true
   }
 
-  
+  /**
+   * Extract value from object
+   */
+  static getValueFromObject(object: AnyDict, path: string): any {
+    // remove initial "." if any
+    if(path.startsWith(".")) {
+      path = path.substring(1)
+    }
+    // dummy use case
+    if(!path || path.length == 0) {
+      return object
+    }
+    // regular expression for match .*[key==value].*
+    const regex = /\[[^\=]+\=\=[^\]]+\]/g; 
+    const match = regex.exec(path);
+    if(match) {
+      // retrieve list
+      const listPath = path.substring(0, match.index)
+      const list = foundry.utils.getProperty(object, listPath)
+      if(list) {
+        // find matching element in list
+        const keyVal = match[0].substring(1,match[0].length-1).split("==")
+        const found = list.find((el: AnyDict) => el[keyVal[0]] == keyVal[1])
+        if(found) {
+          // find value
+          return MouFoundryUtils.getValueFromObject(found, path.substring(match.index + match[0].length))
+        }
+      }
+    }
+    // count
+    else if(path.startsWith("#")) {
+      const value = foundry.utils.getProperty(object, path.substring(1))
+      return value ? value.size : 0
+    }
+    else {
+      return foundry.utils.getProperty(object, path)
+    }
+    return null
+  }
 
 }

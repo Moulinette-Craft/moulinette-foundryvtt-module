@@ -7,7 +7,7 @@ import { MouCollection, MouCollectionAction, MouCollectionActionHint, MouCollect
 import MouConfig, { MOU_STORAGE_PUB, SETTINGS_COLLECTION_CLOUD, SETTINGS_SESSION_ID } from "../constants";
 import { AnyDict } from "../types";
 import MouFoundryUtils from "../utils/foundry-utils";
-import CloudCollectionConfig from "./collection-cloud-config";
+import CloudCollectionConfig from "./config/collection-cloud-config";
 
 export enum CloudMode {
   ALL = "cloud-all",                          // all assets including non-accessible
@@ -235,8 +235,7 @@ export default class MouCollectionCloud implements MouCollection {
     return [] as string[]
   }
 
-  async getAssetsCount(filters: MouCollectionFilters): Promise<number> {
-    console.log(filters)
+  async getAssetsCount(): Promise<number> {
     return 0
   }
 

@@ -1,6 +1,7 @@
 import MouConfig, { MODULE_ID } from "../constants";
 import { AnyDict, MouModule } from "../types";
 import MouFileManager from "../utils/file-manager";
+import MouMediaUtils from "../utils/media-utils";
 import MouApplication from "./application";
 import { MouCollection, MouCollectionAsset, MouCollectionAssetTypeEnum, MouCollectionDragData, MouCollectionFilters, MouCollectionUtils } from "./collection";
 
@@ -15,6 +16,7 @@ export default class MouBrowser extends MouApplication {
   private ignoreScroll: boolean = false;
   private page: number = 0; // -1 means = ignore. Otherwise, increments the page and loads more data
   private collection?: MouCollection;
+  private currentAssetsCount: number = 0;
   private currentAssets = [] as MouCollectionAsset[];
   private currentFoldersScroll = { top: 0, left: 0 }
   
@@ -66,6 +68,8 @@ export default class MouBrowser extends MouApplication {
     this.currentAssets = []
     const types = await this.collection.getTypes(this.filters)
     const typesObj = types.map( type => ({ id: Number(type.id), name: MouCollectionUtils.getTranslatedType(Number(type.id)), assetsCount: type.assetsCount}))
+    typesObj.sort((a, b) => a.name.localeCompare(b.name))
+    
     // change type if selected type not available for current collection
     if(!types.find(t => t.id == this.filters.type)) {
       this.filters.type = types.length > 0 ? types[0].id : undefined
@@ -137,6 +141,8 @@ export default class MouBrowser extends MouApplication {
         this.filters.searchTerms = search.val() as string
         this.page = 0
         this.html?.find(".content").html("")
+        this.currentAssets = []
+        this.currentAssetsCount = 0
         this.loadMoreAssets()
       }, MouBrowser.DEBOUNCE_TIME);
     });
@@ -167,6 +173,9 @@ export default class MouBrowser extends MouApplication {
     let assets: MouCollectionAsset[] = [];
     try {
       assets = await this.collection.getAssets(this.filters, this.page);
+      if(this.page == 0) {
+        this.currentAssetsCount = await this.collection.getAssetsCount(this.filters)
+      }
     } catch (error) {
       this.logError("Error loading assets:", error)
       ui.notifications?.error((game as Game).i18n.localize("MOU.errorLoadingAssets"));
@@ -211,7 +220,15 @@ export default class MouBrowser extends MouApplication {
     });
 
     // show count
-    this.html?.find(".count").text(this.currentAssets.length)
+    let countHTML = ""
+    if(this.currentAssetsCount > 0) {
+      countHTML = (game as Game).i18n.format("MOU.asset_count", { 
+        count: MouMediaUtils.prettyNumber(this.currentAssets.length, true), 
+        total: MouMediaUtils.prettyNumber(this.currentAssetsCount, true) })
+    } else {
+      countHTML = (game as Game).i18n.format("MOU.asset_count_nototal", { count: MouMediaUtils.prettyNumber(this.currentAssets.length, true) })
+    }
+    this.html?.find(".count").text(countHTML)
   }
 
   /** Extend/collapse filter section */

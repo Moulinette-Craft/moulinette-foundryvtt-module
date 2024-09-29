@@ -11,6 +11,7 @@ export enum MouCollectionAssetTypeEnum {
   JournalEntry = 8,
   Playlist = 9,
   Macro = 10,
+  RollTable = 11,
   Undefined = 99
 }
 
@@ -20,7 +21,7 @@ export interface MouCollectionAssetType {
 }
 
 export interface MouCollectionAssetMeta {
-  icon: string,
+  icon?: string,
   text: string,
   hint: string
 }

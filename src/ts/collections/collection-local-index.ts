@@ -5,7 +5,7 @@ import MouConfig from "../constants";
 import { AnyDict } from "../types";
 import MouFoundryUtils from "../utils/foundry-utils";
 import MouMediaUtils from "../utils/media-utils";
-import LocalCollectionConfig from "./collection-local-index-config";
+import LocalCollectionConfig from "./config/collection-local-index-config";
 
 enum LocalAssetAction {
   DRAG,                     // drag & drop capability for the asset

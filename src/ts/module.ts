@@ -17,6 +17,7 @@ import MouEventHandler from "./apps/event-handler";
 import MouHooks from "./utils/hooks";
 import MouCollectionCompendiums from "./collections/collection-compendiums";
 import MouCollectionLocal from "./collections/collection-local-index";
+import { MouCompendiumsDefaults } from "./collections/config/collection-compendiums-defaults";
 
 let module: MouModule;
 
@@ -30,6 +31,7 @@ Hooks.once("init", () => {
   module.cache = new MouCache();
   module.collections = [] as MouCollection[]
   module.eventHandler = new MouEventHandler();
+  module.compendiumMappings = { mappings: MouCompendiumsDefaults.metadataMappings, formatters: MouCompendiumsDefaults.metadataMappingsFormatters }
   module.debug = true;
   
   (game as Game).settings.register(MODULE_ID, SETTINGS_SESSION_ID, { scope: "world", config: false, type: String, default: "anonymous" });

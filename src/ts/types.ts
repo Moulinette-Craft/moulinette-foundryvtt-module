@@ -15,7 +15,15 @@ export interface MouModule extends Game.ModuleData<ModuleData> {
   cache: MouCache;
   collections: MouCollection[];
   eventHandler: MouEventHandler;
+
+  // configurations that can be overridden
   configs: MouConfig;
+
+  // compendium mappings
+  compendiumMappings: {
+    mappings: AnyDict;
+    formatters: AnyDict;
+  }
 }
 
 export interface AnyDict {
