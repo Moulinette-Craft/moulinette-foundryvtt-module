@@ -7,7 +7,6 @@ declare var libWrapper: any;
  * Moulinette hooks
  */
 export default class MouHooks {
-
   
   /**
    * Adds custom Moulinette controls to the scene controls.
@@ -20,18 +19,19 @@ export default class MouHooks {
    * authenticated.
    */
   static addMoulinetteControls(buttons: SceneControl[]) {
+    console.log("HERE")
     const module = (game as Game).modules.get(MODULE_ID) as MouModule;
 
     if((game as Game).user?.isGM) {
       const moulinetteTool = {
         activeTool: "",
-        icon: "fa-solid fa-photo-film-music",
+        icon: "mou-icon mou-logo",
         layer: "moulayer",
         name: "moucontrols",
         title: (game as Game).i18n.localize("MOU.user_authenticated"),
         tools: [{ 
           name: "actions", 
-          icon: "fa-solid fa-file-magnifying-glass", 
+          icon: "fa-solid fa-magnifying-glass", 
           title: (game as Game).i18n.localize("MOU.browser"),
           button: true, 
           onClick: () => { module.browser.render(true) } 
@@ -50,6 +50,9 @@ export default class MouHooks {
   
       buttons.push(moulinetteTool)
     }
+
+
+    
   }
 
   
