@@ -58,13 +58,13 @@ export default class MouLocalClient {
     const assetsPacks = []
     const assets = []
     let idx = 0
-    let processed = 0
+    //let processed = 0
     
-    const progressbar = (new MoulinetteProgress((game as Game).i18n.localize("MOU.index_compendiums")))
-    progressbar.render(true)
+    //const progressbar = (new MoulinetteProgress((game as Game).i18n.localize("MOU.index_compendiums")))
+    //progressbar.render(true)
 
     for(const p of _game.packs) {
-      progressbar.setProgress(Math.round((idx / (game as Game).packs.size)*100), (game as Game).i18n.format("MOU.indexing", { count: processed++ }))
+      //progressbar.setProgress(Math.round((idx / (game as Game).packs.size)*100), (game as Game).i18n.format("MOU.indexing", { count: processed++ }))
     
       // @ts-ignore check permission 
       if(!p.testUserPermission(_game.user, "OBSERVER")) {
@@ -184,7 +184,7 @@ export default class MouLocalClient {
       idx++;
     }
 
-    progressbar.setProgress(100, (game as Game).i18n.format("MOU.indexing", { count: processed++ }))
+    //progressbar.setProgress(100, (game as Game).i18n.format("MOU.indexing", { count: processed++ }))
 
     // store index if updated
     if(updated) {

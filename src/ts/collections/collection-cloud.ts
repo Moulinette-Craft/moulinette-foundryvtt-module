@@ -235,6 +235,11 @@ export default class MouCollectionCloud implements MouCollection {
     return [] as string[]
   }
 
+  async getAssetsCount(filters: MouCollectionFilters): Promise<number> {
+    console.log(filters)
+    return 0
+  }
+
   async getAssets(filters: MouCollectionFilters, page: number): Promise<MouCollectionAsset[]> {
     const filtersDuplicate = JSON.parse(JSON.stringify(filters));
     filtersDuplicate["page"] = page

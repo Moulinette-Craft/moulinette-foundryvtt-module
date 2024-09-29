@@ -110,6 +110,9 @@ export interface MouCollection {
   /** Returns the list of folders */
   getFolders(filters: MouCollectionFilters): Promise<string[]>
 
+  /** Returns the total number of assets based on filters */
+  getAssetsCount(filters: MouCollectionFilters): Promise<number>
+
   /** Returns random assets from the collection based on filters */
   getAssets(filters: MouCollectionFilters, page: number): Promise<MouCollectionAsset[]>
 

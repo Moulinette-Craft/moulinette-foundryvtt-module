@@ -92,6 +92,7 @@ export default class MouBrowser extends MouApplication {
     const types2 = typesObj.slice(middleIndex);
     
     return {
+      user: module.cache.user,
       filters: {
         collections: module.collections.map( col => ( {id: col.getId(), name: col.getName(), configurable: col.isConfigurable() } )),
         prefs: this.filters_prefs,
@@ -208,6 +209,9 @@ export default class MouBrowser extends MouApplication {
       img.classList.add("fallback-image");
       $(this).closest("video").replaceWith(img);
     });
+
+    // show count
+    this.html?.find(".count").text(this.currentAssets.length)
   }
 
   /** Extend/collapse filter section */

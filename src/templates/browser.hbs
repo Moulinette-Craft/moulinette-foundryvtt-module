@@ -75,4 +75,11 @@
     <main class="content">
     </main>
   </div>
+  <footer class="status">
+    <div class="support">
+      {{#if user.patron}}<i class="fa-solid fa-heart"></i> {{localize "MOU.thanks_supporting"}}{{/if}}
+      {{#unless user.patron}}<i class="fa-brands fa-patreon"></i> <a href="https://www.patreon.com/moulinette" target="_blank">{{localize "MOU.support_moulinette"}}</a>{{/unless}}
+    </div>
+    <div class="count"></div>
+  </footer>
 </div>

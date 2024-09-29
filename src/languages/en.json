@@ -146,6 +146,7 @@
   "MOU.source_generate_thumbnails_notes": "Generates a thumbnail for each image. This makes navigation much smoother. <b>WARNING</b>: Enabling this option will significantly increase indexing time. Each image will need to be downloaded, potentially incurring hosting costs (e.g., AWS). Thumbnail generation also consumes a lot of memory and could cause your FoundryVTT server to crash.",
   "MOU.source_name_notes": "Name your content source. For example, \"Tokens by [creator's name]\".",
   "MOU.support_moulinette": "Support Moulinette",
+  "MOU.thanks_supporting": "Thanks for supporting Moulinette!",
   "MOU.type_actor": "Actor",
   "MOU.type_audio": "Audio",
   "MOU.type_image": "Image",

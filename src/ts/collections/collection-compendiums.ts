@@ -151,6 +151,11 @@ export default class MouCollectionCompendiums implements MouCollection {
     return [] as string[]
   }
 
+  async getAssetsCount(filters: MouCollectionFilters): Promise<number> {
+    console.log(filters)
+    return 0
+  }
+
   async getAssets(filters: MouCollectionFilters, page: number): Promise<MouCollectionAsset[]> {
     const results = [] as MouCollectionAsset[]
     const searchTerms = filters.searchTerms && filters.searchTerms.length >= 3 ? filters.searchTerms.split(" ") : []

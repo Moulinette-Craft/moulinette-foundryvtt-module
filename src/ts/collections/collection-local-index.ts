@@ -228,6 +228,10 @@ export default class MouCollectionLocal implements MouCollection {
     return Array.from(folders.values()).sort((a, b) => a.localeCompare(b))
   }
 
+  async getAssetsCount(filters: MouCollectionFilters): Promise<number> {
+    return (await this.getAllResults(filters)).length
+  }
+
   async getAssets(filters: MouCollectionFilters, page: number): Promise<MouCollectionAsset[]> {
     const results = await this.getAllResults(filters)
     const fromIdx = page * MouBrowser.PAGE_SIZE
