@@ -16,6 +16,7 @@ export default class MouBrowser extends MouApplication {
   private page: number = 0; // -1 means = ignore. Otherwise, increments the page and loads more data
   private collection?: MouCollection;
   private currentAssets = [] as MouCollectionAsset[];
+  private currentFoldersScroll = { top: 0, left: 0 }
   
   /* Filter preferences */
   private filters_prefs:AnyDict = {
@@ -123,7 +124,8 @@ export default class MouBrowser extends MouApplication {
       .on("click", this._onConfigureCollection.bind(this));
     html.find(".filters .folders a")
       .on("click", this._onChooseFolder.bind(this));
-  
+    html.find(".filters .folders").scrollTop(this.currentFoldersScroll.top);
+    html.find(".filters .folders").scrollLeft(this.currentFoldersScroll.left);
     
     // input triggers searches
     const search = html.find(".search-bar input");
@@ -226,10 +228,24 @@ export default class MouBrowser extends MouApplication {
     }
   }
 
-  /** Drop-down list selection (creator/packs) */
+  
+  /**
+   * Handles the selection of filters in the browser.
+   * 
+   * @param event - The event triggered by selecting a filter.
+   * @returns A promise that resolves when the filter selection is processed.
+   * 
+   * This method prevents the default action of the event, updates the current folder scroll position,
+   * and sets the appropriate filter based on the selected element's ID. It then re-renders the component.
+   * 
+   * - If the selected element has an ID of "creator-select", the creator filter is updated.
+   * - If the selected element has an ID of "pack-select", the pack filter is updated.
+   */
   async _onSelectFilters(event: Event): Promise<void> {
     event.preventDefault();
     if(event.currentTarget) {
+      this.currentFoldersScroll = { top: 0, left: 0 }
+      this.filters.folder = ""
       const combo = $(event.currentTarget)
       if(combo.attr('id') == "creator-select") {
         this.filters.creator = String(combo.val());
@@ -244,7 +260,18 @@ export default class MouBrowser extends MouApplication {
     }
   }
 
-  /** Show/hide filters */
+  
+  /**
+   * Handles the click event for toggling the visibility of filters.
+   * 
+   * @param event - The click event triggered by the user.
+   * @returns A promise that resolves when the toggle action is complete.
+   * 
+   * This method checks if the current target exists,
+   * and then toggles the 'collapsed' class on both the filters and the toggle elements.
+   * It also updates the icon class based on the visibility of the filters and sets the 
+   * `filters_prefs.visible` property accordingly.
+   */
   async _onClickFiltersToggle(event: Event): Promise<void> {
     event.preventDefault();
     if(event.currentTarget) {
@@ -377,6 +404,7 @@ export default class MouBrowser extends MouApplication {
     this.filters.pack = ""
     this.filters.type = MouCollectionAssetTypeEnum.Map,
     this.filters.folder = ""
+    this.currentFoldersScroll = { top: 0, left: 0 }
     this.render()
   }
 
@@ -474,6 +502,10 @@ export default class MouBrowser extends MouApplication {
     if(event.currentTarget) {
       const selected = $(event.currentTarget).data("path")
       this.filters.folder = this.filters.folder == selected ? "" : selected
+      this.currentFoldersScroll = {
+        top: $(event.currentTarget).closest(".folders").scrollTop() || 0, 
+        left: $(event.currentTarget).closest(".folders").scrollLeft() || 0
+      }
       this.render()
     }
   }

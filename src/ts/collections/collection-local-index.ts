@@ -184,17 +184,18 @@ export default class MouCollectionLocal implements MouCollection {
    */
   private async getAllResults(filters: MouCollectionFilters): Promise<MouCollectionAsset[]> {
     const results = [] as MouCollectionAsset[]
+    const filterFolder = filters.folder && filters.folder.length ? MouMediaUtils.encodeURL(filters.folder) : null
     for(const packId of Object.keys(this.assets)) {
       if(!filters.pack || filters.pack == packId) {
         const assets = this.assets[packId].assets.filter((a : MouCollectionLocalAsset) => {
           // filter by type
           if(filters.type != a.type) return false
           // filter by folder
-          if(filters.folder && filters.folder.length > 0 && !a.id.startsWith(filters.folder)) return false
+          if(filterFolder && !a.url.startsWith(filterFolder)) return false
           // filter by search
           if(filters.searchTerms) {
             for(const term of filters.searchTerms.toLocaleLowerCase().split(" ")) {
-              if(a.id.toLocaleLowerCase().indexOf(term) < 0) {
+              if(a.url.toLocaleLowerCase().indexOf(term) < 0) {
                 return false
               }
             }
@@ -207,15 +208,21 @@ export default class MouCollectionLocal implements MouCollection {
     return results
   }
 
+  /**
+   * Retrieves a list of unique folder paths based on the provided filters.
+   *
+   * @param {MouCollectionFilters} filters - The filters to apply when retrieving folders.
+   * @returns {Promise<string[]>} A promise that resolves to an array of unique folder paths, sorted alphabetically.
+   */
   async getFolders(filters: MouCollectionFilters): Promise<string[]> {
     if(!filters.pack) return []
     const folders = new Set<string>()
     // generate list of folders
     const results = await this.getAllResults({ type: filters.type, pack: filters.pack })
     for(const r of results) {
-      const f = r.id.substring(0, r.id.lastIndexOf('/'));
+      const f = r.url.substring(0, r.url.lastIndexOf('/'));
       if(f.length > 0) {
-        folders.add(f)
+        folders.add(MouMediaUtils.getCleanURI(f))
       }
     }
     return Array.from(folders.values()).sort((a, b) => a.localeCompare(b))
@@ -261,6 +268,7 @@ export default class MouCollectionLocal implements MouCollection {
     switch(actionId) {
       case LocalAssetAction.DRAG:
         switch(asset.type) {
+          case MouCollectionAssetTypeEnum.Map:
           case MouCollectionAssetTypeEnum.Image: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_drag_image") }
           case MouCollectionAssetTypeEnum.Audio: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_drag_audio") }
         }
