@@ -51,6 +51,7 @@
   "MOU.clipboard_copy_success": "Path successfully copied to your clipboard!",
   "MOU.cloudcollection_config": "Configure your Moulinette Cloud Collection",
   "MOU.collection": "Collections",
+  "MOU.collection_type_bbc_sounds": "BBC Sound Effects",
   "MOU.collection_type_cloud_all": "Moulinette Cloud (all)",
   "MOU.collection_type_cloud_owned": "Moulinette Cloud (accessible)",
   "MOU.collection_type_cloud_supported": "Moulinette Cloud (supported)",

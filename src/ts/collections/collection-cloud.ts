@@ -364,7 +364,7 @@ export default class MouCollectionCloud implements MouCollection {
       throw new Error("Invalid BaseURL?")
     }
     const folderPath = asset.base_url.substring(MouCloudClient.AZURE_BASEURL.length)
-    const targetPath = `${MouConfig.MOU_DEF_FOLDER}/assets/${folderPath}`
+    const targetPath = `${MouConfig.MOU_DEF_FOLDER}/cloud/${folderPath}`
 
     // FVTT entity
     if(asset.filepath.endsWith(".json")) {

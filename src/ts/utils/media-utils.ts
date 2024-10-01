@@ -135,7 +135,7 @@ export default class MouMediaUtils {
     
     // Format MM:SS for duration less than 1 hour
     if (hours === 0) {
-      return `${minutes}:${seconds < 10 ? '0' : ''}${remainingSeconds}`;
+      return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
     } else {
       return `${hours}:${minutes < 10 ? '0' : ''}${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
     }

@@ -17,8 +17,8 @@
     </div>
     <div class="info">
       <div class="title">{{a.name}}</div>
-      <div class="source" title="{{#if a.creator}}{{a.creator}} - {{/if}}{{a.pack}}" data-creator="{{a.creator}}" data-pack="{{a.pack_id}}">
-        {{#if a.creator}}<a class="creator" href>{{a.creator}}</a> - {{/if}}<a class="pack" href>{{a.pack}}</a>
+      <div class="source" title="{{#if a.creator}}{{a.creator}} {{#if a.pack}} - {{/if}}{{/if}}{{a.pack}}" data-creator="{{a.creator}}" data-pack="{{a.pack_id}}">
+        {{#if a.creator}}<a class="creator" href>{{a.creator}}</a> {{#if a.pack}} - {{/if}}{{/if}}<a class="pack" href>{{a.pack}}</a>
       </div>
     </div>
     

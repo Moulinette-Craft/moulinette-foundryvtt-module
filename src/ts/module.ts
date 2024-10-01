@@ -22,6 +22,7 @@ import MouApplication from "./apps/application";
 import MouFileManager from "./utils/file-manager";
 import MouFoundryUtils from "./utils/foundry-utils";
 import MouCollectionGameIcons from "./collections/collection-gameicons";
+import MouCollectionBBCSounds from "./collections/collection-bbc-sounds";
 
 let module: MouModule;
 
@@ -92,6 +93,7 @@ Hooks.once("ready", () => {
   module.collections.push(new MouCollectionCompendiums())
   module.collections.push(new MouCollectionLocal())
   module.collections.push(new MouCollectionGameIcons())
+  module.collections.push(new MouCollectionBBCSounds())
   // make config available
   module.configs = MouConfig
   // hooks some FVTT functions

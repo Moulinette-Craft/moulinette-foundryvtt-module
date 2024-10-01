@@ -210,7 +210,7 @@ export default class MouFileManager {
     const filename  = filepath.substring(filepath.lastIndexOf("/")+1)  // Broken Tower_2.webm (from above example)
     const relFolder = filepath.substring(0, filepath.lastIndexOf("/")) // animated (from above example)
     const targetFolder = folder + (folder.endsWith("/") ? "" : "/") + relFolder 
-    const url = `${packPath}/${uri}`
+    const url = packPath.length > 0 ? `${packPath}/${uri}` : uri
 
     // check if file already downloaded
     await MouFileManager.createFolderRecursive(targetFolder)

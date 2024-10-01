@@ -184,20 +184,21 @@ export default class MouFoundryUtils {
   /**
    * Imports the audio and plays or stops it
    */
-  static async playStopSound(path: string, playlistName:string) {
+  static async playStopSound(path: string, playlistName:string, soundName?: string) {
     if (!(game as Game).user?.isGM) return;
     const volume = 1.0 //audio.volume ? Number(audio.volume) : 1.0
       
     // get playlist
     let playlist = (game as Game).playlists?.find( pl => pl.name == playlistName)
     if(!playlist) {
-      playlist = await Playlist.create({name: playlistName, mode: -1})
+      const folder = await MouFoundryUtils.getOrCreateFolder("Playlist", "Moulinette")
+      playlist = await Playlist.create({name: playlistName, mode: -1, folder: folder})
     }
     if(!playlist) return
     // get sound
     let sound = playlist.sounds.find( s => s.path == MouMediaUtils.getCleanURI(path))
     if(!sound) {
-      const name = MouMediaUtils.prettyMediaName(path)
+      const name = soundName ? soundName : MouMediaUtils.prettyMediaName(path)
       const soundData = (await playlist.createEmbeddedDocuments("PlaylistSound", [{name: name, path: path, volume: volume}], {}))[0]
       playlist.updateEmbeddedDocuments("PlaylistSound", [{_id: soundData.id, playing: true, volume: volume }]);
     } else {
