@@ -119,8 +119,10 @@ export default class MouBrowser extends MouApplication {
       .on("click", this._onClearFilters.bind(this));
     html.find(".filters-toggle")
       .on("click", this._onClickFiltersToggle.bind(this));
-    html.find(".filters input")
-      .on("click", this._onClickFilters.bind(this));
+    html.find(".filters input[name=collection]")
+      .on("click", this._onClickCollection.bind(this));
+      html.find(".filters input[name=asset_type]")
+      .on("click", this._onClickAssetType.bind(this));
     html.find(".filters select")
       .on("change", this._onSelectFilters.bind(this));
     html.find(".content")
@@ -307,12 +309,25 @@ export default class MouBrowser extends MouApplication {
     }
   }
 
+  /** Chnage collection */
+  async _onClickCollection(): Promise<void> {
+    const selCollection = this.html?.find('.filters input[name=collection]:checked').attr('id')
+    if(selCollection && this.filters_prefs.collection != selCollection) {
+      this.filters_prefs.collection = selCollection
+      this.filters.creator = ""
+      this.filters.pack = ""
+      this.filters.folder = ""
+      this.render()
+    }
+  }
+
   /** Filter interactions */
-  async _onClickFilters(): Promise<void> {
-    this.filters_prefs.collection = this.html?.find('.filters input[name=collection]:checked').attr('id')
-    const type = Number(this.html?.find('.filters input[name=asset_type]:checked').attr('id'))
-    this.filters.type = type ? (type as MouCollectionAssetTypeEnum) : MouCollectionAssetTypeEnum.Map
-    this.render()
+  async _onClickAssetType(): Promise<void> {
+    const selType = Number(this.html?.find('.filters input[name=asset_type]:checked').attr('id'))
+    if(selType && this.filters.type != selType) {
+      this.filters.type = selType as MouCollectionAssetTypeEnum
+      this.render()
+    }
   }
 
   /** Load more assets when reaching the end of the page */
@@ -394,11 +409,22 @@ export default class MouBrowser extends MouApplication {
     event.stopPropagation();
     if(event.currentTarget) {
       const target = $(event.currentTarget)
-      const creator = target.closest(".source").data("creator")
-      if(creator) {
-        this.filters.creator = creator
-        this.filters.pack = ""
-        this.render()
+      // collection has creators => filter by creator
+      if(this.html!.find("#creator-select").length! > 0) {
+        const creator = target.closest(".source").data("creator")
+        if(creator) {
+          this.filters.creator = creator
+          this.filters.pack = ""
+          this.render()
+        }
+      }
+      // otherwise, open creator's url
+      else {
+        const asset = target.closest(".asset")
+        const selAsset = this.currentAssets.find((a) => a.id == asset.data("id"))
+        if(selAsset && selAsset.creatorUrl) {
+          window.open(selAsset.creatorUrl, "_blank")
+        }
       }
     }
   }
@@ -410,8 +436,11 @@ export default class MouBrowser extends MouApplication {
       const target = $(event.currentTarget)
       const creator = target.closest(".source").data("creator")
       const pack = target.closest(".source").data("pack")
-      if(creator && pack) {
-        this.filters.creator = creator
+      console.log(creator, pack)
+      if(pack) {
+        if(creator) {
+          this.filters.creator = creator
+        }
         this.filters.pack = pack
         this.render()
       }

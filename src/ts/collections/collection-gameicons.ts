@@ -35,7 +35,7 @@ class MouCollectionGameIconsAsset implements MouCollectionAsset {
     this.type = MouCollectionAssetTypeEnum.Image
     this.format = "tiny"
     this.creator = asset.author
-    this.creatorUrl = null
+    this.creatorUrl = "https://game-icons.net/about.html#authors"
     this.pack = null
     this.pack_id = null
     this.name = asset.name

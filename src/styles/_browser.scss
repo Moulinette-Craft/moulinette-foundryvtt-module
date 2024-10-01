@@ -239,12 +239,8 @@
             width: 100px;
             height: 100px;
           }
-          .meta {
-            display: none;
-          }
-          .overlay {
-            height: 100px;
-          }
+          .meta { display: none; }
+          .overlay, .menu { height: 100px; }
         }
 
         .preview {

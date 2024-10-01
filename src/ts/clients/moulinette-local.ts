@@ -322,6 +322,7 @@ export default class MouLocalClient {
       const folderIdx = `${folder.path}#${folder.source}`
       if(folderIdx in indexData) {
         assets[folderIdx] = {
+          id: folderIdx,
           name: folder.name,
           assets: indexData[folderIdx],
           options: folder.options
