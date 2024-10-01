@@ -1,6 +1,5 @@
 import MouApplication from "../../apps/application"
-import { MODULE_ID } from "../../constants"
-import { AnyDict, MouModule } from "../../types"
+import { AnyDict } from "../../types"
 import MouFoundryUtils from "../../utils/foundry-utils"
 
 export class MouCompendiumsDefaultsInfos {
@@ -22,7 +21,7 @@ export class CollectionCompendiumsUtils {
    * Converts into a new object including /meta
    */
   static generateMetaFromLocal(entry: AnyDict, type: string) {
-    const module = (game as Game).modules.get(MODULE_ID) as MouModule
+    const module = MouApplication.getModule()
     let metaEntry = {} as AnyDict
     try {
       let mappings = {} as AnyDict
@@ -61,7 +60,7 @@ export class CollectionCompendiumsUtils {
    */
   static getInformationFromMeta(entry: AnyDict): MouCompendiumsDefaultsInfos | null {
     const _game = game as Game
-    const module = (game as Game).modules.get(MODULE_ID) as MouModule
+    const module = MouApplication.getModule()
     try {
       let formatter = null
 

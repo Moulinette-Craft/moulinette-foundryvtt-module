@@ -1,5 +1,4 @@
-import { MODULE_ID } from "../constants";
-import { MouModule } from "../types";
+import MouApplication from "../apps/application";
 
 declare var libWrapper: any;
 
@@ -19,8 +18,7 @@ export default class MouHooks {
    * authenticated.
    */
   static addMoulinetteControls(buttons: SceneControl[]) {
-    console.log("HERE")
-    const module = (game as Game).modules.get(MODULE_ID) as MouModule;
+    const module = MouApplication.getModule()
 
     if((game as Game).user?.isGM) {
       const moulinetteTool = {
@@ -30,12 +28,12 @@ export default class MouHooks {
         name: "moucontrols",
         title: (game as Game).i18n.localize("MOU.user_authenticated"),
         tools: [{ 
-          name: "actions", 
+          name: "search", 
           icon: "fa-solid fa-magnifying-glass", 
           title: (game as Game).i18n.localize("MOU.browser"),
           button: true, 
           onClick: () => { module.browser.render(true) } 
-        }],
+        }] as any,
         visible: true
       }
       
@@ -46,13 +44,14 @@ export default class MouHooks {
         title: (game as Game).i18n.localize("MOU.user_authenticated"),
         button: true,
         onClick: () => { module.user.render(true) }
-      })
+      });
+
+      for(const tool of module.tools) {
+        moulinetteTool.tools.push(tool)
+      }
   
       buttons.push(moulinetteTool)
     }
-
-
-    
   }
 
   
@@ -71,7 +70,7 @@ export default class MouHooks {
    */
   static replaceFromDropData()  {
 
-    const module = (game as Game).modules.get(MODULE_ID) as MouModule;
+    const module = MouApplication.getModule()
     const isLibwrapperAvailable = typeof libWrapper === "function"; // See: https://github.com/ruipin/fvtt-lib-wrapper
 
     // replace default FVTT implementation for Actors

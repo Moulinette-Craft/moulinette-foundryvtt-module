@@ -1,5 +1,5 @@
 import MouConfig, { MODULE_ID } from "../constants";
-import { AnyDict, MouModule } from "../types";
+import { AnyDict } from "../types";
 import MouFileManager from "../utils/file-manager";
 import MouMediaUtils from "../utils/media-utils";
 import MouApplication from "./application";
@@ -54,7 +54,7 @@ export default class MouBrowser extends MouApplication {
 
   override async getData() {
     // check that module and collections are properly loaded
-    const module = (game as Game).modules.get(MODULE_ID) as MouModule
+    const module = MouApplication.getModule()
     if(!module || !module.collections || module.collections.length == 0) 
       throw new Error(`${this.APP_NAME} | Module ${MODULE_ID} not found or no collection loaded`);
     // check that selected collection exists
@@ -178,7 +178,7 @@ export default class MouBrowser extends MouApplication {
       }
     } catch (error) {
       this.logError("Error loading assets:", error)
-      ui.notifications?.error((game as Game).i18n.localize("MOU.errorLoadingAssets"));
+      ui.notifications?.error((game as Game).i18n.localize("MOU.error_loading_assets"));
     }
     if(assets.length == 0) {
       if(this.page == 0) {
@@ -508,7 +508,7 @@ export default class MouBrowser extends MouApplication {
     event.preventDefault()
     event.stopPropagation();
     if(event.currentTarget) {
-      const module = (game as Game).modules.get(MODULE_ID) as MouModule
+      const module = MouApplication.getModule()
       const collectionId = $(event.currentTarget).closest(".action").data("col")
       const collection = module.collections.find(c => c.getId() == collectionId)
       if(collection) {

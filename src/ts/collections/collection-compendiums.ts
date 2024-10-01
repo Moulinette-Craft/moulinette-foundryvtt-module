@@ -346,7 +346,7 @@ export default class MouCollectionCompendiums implements MouCollection {
       
       case CompendiumAssetAction.IMPORT:
         const id = asset.id.split(".").pop()
-        const pack = (game as Game).packs.get(asset.pack_id)
+        const pack = (game as Game).packs.get(asset.pack_id!)
         const collection = (game as Game).collections.get(MouCollectionAssetTypeEnum[asset.type]);
         if(pack && collection && id) {  
           const document = await collection.importFromCompendium(pack, id, {}, { renderSheet: true}) as any

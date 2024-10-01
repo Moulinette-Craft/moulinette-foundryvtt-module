@@ -11,7 +11,7 @@ export default class MouApplication extends Application {
   APP_NAME = "Moulinette";        // default application name
 
   static logDebug(source: string, message: string, data?: any) {
-    const module = (game as Game).modules.get(MODULE_ID) as MouModule;
+    const module = MouApplication.getModule()
     if(module.debug) {
       if(data !== undefined) {
         console.debug(`${source} | ${message}`, data); 
@@ -53,7 +53,7 @@ export default class MouApplication extends Application {
   logWarn(message: string, data?: any) { MouApplication.logWarn(this.APP_NAME, message, data) }
   logError(message: string, data?: any, error?: Error) { MouApplication.logError(this.APP_NAME, message, data, error) }
 
-  getModule(): MouModule {
+  static getModule(): MouModule {
     return (game as Game).modules.get(MODULE_ID) as MouModule;
   }
 

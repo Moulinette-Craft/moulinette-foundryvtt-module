@@ -6,6 +6,9 @@ import MouCache from "./apps/cache";
 import { MouCollection } from "./apps/collection";
 import MouEventHandler from "./apps/event-handler";
 import MouConfig from "./constants";
+import MouMediaUtils from "./utils/media-utils";
+import MouFoundryUtils from "./utils/foundry-utils";
+import MouFileManager from "./utils/file-manager";
 
 export interface MouModule extends Game.ModuleData<ModuleData> {
   debug: boolean;
@@ -16,6 +19,9 @@ export interface MouModule extends Game.ModuleData<ModuleData> {
   collections: MouCollection[];
   eventHandler: MouEventHandler;
 
+  // additional tooles (ie. from modules) to load
+  tools: AnyDict[]
+
   // configurations that can be overridden
   configs: MouConfig;
 
@@ -23,6 +29,13 @@ export interface MouModule extends Game.ModuleData<ModuleData> {
   compendiumMappings: {
     mappings: AnyDict;
     formatters: AnyDict;
+  }
+
+  // make utils available to other modules
+  utils: {
+    media: MouMediaUtils,
+    foundry: MouFoundryUtils,
+    filemanager: MouFileManager
   }
 }
 

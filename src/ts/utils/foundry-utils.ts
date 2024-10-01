@@ -51,7 +51,7 @@ export default class MouFoundryUtils {
     let folders : Folder[] = (game as Game).folders?.filter( f => f.name == paths[0] && f.type == entityType ) || []
     let curLevel = folders.length == 0 ? await Folder.create({name: paths[0], type: entityType, folder: null}) : folders[0]
     
-    for(let lvl = 1; lvl < Math.max(paths.length, MouFoundryUtils.FOLDER_MAX_LEVELS); lvl++ ) {
+    for(let lvl = 1; lvl < Math.min(paths.length, MouFoundryUtils.FOLDER_MAX_LEVELS); lvl++ ) {
       folders = curLevel?.getSubfolders() ? curLevel?.getSubfolders().filter( f => f.name == paths[lvl] ) : []
       curLevel = folders.length == 0 ? await Folder.create({name: paths[lvl], type: entityType, folder: curLevel?.id}) : folders[0]
     }
@@ -332,7 +332,7 @@ export default class MouFoundryUtils {
   /**
    * Extract value from object
    */
-  static getValueFromObject(object: AnyDict, path: string): any {
+  static getValueFromObject(object: AnyDict, path: string): AnyDict | null {
     // remove initial "." if any
     if(path.startsWith(".")) {
       path = path.substring(1)

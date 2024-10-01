@@ -18,20 +18,26 @@ import MouHooks from "./utils/hooks";
 import MouCollectionCompendiums from "./collections/collection-compendiums";
 import MouCollectionLocal from "./collections/collection-local-index";
 import { MouCompendiumsDefaults } from "./collections/config/collection-compendiums-defaults";
+import MouApplication from "./apps/application";
+import MouFileManager from "./utils/file-manager";
+import MouFoundryUtils from "./utils/foundry-utils";
+import MouCollectionGameIcons from "./collections/collection-gameicons";
 
 let module: MouModule;
 
 Hooks.once("init", () => {
   console.log(`Initializing ${MODULE_ID}`);
 
-  module = (game as Game).modules.get(MODULE_ID) as MouModule;
+  module = MouApplication.getModule();
   module.browser = new MouBrowser();
   module.user = new MouUser();
   module.cloudclient = new MouCloudClient();
   module.cache = new MouCache();
   module.collections = [] as MouCollection[]
   module.eventHandler = new MouEventHandler();
+  module.tools = [];
   module.compendiumMappings = { mappings: MouCompendiumsDefaults.metadataMappings, formatters: MouCompendiumsDefaults.metadataMappingsFormatters }
+  module.utils = { media: MouMediaUtils, filemanager: MouFileManager, foundry: MouFoundryUtils }
   module.debug = true;
   
   (game as Game).settings.register(MODULE_ID, SETTINGS_SESSION_ID, { scope: "world", config: false, type: String, default: "anonymous" });
@@ -85,6 +91,7 @@ Hooks.once("ready", () => {
   module.collections.push(new MouCollectionCloud())
   module.collections.push(new MouCollectionCompendiums())
   module.collections.push(new MouCollectionLocal())
+  module.collections.push(new MouCollectionGameIcons())
   // make config available
   module.configs = MouConfig
   // hooks some FVTT functions

@@ -1,6 +1,6 @@
 import MouApplication from "../apps/application";
-import { MODULE_ID, MOU_API, SETTINGS_SESSION_ID } from "../constants";
-import { AnyDict, MouModule } from "../types";
+import { MOU_API, SETTINGS_SESSION_ID } from "../constants";
+import { AnyDict } from "../types";
 
 export default class MouCloudClient {
 
@@ -59,7 +59,7 @@ export default class MouCloudClient {
    * Returns user data from session (store in settings)
    */
   async getUser(force = false, forceRefresh = false) {
-    const module = (game as Game).modules.get(MODULE_ID) as MouModule;
+    const module = MouApplication.getModule()
     const sessionId = MouApplication.getSettings(SETTINGS_SESSION_ID)
     
     // moulinette cloud is disabled

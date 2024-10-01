@@ -34,8 +34,8 @@ export interface MouCollectionAsset {
   format: string                          // asset format (small, large)
   creator: string | null                  // asset creator
   creatorUrl: string | null               // asset creator url
-  pack: string                            // asset pack
-  pack_id: string                         // asset pack id
+  pack: string | null                     // asset pack
+  pack_id: string | null                  // asset pack id
   name: string                            // asset name
   meta: MouCollectionAssetMeta[]          // asset metadata
   icon: string | null,                    // FA icon representing the asset

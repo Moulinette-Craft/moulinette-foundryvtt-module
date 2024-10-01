@@ -1,8 +1,8 @@
 import MouApplication from "../apps/application";
 import { MoulinetteProgress } from "../apps/progressbar";
 import { CollectionCompendiumsUtils } from "../collections/config/collection-compendiums-utils";
-import MouConfig, { MODULE_ID, SETTINGS_COLLECTION_LOCAL } from "../constants";
-import { AnyDict, MouModule } from "../types";
+import MouConfig, { SETTINGS_COLLECTION_LOCAL } from "../constants";
+import { AnyDict } from "../types";
 import MouFileManager from "../utils/file-manager";
 import MouFoundryUtils from "../utils/foundry-utils";
 import MouMediaUtils from "../utils/media-utils";
@@ -196,7 +196,7 @@ export default class MouLocalClient {
     const oldAssets = force ? [] : indexData[indexFolder]
     const assets = indexData[indexFolder] = [] as AnyDict
 
-    const module = (game as Game).modules.get(MODULE_ID) as MouModule
+    const module = MouApplication.getModule()
     const progressbar = (new MoulinetteProgress((game as Game).i18n.localize("MOU.index_folders"), 1, (game as Game).i18n.format("MOU.index_folders_list", { path })))
     progressbar.render(true)
     

@@ -1,7 +1,7 @@
 {
   "name": "moulinette",
   "version": "1.0.0",
-  "description": "Moulinette Media Search & Toolbox",
+  "description": "Moulinette Media Search",
   "license": "MIT",
   "private": true,
   "scripts": {

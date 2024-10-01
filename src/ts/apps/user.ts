@@ -44,7 +44,7 @@ export default class MouUser extends MouApplication {
 
   override async getData() {
     this._resetTimer()
-    const user = await this.getModule().cloudclient.getUser(true, this.forceRefresh)
+    const user = await MouApplication.getModule().cloudclient.getUser(true, this.forceRefresh)
     const data = { 
       refreshed: this.forceRefresh,
       user: user 
@@ -109,7 +109,7 @@ export default class MouUser extends MouApplication {
         parent.timerSecondsLeft -= MouUser.TIMER_CHECK_EVERY;
         progress?.html(String(parent.timerSecondsLeft))
 
-        if(parent.timerSecondsLeft <= 0 || await parent.getModule().cloudclient.isUserAuthenticated(newGUID, authSource)) {
+        if(parent.timerSecondsLeft <= 0 || await MouApplication.getModule().cloudclient.isUserAuthenticated(newGUID, authSource)) {
           parent._resetTimer()
           parent.render()
         }
@@ -120,7 +120,7 @@ export default class MouUser extends MouApplication {
     else if(source.hasClass("logout")) {
       this.logInfo("Signing out...")
       await MouApplication.setSettings(SETTINGS_SESSION_ID, "anonymous")
-      this.getModule().cache.clearCache()
+      MouApplication.getModule().cache.clearCache()
       this.render()
     }
     else if(source.hasClass("gift")) {
