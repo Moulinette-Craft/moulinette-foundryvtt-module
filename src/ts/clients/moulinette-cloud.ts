@@ -1,5 +1,5 @@
 import MouApplication from "../apps/application";
-import { MOU_API, SETTINGS_SESSION_ID } from "../constants";
+import MouConfig, { MOU_API, SETTINGS_SESSION_ID } from "../constants";
 import { AnyDict } from "../types";
 
 export default class MouCloudClient {
@@ -33,8 +33,16 @@ export default class MouCloudClient {
     return MouCloudClient._fetch(uri, "GET", parameters)
   }
 
+  async apiGET(uri: string, parameters?: {}) {
+    return MouCloudClient.apiGET(uri, parameters)
+  }
+
   static async apiPOST(uri: string, data: AnyDict, parameters?: {}) {
     return MouCloudClient._fetch(uri, "POST", parameters, data)
+  }
+
+  async apiPOST(uri: string, data: AnyDict, parameters?: {}) {
+    return MouCloudClient.apiPOST(uri, data, parameters)
   }
 
   /**
@@ -98,4 +106,14 @@ export default class MouCloudClient {
 
     return module.cache.user
   }
+
+  /**
+   * This method doesn't really belong here, but is required for other modules
+   * which need to download assets from the cloud
+   */
+  getDefaultDownloadFolder(baseUrl: string) {
+    const match = baseUrl.match(/https:\/\/[^.]+\.blob\.core\.windows\.net\/(.+)/);
+    return `${MouConfig.MOU_DEF_FOLDER}/cloud/${match ? match[1] : "unkown"}`
+  }
+  
 }

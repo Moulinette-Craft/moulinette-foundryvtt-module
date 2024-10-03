@@ -153,8 +153,7 @@ export default class MouCollectionBBCSounds implements MouCollection {
   }
 
   async executeAction(actionId: number, asset: MouCollectionAsset): Promise<void> {
-    console.log(asset)
-    //const folderPath = `Moulinette/Game Icons`
+    //const folderPath = `Moulinette/BBC Sound Effects`
     switch(actionId) {
       case BBCAssetAction.DRAG:
         ui.notifications?.info((game as Game).i18n.localize("MOU.dragdrop_instructions"))

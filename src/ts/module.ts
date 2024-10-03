@@ -83,6 +83,10 @@ Hooks.once("init", () => {
   Handlebars.registerHelper('increment', function(value, valueAdd) {
     return value + valueAdd;
   });
+
+  module.getSessionId = () => {
+    return (game as Game).settings.get(MODULE_ID, SETTINGS_SESSION_ID) as string
+  }
 });
 
 Hooks.once("ready", () => {
@@ -109,8 +113,11 @@ Hooks.on('getSceneControlButtons', (buttons) => MouHooks.addMoulinetteControls(b
  * Manage canvas drop
  */
 Hooks.on('dropCanvasData', (canvas, data) => {
-  if("moulinette" in data && data.moulinette.collection) {
-    module.collections.find(c => c.getId() == data.moulinette.collection)?.dropDataCanvas(canvas, data)
+  if("moulinette" in data) {
+    // Drag & drop from a collection
+    if(data.moulinette.collection) {
+      module.collections.find(c => c.getId() == data.moulinette.collection)?.dropDataCanvas(canvas, data)
+    }
   }
 });
 

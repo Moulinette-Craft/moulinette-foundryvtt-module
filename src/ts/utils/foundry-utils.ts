@@ -49,7 +49,7 @@ export default class MouFoundryUtils {
     const paths = path.split("/")
     // first level
     let folders : Folder[] = (game as Game).folders?.filter( f => f.name == paths[0] && f.type == entityType ) || []
-    let curLevel = folders.length == 0 ? await Folder.create({name: paths[0], type: entityType, folder: null}) : folders[0]
+    let curLevel = folders.length == 0 ? await Folder.create({name: paths[0], type: entityType, folder: null, color: MouConfig.MOU_DEF_FOLDER_COLOR}) : folders[0]
     
     for(let lvl = 1; lvl < Math.min(paths.length, MouFoundryUtils.FOLDER_MAX_LEVELS); lvl++ ) {
       folders = curLevel?.getSubfolders() ? curLevel?.getSubfolders().filter( f => f.name == paths[lvl] ) : []

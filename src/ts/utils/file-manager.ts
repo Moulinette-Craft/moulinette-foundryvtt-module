@@ -232,12 +232,12 @@ export default class MouFileManager {
         let res = await fetch(url)
         if(res && res.status == 200) {
           const blob = await res.blob()
-          const success = await MouFileManager.uploadFile(new File([blob], filename, { type: blob.type, lastModified: new Date().getTime() }), filename, targetFolder, force)
-          if(success && success.status == "success") {
-            return success
+          const uploadResult = await MouFileManager.uploadFile(new File([blob], filename, { type: blob.type, lastModified: new Date().getTime() }), filename, targetFolder, force)
+          if(uploadResult && uploadResult.status == "success") {
+            return uploadResult
           }
           else {
-            MouApplication.logWarn(MouFileManager.APP_NAME, `MTTERR003 Download succeeded but upload failed for ${infoURL}: ${success}`)
+            MouApplication.logWarn(MouFileManager.APP_NAME, `MTTERR003 Download succeeded but upload failed for ${infoURL}: ${uploadResult}`)
           }
         }
         else {

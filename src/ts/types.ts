@@ -37,6 +37,8 @@ export interface MouModule extends Game.ModuleData<ModuleData> {
     foundry: MouFoundryUtils,
     filemanager: MouFileManager
   }
+
+  getSessionId(): string;
 }
 
 export interface AnyDict {

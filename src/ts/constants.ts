@@ -18,14 +18,25 @@ export const SETTINGS_COLLECTION_LOCAL = "local_collection"
 export const SETTINGS_DATA_EXCLUSION = "dataExclusions"
 
 /**
- * Some constants which are configurable on runtime
+ * The constants below can be overridden using the following macro :
+ * `game.modules.get("moulinette").configs.[CONFIG_NAME] = [NEW_VALUE]`
+ * 
+ * Example:
+ * `game.modules.get("moulinette").configs.MOU_DEF_FOLDER = "moufolder"`
  */
 export default class MouConfig {
   
-  static MOU_DEF_FOLDER = "moulinette-v2"
+  // default folder color
+  static MOU_DEF_FOLDER_COLOR = "#e87209"
+
+  // default folder where all assets & thumbs are stored
+  static MOU_DEF_FOLDER = "moulinette-v2" 
   static MOU_DEF_THUMBS = `${MouConfig.MOU_DEF_FOLDER}/thumbs`
+
+  // default image displayed in case of missing images
   static MOU_DEF_NOTHUMB = 'modules/moulinette/img/no-photo.webp'
 
+  // supported media types
   static MEDIA_IMAGES = ["apng", "avif", "bmp", "gif", "jpeg", "jpg", "png", "svg", "tiff", "webp"]
   static MEDIA_VIDEOS = ["m4v", "mp4", "ogv", "webm"]
   static MEDIA_AUDIO = ["aac", "flac", "m4a", "mid", "mp3", "ogg", "opus", "wav", "webm"]
