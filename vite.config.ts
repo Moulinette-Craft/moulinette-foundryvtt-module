@@ -24,23 +24,6 @@ export default defineConfig({
       },
     },
   },
-  /**
-  server: {
-    watch: {
-      ignored: (p) => {
-        console.log("HERE")
-        const relativePath = path.relative(
-          path.resolve(url.fileURLToPath(import.meta.url), 'src'),
-          p
-        )
-        return (
-          relativePath !== '' &&
-          relativePath !== 'src' &&
-          !normalizePath(relativePath).startsWith('src/')
-        )
-      }
-    }
-  }, */
   plugins: [
     updateModuleManifestPlugin(),
     scss({
@@ -53,6 +36,7 @@ export default defineConfig({
         { src: "src/languages", dest: "dist" },
         { src: "src/templates", dest: "dist" },
         { src: "src/img", dest: "dist" },
+        { src: "src/font", dest: "dist" }
       ],
       hook: "writeBundle",
     }),
