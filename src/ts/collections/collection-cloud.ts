@@ -245,7 +245,7 @@ export default class MouCollectionCloud implements MouCollection {
         existing.id += `;${p.pack_ref}`
       } else {
         results[p.name] = {
-          id: p.pack_ref,
+          id: `${p.pack_ref}`,
           name: p.name,
           assetsCount: p.assets
         }
@@ -268,6 +268,7 @@ export default class MouCollectionCloud implements MouCollection {
     filtersDuplicate["page"] = page
     filtersDuplicate["scope"] = this.getScope()
     filtersDuplicate["pack"] = filtersDuplicate["pack"].length == 0 ? null : filtersDuplicate["pack"]
+    
     const assets = await MouCloudClient.apiPOST(`/assets`, filtersDuplicate)
     const results = []
     for(const data of assets) {
