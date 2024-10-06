@@ -129,12 +129,12 @@ export default class MouFoundryUtils {
     if (!(game as Game).user?.isGM) return;
     let needsDims = !("width" in sceneData)
     delete sceneData._stats // causes sometimes incompatibilites
-    // @ts-ignore: https://foundryvtt.com/api/classes/client.Scene.html#fromSource
-    const doc = await Scene.fromSource(sceneData)
-    const newScene = await Scene.create(doc)
+    // @ts-ignore
+    const doc = await Scene.fromImport(sceneData)
+    const newScene = await Scene.create(doc) as any
+    console.log(newScene)
     if(newScene) {
       const folderObj = await MouFoundryUtils.getOrCreateFolder("Scene", folder)
-      // @ts-ignore
       let tData = await newScene.createThumbnail({img: newScene["background.src"] ?? newScene.background.src});
       // reset width/height
       let tUpdate = { thumb: tData.thumb, folder: folderObj ? folderObj.id : null } as AnyDict
@@ -152,8 +152,8 @@ export default class MouFoundryUtils {
    */
   static async importItem(itemData: AnyDict, folder:string) {
     if (!(game as Game).user?.isGM) return;
-    // @ts-ignore: https://foundryvtt.com/api/classes/client.Item.html#fromSource
-    const doc = await Item.fromSource(itemData)
+    // @ts-ignore
+    const doc = await Item.fromImport(itemData)
     const newItem = await Item.create(doc)
     if(newItem) {
       const folderObj = await MouFoundryUtils.getOrCreateFolder("Item", folder)
@@ -169,8 +169,8 @@ export default class MouFoundryUtils {
    */
   static async importActor(actorData: AnyDict, folder:string) {
     if (!(game as Game).user?.isGM) return;
-    // @ts-ignore: https://foundryvtt.com/api/classes/client.Actor.html#fromSource
-    const doc = await Actor.fromSource(actorData)
+    // @ts-ignore
+    const doc = await Actor.fromImport(actorData)
     const newActor = await Actor.create(doc)
     if(newActor) {
       const folderObj = await MouFoundryUtils.getOrCreateFolder("Actor", folder)
@@ -178,6 +178,40 @@ export default class MouFoundryUtils {
       await newActor.update(tUpdate);
       ui.actors?.activate()
       newActor?.sheet?.render(true)
+    }
+  }
+
+  /**
+   * Creates a new playlist from the given data
+   */
+  static async importPlaylist(plistData: AnyDict, folder:string) {
+    if (!(game as Game).user?.isGM) return;
+    // @ts-ignore
+    const doc = await Playlist.fromImport(plistData)
+    const newPlaylist = await Playlist.create(doc) as any
+    if(newPlaylist) {
+      const folderObj = await MouFoundryUtils.getOrCreateFolder("Playlist", folder)
+      // reset folder
+      let tUpdate = { folder: folderObj ? folderObj.id : null } as AnyDict
+      await newPlaylist.update(tUpdate);
+      ui.playlists?.activate()
+    }
+  }
+
+  /**
+   * Creates a new journal entry from the given data
+   */
+  static async importJournalEntry(journalData: AnyDict, folder:string) {
+    if (!(game as Game).user?.isGM) return;
+    // @ts-ignore
+    const doc = await JournalEntry.fromImport(journalData)
+    const newJournalEntry = await JournalEntry.create(doc) as any
+    if(newJournalEntry) {
+      const folderObj = await MouFoundryUtils.getOrCreateFolder("JournalEntry", folder)
+      // reset folder
+      let tUpdate = { folder: folderObj ? folderObj.id : null } as AnyDict
+      await newJournalEntry.update(tUpdate);
+      ui.journal?.activate()
     }
   }
 

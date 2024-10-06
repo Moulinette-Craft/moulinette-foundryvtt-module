@@ -75,7 +75,7 @@ export default class MouMediaUtils {
    */
   static prettyFilesize(filesize : number, decimals = 1) {
     if(filesize < 1024) {
-      return `${filesize.toLocaleString()} B`
+      return `< 1KB`
     } else if(filesize < 1024*1024) {
       const size = filesize / 1024
       if(decimals == 0) {

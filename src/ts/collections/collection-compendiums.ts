@@ -103,7 +103,7 @@ export default class MouCollectionCompendiums implements MouCollection {
 
   async getTypes(): Promise<MouCollectionAssetType[]> {
     const types = {} as AnyDict
-    console.log(this.compendiums.packs)
+    //console.log(this.compendiums.packs)
     for(const pack of Object.values(this.compendiums.packs) as AnyDict[]) {
       if(pack.type in types) {
         types[pack.type] += pack.count

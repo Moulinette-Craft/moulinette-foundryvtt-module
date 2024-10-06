@@ -16,7 +16,7 @@ export enum CloudMode {
 }
 
 enum CloudAssetType {
-  PREVIEW,                  // asset a preview (no access, requires membership)
+  PREVIEW,                  // asset is a preview (no access, requires membership)
   FREE,                     // asset is a freebe from creator
   AVAILABLE,                // asset is available (but not free)
 }
@@ -135,9 +135,28 @@ class MouCollectionCloudAsset implements MouCollectionAsset {
       case MouCollectionAssetTypeEnum.PDF:
         this.meta.push({ 
           icon: "fa-regular fa-file-pdf", 
-          text: `${data.pdf.pages} ` + (game as Game).i18n.localize(data.pdf.pages > 1 ? "MOU.pages" : "MOU.page"),
+          text: `${data.pdf?.pages} ` + (game as Game).i18n.localize(data.pdf.pages > 1 ? "MOU.pages" : "MOU.page"),
           hint: (game as Game).i18n.localize("MOU.meta_pdf_pages")
         })
+        break
+      case MouCollectionAssetTypeEnum.Playlist:
+        if(data.playlist?.sounds) {
+          this.meta.push({ 
+            icon: "fa-regular fa-music", 
+            text: `${data.playlist.sounds} ` + (game as Game).i18n.localize(data.playlist.sounds > 1 ? "MOU.tracks" : "MOU.track"),
+            hint: (game as Game).i18n.localize("MOU.meta_playlist_tracks")
+          })
+        }
+        break
+      case MouCollectionAssetTypeEnum.JournalEntry:
+        console.log(data)
+        if(data.journal?.pages) {
+          this.meta.push({ 
+            icon: "fa-regular fa-file-lines", 
+            text: `${data.journal.pages} ` + (game as Game).i18n.localize(data.journal.pages > 1 ? "MOU.pages" : "MOU.page"),
+            hint: (game as Game).i18n.localize("MOU.meta_journal_pages")
+          })
+        }
         break
     }
     this.meta.push({ 
@@ -191,7 +210,7 @@ export default class MouCollectionCloud implements MouCollection {
   async getTypes(filters: MouCollectionFilters): Promise<MouCollectionAssetType[]> {
     const filtersDuplicate = JSON.parse(JSON.stringify(filters));
     filtersDuplicate["scope"] = this.getScope()
-    filtersDuplicate["pack"] = filtersDuplicate["pack"].length == 0 ? 0 : Number(filtersDuplicate["pack"])
+    filtersDuplicate["pack"] = filtersDuplicate["pack"].length == 0 ? null : filtersDuplicate["pack"]
     // returns a dict with key = asset type and value = count
     const results = await MouCloudClient.apiPOST("/assets/types", filtersDuplicate)
     return Object.entries(results).map( entry => { return {
@@ -216,18 +235,23 @@ export default class MouCollectionCloud implements MouCollection {
   }
   
   async getPacks(type: MouCollectionAssetTypeEnum, creator: string): Promise<MouCollectionPack[]> {
-    const results = [] as MouCollectionPack[]
-    if(creator.length == 0) return results
+    const results: { [key: string]: MouCollectionPack } = {};
+    if(creator.length == 0) return [];
     const packs = await MouCloudClient.apiPOST("/packs", { type: type, creator: creator, scope: this.getScope() })
     for(const p of packs) {
-      const pack : MouCollectionPack = {
-        id: String(p.pack_ref),
-        name: p.name,
-        assetsCount: p.assets
-      }  
-      results.push(pack)
+      if(p.name in results) {
+        const existing = results[p.name]
+        existing.assetsCount += p.assets
+        existing.id += `;${p.pack_ref}`
+      } else {
+        results[p.name] = {
+          id: p.pack_ref,
+          name: p.name,
+          assetsCount: p.assets
+        }
+      }
     }
-    return results
+    return Object.values(results)
   }
 
   async getFolders(filters: MouCollectionFilters): Promise<string[]> {
@@ -240,10 +264,10 @@ export default class MouCollectionCloud implements MouCollection {
   }
 
   async getAssets(filters: MouCollectionFilters, page: number): Promise<MouCollectionAsset[]> {
-    const filtersDuplicate = JSON.parse(JSON.stringify(filters));
+    const filtersDuplicate = foundry.utils.duplicate(filters) as AnyDict;
     filtersDuplicate["page"] = page
     filtersDuplicate["scope"] = this.getScope()
-    filtersDuplicate["pack"] = filtersDuplicate["pack"].length == 0 ? 0 : Number(filtersDuplicate["pack"])
+    filtersDuplicate["pack"] = filtersDuplicate["pack"].length == 0 ? null : filtersDuplicate["pack"]
     const assets = await MouCloudClient.apiPOST(`/assets`, filtersDuplicate)
     const results = []
     for(const data of assets) {
@@ -288,6 +312,7 @@ export default class MouCollectionCloud implements MouCollection {
         actions.push({ id: CloudAssetAction.CREATE_ARTICLE, name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
         break;    
       case MouCollectionAssetTypeEnum.Image:
+        actions.push({ id: CloudAssetAction.DRAG, drag: true, name: (game as Game).i18n.format("MOU.action_drag", { type: assetType}), icon: "fa-solid fa-hand" })
         actions.push({ id: CloudAssetAction.CREATE_ARTICLE, name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
         break;    
       case MouCollectionAssetTypeEnum.PDF:
@@ -298,8 +323,15 @@ export default class MouCollectionCloud implements MouCollection {
         if(asset.flags.hasAudioPreview) {
           actions.push({ id: CloudAssetAction.PREVIEW, name: (game as Game).i18n.localize("MOU.action_preview"), icon: "fa-solid fa-headphones" })
         }
+        break;
+      case MouCollectionAssetTypeEnum.JournalEntry:
+        actions.push({ id: CloudAssetAction.IMPORT, name: (game as Game).i18n.format("MOU.action_import", { type: assetType}), icon: "fa-solid fa-file-import" })
+        break;
+      case MouCollectionAssetTypeEnum.Playlist:
+        actions.push({ id: CloudAssetAction.IMPORT, name: (game as Game).i18n.localize("MOU.action_audio_play"), icon: "fa-solid fa-play-pause" })
         break;    
     }
+
     actions.push({ id: CloudAssetAction.DOWNLOAD, small: true, name: (game as Game).i18n.localize("MOU.action_download"), icon: "fa-solid fa-cloud-arrow-down" })
     actions.push({ id: CloudAssetAction.MEMBERSHIP, small: true, name: (game as Game).i18n.localize("MOU.action_support"), icon: "fa-solid fa-hands-praying" })
     
@@ -324,6 +356,8 @@ export default class MouCollectionCloud implements MouCollection {
           case MouCollectionAssetTypeEnum.Actor: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_download_import_asset") }
           case MouCollectionAssetTypeEnum.Image: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_download_import_image") }
           case MouCollectionAssetTypeEnum.Audio: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_download_import_audio") }
+          case MouCollectionAssetTypeEnum.Playlist: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_download_import_playlist") }
+          case MouCollectionAssetTypeEnum.JournalEntry: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_download_import_journal") }
         }
         break
       case CloudAssetAction.DOWNLOAD:
@@ -405,6 +439,8 @@ export default class MouCollectionCloud implements MouCollection {
             case MouCollectionAssetTypeEnum.Item: MouFoundryUtils.importItem(JSON.parse(resultImport.message), folderPath); break
             case MouCollectionAssetTypeEnum.Actor: MouFoundryUtils.importActor(JSON.parse(resultImport.message), folderPath); break
             case MouCollectionAssetTypeEnum.Audio: MouFoundryUtils.playStopSound(resultImport.path, MouCollectionCloud.PLAYLIST_NAME); break
+            case MouCollectionAssetTypeEnum.Playlist: MouFoundryUtils.importPlaylist(JSON.parse(resultImport.message), folderPath); break
+            case MouCollectionAssetTypeEnum.JournalEntry: MouFoundryUtils.importJournalEntry(JSON.parse(resultImport.message), folderPath); break
           }
         }
         break
@@ -470,13 +506,10 @@ export default class MouCollectionCloud implements MouCollection {
         break
       
       case CloudAssetAction.MEMBERSHIP:
-        const cAsset = (asset as MouCollectionCloudAsset)
-        if(cAsset.cloud_type == CloudAssetType.PREVIEW) {
-        } else {
-          var win = window.open(cAsset.creatorUrl, '_blank');
-          if (win) { 
-            win.focus();
-          }
+        const cAsset = asset as AnyDict
+        var win = window.open(cAsset.creator_url, '_blank');
+        if (win) { 
+          win.focus();
         }
     }
   }
@@ -502,8 +535,26 @@ export default class MouCollectionCloud implements MouCollection {
   }
 
   async dropDataCanvas(canvas: Canvas, data: AnyDict): Promise<void> {
-    console.log(canvas, data)
-    throw new Error("Method not implemented.");
+    const asset = await MouCloudClient.apiGET(`/asset/${data.moulinette.asset}`, { session: MouApplication.getSettings(SETTINGS_SESSION_ID) })    
+    const position = {x: data.x, y: data.y }
+    if(asset) {
+      switch(data.type) {
+        case "Image":
+          const resultImg = await MouCollectionCloud.downloadAsset(asset)  
+          if(resultImg) {
+            MouFoundryUtils.createTile(canvas, resultImg.path, position)
+          }
+          break;
+        case "Audio":
+          const resultAudio = await MouCollectionCloud.downloadAsset(asset)  
+          if(resultAudio) {
+            MouFoundryUtils.createAmbientAudio(canvas, resultAudio.path, position)
+          }
+          break;
+        default:
+          throw new Error(`Method not implemented for ${data.type}`);
+      }
+    }
   }
 
   /** Collection Cloud has specific configurations */
