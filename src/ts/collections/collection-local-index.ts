@@ -3,6 +3,7 @@ import { MouCollection, MouCollectionAction, MouCollectionActionHint, MouCollect
 import MouLocalClient from "../clients/moulinette-local";
 import MouConfig from "../constants";
 import { AnyDict } from "../types";
+import MouFileManager from "../utils/file-manager";
 import MouFoundryUtils from "../utils/foundry-utils";
 import MouMediaUtils from "../utils/media-utils";
 import LocalCollectionConfig from "./config/collection-local-index-config";
@@ -34,7 +35,7 @@ class MouCollectionLocalAsset implements MouCollectionAsset {
   animated: boolean;
   flags: AnyDict;
   
-  constructor(data: AnyDict, pack: AnyDict, idx: number) {
+  constructor(data: AnyDict, pack: AnyDict, idx: number, baseUrl: string) {
     let assetType : MouCollectionAssetTypeEnum
     this.animated = false
     if(MouConfig.MEDIA_IMAGES.includes(data.path.split(".").pop()?.toLocaleLowerCase() as string)) {
@@ -55,7 +56,9 @@ class MouCollectionLocalAsset implements MouCollectionAsset {
     } else {
       assetType = MouCollectionAssetTypeEnum.Undefined
     }
-    const thumbPath = `${MouConfig.MOU_DEF_THUMBS}/` + data.path.substring(0, data.path.lastIndexOf(".")) + ".webp"
+    console.log(baseUrl, data.path)
+    const thumbPath = baseUrl + `${MouConfig.MOU_DEF_THUMBS}/` + data.path.substring(0, data.path.lastIndexOf(".")) + ".webp" 
+
     this.id = String(idx)
     this.url = MouMediaUtils.encodeURL(data.path);
     this.format = assetType == MouCollectionAssetTypeEnum.Map ? "large" : "small"
@@ -111,11 +114,14 @@ export default class MouCollectionLocal implements MouCollection {
     let idx = 0
     for(const packId of Object.keys(assets)) {
       const results = [] as MouCollectionAsset[]
+      const pack = assets[packId]
+      const source = pack.id.split("#").pop()
+      const baseUrl = await MouFileManager.getBaseURL(source) || ""    
       // replace raw assets by MouCollectionAsset
-      for(const a of assets[packId].assets) {
-        results.push(new MouCollectionLocalAsset(a, assets[packId], ++idx))
+      for(const a of pack.assets) {
+        results.push(new MouCollectionLocalAsset(a, pack, ++idx, baseUrl))
       }
-      assets[packId].assets = results
+      pack.assets = results
     }
     this.assets = assets
   }
@@ -166,14 +172,14 @@ export default class MouCollectionLocal implements MouCollection {
     return [] as MouCollectionCreator[]
   }
 
-  async getPacks(type: MouCollectionAssetTypeEnum): Promise<MouCollectionPack[]> {
+  async getPacks(filters: MouCollectionFilters): Promise<MouCollectionPack[]> {
     const packs = [] as MouCollectionPack[]
     for(const packId of Object.keys(this.assets)) {
       const pack = this.assets[packId]
       packs.push({
         id: packId,
         name: pack.name,
-        assetsCount: pack.assets.filter((a: MouCollectionLocalAsset) => a.type == type).length
+        assetsCount: pack.assets.filter((a: MouCollectionLocalAsset) => a.type == filters.type).length
       })
     }
     return packs;

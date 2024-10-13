@@ -4,10 +4,11 @@ import MouFileManager from "../utils/file-manager";
 import MouMediaUtils from "../utils/media-utils";
 
 import { MouCollection, MouCollectionAction, MouCollectionActionHint, MouCollectionAsset, MouCollectionAssetMeta, MouCollectionAssetType, MouCollectionAssetTypeEnum, MouCollectionCreator, MouCollectionDragData, MouCollectionFilters, MouCollectionPack } from "../apps/collection";
-import { MOU_STORAGE_PUB, SETTINGS_COLLECTION_CLOUD, SETTINGS_SESSION_ID } from "../constants";
+import { MOU_STORAGE, MOU_STORAGE_PUB, SETTINGS_COLLECTION_CLOUD, SETTINGS_SESSION_ID } from "../constants";
 import { AnyDict } from "../types";
 import MouFoundryUtils from "../utils/foundry-utils";
 import CloudCollectionConfig from "./config/collection-cloud-config";
+import MouPreview from "../apps/preview";
 
 export enum CloudMode {
   ALL = "cloud-all",                          // all assets including non-accessible
@@ -73,10 +74,12 @@ class MouCollectionCloudAsset implements MouCollectionAsset {
     if(data.perms == 0) {
       this.icons.push({descr: (game as Game).i18n.localize("MOU.pack_is_free"), icon: "fa-solid fa-gift"})
       this.cloud_type = CloudAssetType.FREE
+      this.previewUrl = `${MOU_STORAGE}${data.pack.creator_ref}/${data.pack.path}/${data.thumb}`
     } else if (data.perms < 0) {
       this.cloud_type = CloudAssetType.PREVIEW
     } else {
       this.cloud_type = CloudAssetType.AVAILABLE
+      this.previewUrl = `${MOU_STORAGE}${data.pack.creator_ref}/${data.pack.path}/${data.thumb}`
     }
     
     switch(data.type) {
@@ -109,11 +112,13 @@ class MouCollectionCloudAsset implements MouCollectionAsset {
             hint: (game as Game).i18n.localize("MOU.meta_scene_dims")
           })
         } else {
-          this.meta.push({ 
-            icon: "fa-regular fa-expand-wide", 
-            text: `${MouMediaUtils.prettyNumber(data.size.width, true)} x ${MouMediaUtils.prettyNumber(data.size.height, true)}`,
-            hint: (game as Game).i18n.localize("MOU.meta_media_size")
-          })
+          if(data.size) {
+            this.meta.push({ 
+              icon: "fa-regular fa-expand-wide", 
+              text: `${MouMediaUtils.prettyNumber(data.size.width, true)} x ${MouMediaUtils.prettyNumber(data.size.height, true)}`,
+              hint: (game as Game).i18n.localize("MOU.meta_media_size")
+            })
+          }
         }
         if(data.scene.hasWalls) this.icons.push({descr: (game as Game).i18n.localize("MOU.scene_has_walls"), icon: "fa-solid fa-block-brick"})
         if(data.scene.hasLights) this.icons.push({descr: (game as Game).i18n.localize("MOU.scene_has_lights"), icon: "fa-regular fa-lightbulb"})
@@ -149,7 +154,6 @@ class MouCollectionCloudAsset implements MouCollectionAsset {
         }
         break
       case MouCollectionAssetTypeEnum.JournalEntry:
-        console.log(data)
         if(data.journal?.pages) {
           this.meta.push({ 
             icon: "fa-regular fa-file-lines", 
@@ -210,7 +214,6 @@ export default class MouCollectionCloud implements MouCollection {
   async getTypes(filters: MouCollectionFilters): Promise<MouCollectionAssetType[]> {
     const filtersDuplicate = JSON.parse(JSON.stringify(filters));
     filtersDuplicate["scope"] = this.getScope()
-    filtersDuplicate["pack"] = filtersDuplicate["pack"].length == 0 ? null : filtersDuplicate["pack"]
     // returns a dict with key = asset type and value = count
     const results = await MouCloudClient.apiPOST("/assets/types", filtersDuplicate)
     return Object.entries(results).map( entry => { return {
@@ -220,8 +223,10 @@ export default class MouCollectionCloud implements MouCollection {
       })
   }
 
-  async getCreators(type: MouCollectionAssetTypeEnum): Promise<MouCollectionCreator[]> {
-    const creators = await MouCloudClient.apiPOST("/creators", { type: type, scope: this.getScope() })
+  async getCreators(filters: MouCollectionFilters): Promise<MouCollectionCreator[]> {
+    const filtersDuplicate = JSON.parse(JSON.stringify(filters));
+    filtersDuplicate["scope"] = this.getScope()
+    const creators = await MouCloudClient.apiPOST("/creators", filtersDuplicate)
     const results = []
     for(const c of creators) {
       const creator : MouCollectionCreator = {
@@ -234,10 +239,13 @@ export default class MouCollectionCloud implements MouCollection {
     return results
   }
   
-  async getPacks(type: MouCollectionAssetTypeEnum, creator: string): Promise<MouCollectionPack[]> {
+  async getPacks(filters: MouCollectionFilters): Promise<MouCollectionPack[]> {
+    const filtersDuplicate = JSON.parse(JSON.stringify(filters));
+    filtersDuplicate["scope"] = this.getScope()
+    if(!filters.creator || filters.creator.length == 0) return [];
+    const packs = await MouCloudClient.apiPOST("/packs", filtersDuplicate)
+    
     const results: { [key: string]: MouCollectionPack } = {};
-    if(creator.length == 0) return [];
-    const packs = await MouCloudClient.apiPOST("/packs", { type: type, creator: creator, scope: this.getScope() })
     for(const p of packs) {
       if(p.name in results) {
         const existing = results[p.name]
@@ -254,8 +262,7 @@ export default class MouCollectionCloud implements MouCollection {
     return Object.values(results)
   }
 
-  async getFolders(filters: MouCollectionFilters): Promise<string[]> {
-    console.log(filters)
+  async getFolders(): Promise<string[]> {
     return [] as string[]
   }
 
@@ -305,6 +312,7 @@ export default class MouCollectionCloud implements MouCollection {
       case MouCollectionAssetTypeEnum.Map:
         actions.push({ id: CloudAssetAction.IMPORT, name: (game as Game).i18n.format("MOU.action_import", { type: assetType}), icon: "fa-solid fa-file-import" })
         actions.push({ id: CloudAssetAction.CREATE_ARTICLE, name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
+        actions.push({ id: CloudAssetAction.PREVIEW, small: true, name: (game as Game).i18n.localize("MOU.action_preview_asset"), icon: "fa-solid fa-eyes" })
         break; 
       case MouCollectionAssetTypeEnum.Item:
       case MouCollectionAssetTypeEnum.Actor:
@@ -315,6 +323,7 @@ export default class MouCollectionCloud implements MouCollection {
       case MouCollectionAssetTypeEnum.Image:
         actions.push({ id: CloudAssetAction.DRAG, drag: true, name: (game as Game).i18n.format("MOU.action_drag", { type: assetType}), icon: "fa-solid fa-hand" })
         actions.push({ id: CloudAssetAction.CREATE_ARTICLE, name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
+        actions.push({ id: CloudAssetAction.PREVIEW, small: true, name: (game as Game).i18n.localize("MOU.action_preview_asset"), icon: "fa-solid fa-eyes" })
         break;    
       case MouCollectionAssetTypeEnum.PDF:
         actions.push({ id: CloudAssetAction.CREATE_ARTICLE, name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
@@ -381,6 +390,10 @@ export default class MouCollectionCloud implements MouCollection {
       case CloudAssetAction.PREVIEW:
         switch(asset.type) {
           case MouCollectionAssetTypeEnum.Audio: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_preview_audio") }
+          case MouCollectionAssetTypeEnum.Scene: 
+          case MouCollectionAssetTypeEnum.Image: 
+          case MouCollectionAssetTypeEnum.Map: 
+            return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_preview_asset") }
         }
         break
     }
@@ -399,6 +412,8 @@ export default class MouCollectionCloud implements MouCollection {
       throw new Error("Invalid BaseURL?")
     }
     const targetPath = MouApplication.getModule().cloudclient.getDefaultDownloadFolder(asset.base_url)
+    const baseURL = await MouFileManager.getBaseURL()
+    const targetPathBaseURL = baseURL ? baseURL + targetPath : targetPath
 
     // FVTT entity
     if(asset.filepath.endsWith(".json")) {
@@ -407,8 +422,8 @@ export default class MouCollectionCloud implements MouCollection {
         if(entityString.length > 0) {
           // replace all #DEPS#
           return {
-            path: targetPath,
-            message: entityString.replace(new RegExp("#DEP#", "g"), targetPath + "/"),
+            path: targetPathBaseURL,
+            message: entityString.replace(new RegExp("#DEP#", "g"), targetPathBaseURL + "/"),
             status: "success",
           }
         }
@@ -427,6 +442,7 @@ export default class MouCollectionCloud implements MouCollection {
   async executeAction(actionId: number, selAsset: MouCollectionAsset): Promise<void> {
     const asset = await MouCloudClient.apiGET(`/asset/${selAsset.id}`, { session: MouApplication.getSettings(SETTINGS_SESSION_ID) })
     const folderPath = `Moulinette/${asset.creator}/${asset.pack}`
+    console.log("HERE")
     switch(actionId) {
       case CloudAssetAction.DRAG:
         ui.notifications?.info((game as Game).i18n.localize("MOU.dragdrop_instructions"))
@@ -503,6 +519,29 @@ export default class MouCollectionCloud implements MouCollection {
               audio.pause();
             }
             break
+          case MouCollectionAssetTypeEnum.Scene:
+            const jsonData = await MouFileManager.downloadFileAsString(`${asset.base_url}/${asset.file_url}`)
+            if(jsonData.length > 0) {
+              const imagePath = MouFoundryUtils.getImagePathFromEntity(JSON.parse(jsonData));
+              if(imagePath) {
+                const depPath = imagePath.replace("#DEP#", "")
+                const dep = asset.deps.find((d : string) => d.startsWith(depPath))
+                if(dep) {
+                  (new MouPreview(`${asset.base_url}/${dep}`)).render(true)  
+                } else {
+                  MouApplication.logError(this.APP_NAME, `Failed to find matching dependency ${depPath}`)
+                }
+              } else {
+                MouApplication.logError(this.APP_NAME, `Failed to get image from scene ${asset.file_url.split("?")[0]}`)  
+              }
+            } else {
+              MouApplication.logError(this.APP_NAME, `Failed to download scene data for ${asset.file_url.split("?")[0]}`)
+            }
+            break
+          case MouCollectionAssetTypeEnum.Image:
+          case MouCollectionAssetTypeEnum.Map:
+            (new MouPreview(`${asset.base_url}/${asset.file_url}`)).render(true)
+            break;
         }
         break
       
@@ -528,7 +567,7 @@ export default class MouCollectionCloud implements MouCollection {
         case MouCollectionAssetTypeEnum.Item: 
           const result = await MouCollectionCloud.downloadAsset(asset)  
           if(result) {
-            data.data = JSON.parse(result.message)
+            data.data = JSON.parse(result.message) as AnyDict
           }
           break
       }

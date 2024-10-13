@@ -12,6 +12,7 @@ export enum MouCollectionAssetTypeEnum {
   Playlist = 9,
   Macro = 10,
   RollTable = 11,
+  Adventure = 12,
   Undefined = 99
 }
 
@@ -103,10 +104,10 @@ export interface MouCollection {
   getTypes(filters: MouCollectionFilters): Promise<MouCollectionAssetType[]>
   
   /** Returns the list of creators (for a specific type) or empty list (collection doesn't support creators) */
-  getCreators(type: MouCollectionAssetTypeEnum): Promise<MouCollectionCreator[]>
+  getCreators(filters: MouCollectionFilters): Promise<MouCollectionCreator[]>
 
   /** Returns the list of packs (for a specific type and creator) or empty list (collection doesn't support packs) */
-  getPacks(type: MouCollectionAssetTypeEnum, creator: string): Promise<MouCollectionPack[]>
+  getPacks(filters: MouCollectionFilters): Promise<MouCollectionPack[]>
 
   /** Returns the list of folders */
   getFolders(filters: MouCollectionFilters): Promise<string[]>
@@ -145,7 +146,7 @@ export interface MouCollection {
 
 export class MouCollectionUtils {
   static getTranslatedType(value: number): string {
-    const key : string = MouCollectionAssetTypeEnum[value];
-    return (game as Game).i18n.localize(`MOU.type_${key.toLowerCase()}`);
+    const key : string = MouCollectionAssetTypeEnum[value];    
+    return key ? (game as Game).i18n.localize(`MOU.type_${key.toLowerCase()}`) : "Unknown" + value;
   }
 }

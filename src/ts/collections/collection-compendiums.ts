@@ -129,11 +129,11 @@ export default class MouCollectionCompendiums implements MouCollection {
    * @param {MouCollectionAssetTypeEnum} type - The type of asset to filter creators by.
    * @returns {Promise<MouCollectionCreator[]>} A promise that resolves to an array of creators with their respective asset counts.
    */
-  async getCreators(type: MouCollectionAssetTypeEnum): Promise<MouCollectionCreator[]> {
+  async getCreators(filters: MouCollectionFilters): Promise<MouCollectionCreator[]> {
     const creators = {} as AnyDict
     for(const pack of Object.values(this.compendiums.packs) as AnyDict[]) {
       // skip non-matching type
-      if(MouCollectionAssetTypeEnum[pack.type as keyof typeof MouCollectionAssetTypeEnum] != type) continue;
+      if(MouCollectionAssetTypeEnum[pack.type as keyof typeof MouCollectionAssetTypeEnum] != filters.type) continue;
       if(pack.publisher in creators) {
         creators[pack.publisher] += pack.count
       } else {
@@ -151,12 +151,13 @@ export default class MouCollectionCompendiums implements MouCollection {
     return results
   }
 
-  async getPacks(type: MouCollectionAssetTypeEnum, creator: string): Promise<MouCollectionPack[]> {
+  async getPacks(filters: MouCollectionFilters): Promise<MouCollectionPack[]> {
     const results = [] as MouCollectionPack[]
+    const creator = filters.creator || ""
     if(creator.length == 0) return results
     for(const pack of Object.values(this.compendiums.packs) as AnyDict[]) {
       // skip non-matching type
-      if(MouCollectionAssetTypeEnum[pack.type as keyof typeof MouCollectionAssetTypeEnum] != type) continue;
+      if(MouCollectionAssetTypeEnum[pack.type as keyof typeof MouCollectionAssetTypeEnum] != filters.type) continue;
       // skip non-matching creator
       if(creator && pack.publisher != creator) continue;
       results.push({

@@ -1,0 +1,11 @@
+<div>
+  {{#if animated}}
+  <video class="previewVideo" autoplay loop muted>
+    <source src="{{asset}}" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+  {{/if}}
+  {{#unless animated}}
+  <img class="previewImg" src="{{asset}}"/>
+  {{/unless}}
+</div>

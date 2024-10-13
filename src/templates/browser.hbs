@@ -56,7 +56,7 @@
           <select name="packs" id="pack-select">
             <option value="">--Please choose a pack--</option>
             {{#each filters.packs as |p|}}
-              <option value="{{p.id}}" {{#if (eq ../filters.values.pack p.id)}}selected{{/if}}>{{p.name}} ({{prettyNumber p.assetsCount true}})</option>
+              <option value="{{p.id}}" {{#if p.selected}}selected{{/if}}>{{p.name}} ({{prettyNumber p.assetsCount true}})</option>
             {{/each}}
           </select>
           {{/if}}

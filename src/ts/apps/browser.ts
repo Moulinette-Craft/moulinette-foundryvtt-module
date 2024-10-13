@@ -72,10 +72,10 @@ export default class MouBrowser extends MouApplication {
     
     // change type if selected type not available for current collection
     if(!types.find(t => t.id == this.filters.type)) {
-      this.filters.type = types.length > 0 ? types[0].id : undefined
+      this.filters.type = types.length > 0 ? types[0].id : MouCollectionAssetTypeEnum.Image
     }
-    const creators = this.filters.type ? await this.collection.getCreators(this.filters.type) : null
-    let packs = this.filters.type ? await this.collection.getPacks(this.filters.type, this.filters.creator ? this.filters.creator : "") : null
+    const creators = this.filters.type ? await this.collection.getCreators(this.filters) : null
+    let packs = this.filters.type ? await this.collection.getPacks(this.filters) : null
     const folders = await this.collection.getFolders(this.filters);
 
     // improve folders by removing common path
@@ -88,6 +88,16 @@ export default class MouBrowser extends MouApplication {
     if(packs) {
       packs.sort((a, b) => a.name.toLocaleLowerCase().localeCompare(b.name.toLocaleLowerCase()))
       packs = packs.filter(p => p.assetsCount > 0)
+      // look for selected pack
+      console.log(this.filters.pack)
+      if(this.filters.pack && this.filters.pack.length > 0) {
+        for(const pack of packs) {
+          if(this.filters.pack.indexOf(pack.id) >= 0) {
+            (pack as AnyDict).selected = true
+            break;
+          }
+        }
+      }
     }
 
     // split types into 2 lists
@@ -141,11 +151,12 @@ export default class MouBrowser extends MouApplication {
       clearTimeout(typingTimer);
       typingTimer = setTimeout(() => {
         this.filters.searchTerms = search.val() as string
-        this.page = 0
-        this.html?.find(".content").html("")
-        this.currentAssets = []
-        this.currentAssetsCount = 0
-        this.loadMoreAssets()
+        this.render()
+        // this.page = 0
+        // this.html?.find(".content").html("")
+        // this.currentAssets = []
+        // this.currentAssetsCount = 0
+        // this.loadMoreAssets()
       }, MouBrowser.DEBOUNCE_TIME);
     });
 
@@ -435,13 +446,12 @@ export default class MouBrowser extends MouApplication {
     if(event.currentTarget) {
       const target = $(event.currentTarget)
       const creator = target.closest(".source").data("creator")
-      const pack = target.closest(".source").data("pack")
-      console.log(creator, pack)
-      if(pack) {
+      const packId = target.closest(".source").data("pack")
+      if(packId) {
         if(creator) {
           this.filters.creator = creator
         }
-        this.filters.pack = pack
+        this.filters.pack = "" + packId
         this.render()
       }
     }

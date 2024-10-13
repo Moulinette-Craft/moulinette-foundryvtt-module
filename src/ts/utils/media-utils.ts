@@ -29,8 +29,11 @@ export default class MouMediaUtils {
    * @returns The encoded URI.
    */
   static encodeURL(url: string) {
-    if(url.startsWith("https")) return url
-    return url.split('/').map(encodeURIComponent).join('/')
+    if(url.startsWith("https")) {
+      return "https://" + url.substring(8).split('/').map(encodeURIComponent).join('/')
+    } else {
+      return url.split('/').map(encodeURIComponent).join('/')
+    }
   }
 
   /**

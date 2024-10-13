@@ -1,5 +1,5 @@
 import MouApplication from "../apps/application";
-import { SETTINGS_S3_BUCKET } from "../constants";
+import MouConfig, { SETTINGS_S3_BUCKET } from "../constants";
 import { AnyDict } from "../types";
 import MouMediaUtils from "./media-utils";
 
@@ -288,7 +288,8 @@ export default class MouFileManager {
     // download index file from URL
     let indexData = {}
     const noCache = "?ms=" + new Date().getTime();
-    const response = await fetch(path + noCache, {cache: "no-store"}).catch(function(e) {
+    const baseURL = await MouFileManager.getBaseURL() || ""
+    const response = await fetch(baseURL + path + noCache, {cache: "no-store"}).catch(function(e) {
       MouApplication.logError(MouFileManager.APP_NAME, `Exception while downloading index ${path}`, e)
     });
     if(response && response.status == 200) {
@@ -399,4 +400,5 @@ export default class MouFileManager {
 
     return true
   }
+
 }
