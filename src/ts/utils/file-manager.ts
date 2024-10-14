@@ -1,5 +1,5 @@
 import MouApplication from "../apps/application";
-import MouConfig, { SETTINGS_S3_BUCKET } from "../constants";
+import { SETTINGS_S3_BUCKET } from "../constants";
 import { AnyDict } from "../types";
 import MouMediaUtils from "./media-utils";
 

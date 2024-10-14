@@ -7,7 +7,7 @@
     <aside class="filters {{#unless filters.prefs.visible}}collapsed{{/unless}}">
       <div class="clear"><a href>{{localize "MOU.clear_filters"}}</a></div>
       <h2 data-id="collection">{{localize "MOU.collection"}} <i class="fa-regular fa-square-{{mouIf filters.prefs.opensections.collection "minus" "plus"}}"></i></h2>
-      <div data-id="collection" class="{{#unless filters.prefs.opensections.collection}}collapsed{{/unless}}">
+      <div id="filterCollections" data-id="collection" class="{{#unless filters.prefs.opensections.collection}}collapsed{{/unless}}">
         <ul>
           {{#each filters.collections as |c|}}
           <li>
@@ -22,7 +22,7 @@
       </div>
       
       <h2 data-id="asset_type">{{localize "MOU.asset_type"}} <i class="fa-regular fa-square-{{mouIf filters.prefs.opensections.asset_type "minus" "plus"}}"></i></h2>
-      <div class="options {{#unless filters.prefs.opensections.asset_type}}collapsed{{/unless}}" data-id="asset_type">
+      <div id="filterTypes" class="options {{#unless filters.prefs.opensections.asset_type}}collapsed{{/unless}}" data-id="asset_type">
         <ul>
           {{#each filters.types1 as |t|}}
           <li>

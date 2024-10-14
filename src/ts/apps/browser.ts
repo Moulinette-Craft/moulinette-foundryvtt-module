@@ -131,10 +131,11 @@ export default class MouBrowser extends MouApplication {
       .on("click", this._onClickFiltersToggle.bind(this));
     html.find(".filters input[name=collection]")
       .on("click", this._onClickCollection.bind(this));
-      html.find(".filters input[name=asset_type]")
+    html.find(".filters input[name=asset_type]")
       .on("click", this._onClickAssetType.bind(this));
     html.find(".filters select")
-      .on("change", this._onSelectFilters.bind(this));
+      .on("change", this._onSelectFilters.bind(this))
+      .on("mousedown", this._onDeselectFilters.bind(this));
     html.find(".content")
       .on('scroll', this._onScroll.bind(this))
     html.find(".filters .action a")
@@ -145,25 +146,33 @@ export default class MouBrowser extends MouApplication {
     html.find(".filters .folders").scrollLeft(this.currentFoldersScroll.left);
     
     // input triggers searches
-    const search = html.find(".search-bar input");
+    const search = html.find(".search-bar input")
     let typingTimer: ReturnType<typeof setTimeout>;
     search.on('input', () => {
       clearTimeout(typingTimer);
       typingTimer = setTimeout(() => {
         this.filters.searchTerms = search.val() as string
+        this.filters_prefs.focus = "search#" + search.prop("selectionStart")
         this.render()
-        // this.page = 0
-        // this.html?.find(".content").html("")
-        // this.currentAssets = []
-        // this.currentAssetsCount = 0
-        // this.loadMoreAssets()
       }, MouBrowser.DEBOUNCE_TIME);
     });
 
-    switch(this.filters_prefs.focus) {
-      case "search": search.trigger("focus"); break
+    const focus = this.filters_prefs.focus.split("#")
+    switch(focus[0]) {
+      case "search": 
+        search.trigger("focus"); 
+        const searchInput = search.get(0) as HTMLInputElement
+        if(focus.length == 1) {
+          searchInput.setSelectionRange(searchInput.value.length, searchInput.value.length)
+        } else {
+          searchInput.setSelectionRange(Number(focus[1]), Number(focus[1]))
+        }
+        
+      break
       case "creator": this.html.find("#creator-select").trigger("focus"); break
       case "pack": this.html.find("#pack-select").trigger("focus"); break
+      case "collection": this.html.find(`#filterCollections input[id='${focus[1]}']`).trigger("focus"); break
+      case "type": this.html.find(`#filterTypes input[id='${focus[1]}']`).trigger("focus"); break
       default:
     }
 
@@ -296,6 +305,36 @@ export default class MouBrowser extends MouApplication {
 
   
   /**
+   * Handles the deselection of filters when a mouse down event occurs.
+   * 
+   * @param event - The mouse down event triggered by the user.
+   * @returns A promise that resolves when the filter deselection is complete.
+   * 
+   * This method prevents the default action of the event and checks if the right mouse button (button 2) was clicked.
+   * If so, it resets the current folder scroll position and clears the relevant filters based on the target element's ID.
+   * It then re-renders the component to reflect the changes.
+   */
+  async _onDeselectFilters(event: JQuery.MouseDownEvent): Promise<void> {
+    if(event.button == 2 && event.currentTarget) {
+      event.preventDefault();
+      this.currentFoldersScroll = { top: 0, left: 0 }
+      this.filters.folder = ""
+      const combo = $(event.currentTarget)
+      if(combo.attr('id') == "creator-select") {
+        this.filters.creator = "";
+        this.filters.pack = ""
+        this.filters_prefs.focus = "creator"
+      } else if(combo.attr('id') == "pack-select") {
+        this.filters.pack = "";
+        this.filters_prefs.focus = "pack"
+      }
+      
+      this.render()
+    }
+  }
+
+  
+  /**
    * Handles the click event for toggling the visibility of filters.
    * 
    * @param event - The click event triggered by the user.
@@ -328,6 +367,7 @@ export default class MouBrowser extends MouApplication {
       this.filters.creator = ""
       this.filters.pack = ""
       this.filters.folder = ""
+      this.filters_prefs.focus = "collection#" + selCollection
       this.render()
     }
   }
@@ -337,6 +377,7 @@ export default class MouBrowser extends MouApplication {
     const selType = Number(this.html?.find('.filters input[name=asset_type]:checked').attr('id'))
     if(selType && this.filters.type != selType) {
       this.filters.type = selType as MouCollectionAssetTypeEnum
+      this.filters_prefs.focus = "type#" + selType
       this.render()
     }
   }
