@@ -50,5 +50,9 @@ export default class MouPreview extends MouApplication {
     html.find(".previewVideo").one("playing", function() {
       parent.autoResize();
     })
+
+    // close on click
+    html.find(".previewImg").on("mousedown", () => parent.close());
+    html.find(".previewVideo").on("mousedown", () => parent.close());
   }
 }

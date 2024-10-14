@@ -1,5 +1,6 @@
 import MouBrowser from "../apps/browser";
 import { MouCollection, MouCollectionAction, MouCollectionActionHint, MouCollectionAsset, MouCollectionAssetMeta, MouCollectionAssetType, MouCollectionAssetTypeEnum, MouCollectionCreator, MouCollectionDragData, MouCollectionFilters, MouCollectionPack } from "../apps/collection";
+import MouPreview from "../apps/preview";
 import MouLocalClient from "../clients/moulinette-local";
 import MouConfig from "../constants";
 import { AnyDict } from "../types";
@@ -56,9 +57,9 @@ class MouCollectionLocalAsset implements MouCollectionAsset {
     } else {
       assetType = MouCollectionAssetTypeEnum.Undefined
     }
-    console.log(baseUrl, data.path)
-    const thumbPath = baseUrl + `${MouConfig.MOU_DEF_THUMBS}/` + data.path.substring(0, data.path.lastIndexOf(".")) + ".webp" 
-
+    
+    let thumbPath = baseUrl + `${MouConfig.MOU_DEF_THUMBS}/` + data.path.substring(baseUrl.length, data.path.lastIndexOf(".")) + ".webp" 
+    
     this.id = String(idx)
     this.url = MouMediaUtils.encodeURL(data.path);
     this.format = assetType == MouCollectionAssetTypeEnum.Map ? "large" : "small"
@@ -257,10 +258,12 @@ export default class MouCollectionLocal implements MouCollection {
     switch(cAsset.type) {
       case MouCollectionAssetTypeEnum.Image:
         actions.push({ id: LocalAssetAction.CREATE_ARTICLE, name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
+        actions.push({ id: LocalAssetAction.PREVIEW, small: true, name: (game as Game).i18n.localize("MOU.action_preview_asset"), icon: "fa-solid fa-eyes" })
         break;    
       case MouCollectionAssetTypeEnum.Map:
         actions.push({ id: LocalAssetAction.IMPORT, name: (game as Game).i18n.format("MOU.action_import", { type: assetType}), icon: "fa-solid fa-file-import" })
         actions.push({ id: LocalAssetAction.CREATE_ARTICLE, name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
+        actions.push({ id: LocalAssetAction.PREVIEW, small: true, name: (game as Game).i18n.localize("MOU.action_preview_asset"), icon: "fa-solid fa-eyes" })
         break;    
       case MouCollectionAssetTypeEnum.Audio:
         actions.push({ id: LocalAssetAction.IMPORT, name: (game as Game).i18n.localize("MOU.action_audio_play"), icon: "fa-solid fa-play-pause" })
@@ -296,6 +299,9 @@ export default class MouCollectionLocal implements MouCollection {
       case LocalAssetAction.PREVIEW:
         switch(asset.type) {
           case MouCollectionAssetTypeEnum.Audio: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_preview_audio_full") }
+          case MouCollectionAssetTypeEnum.Image: 
+          case MouCollectionAssetTypeEnum.Map: 
+            return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_preview_asset") }
         }
         break
     }
@@ -349,6 +355,10 @@ export default class MouCollectionLocal implements MouCollection {
               audio.play();
             }
             break
+          case MouCollectionAssetTypeEnum.Image:
+          case MouCollectionAssetTypeEnum.Map:
+              (new MouPreview(asset.url)).render(true)
+              break;
         }
         break
     }
