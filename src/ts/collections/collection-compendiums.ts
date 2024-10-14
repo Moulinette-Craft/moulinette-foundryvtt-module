@@ -232,10 +232,6 @@ export default class MouCollectionCompendiums implements MouCollection {
     return results
   }
 
-  getRandomAssets(filters: MouCollectionFilters): Promise<MouCollectionAsset[]> {
-    throw new Error("Method not implemented." + filters);
-  }
-
   /**
    * Generates a list of actions available for a given collection asset.
    *

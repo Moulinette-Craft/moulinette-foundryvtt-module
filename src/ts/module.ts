@@ -23,6 +23,7 @@ import MouFileManager from "./utils/file-manager";
 import MouFoundryUtils from "./utils/foundry-utils";
 import MouCollectionGameIcons from "./collections/collection-gameicons";
 import MouCollectionBBCSounds from "./collections/collection-bbc-sounds";
+import MouCollectionCloudPrivate from "./collections/collection-cloud-private";
 
 let module: MouModule;
 
@@ -94,6 +95,7 @@ Hooks.once("ready", () => {
   module.cloudclient.getUser()
   // load default collections
   module.collections.push(new MouCollectionCloud())
+  module.collections.push(new MouCollectionCloudPrivate())
   module.collections.push(new MouCollectionCompendiums())
   module.collections.push(new MouCollectionLocal())
   module.collections.push(new MouCollectionGameIcons())

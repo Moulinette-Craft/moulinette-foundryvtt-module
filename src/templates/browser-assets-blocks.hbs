@@ -33,8 +33,10 @@
       </div>
       <div class="title">{{a.name}}</div>
     </div>
+    {{#unless (eq a.meta.length 0)}}
     <div class="meta">
       {{#each a.meta as |m|}}<span title="{{m.hint}}">{{#if m.icon}}<i class="{{m.icon}}"></i> {{/if}}{{m.text}}</span>{{/each}}
     </div>
+    {{/unless}}
   </div>
 {{/each}}

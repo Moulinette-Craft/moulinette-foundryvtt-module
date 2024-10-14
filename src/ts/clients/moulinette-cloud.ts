@@ -7,6 +7,7 @@ export default class MouCloudClient {
   static APP_NAME = "MouCloudClient"
   static HEADERS = { 'Accept': 'application/json', 'Content-Type': 'application/json' }
   static AZURE_BASEURL = "https://mttestorage.blob.core.windows.net/"
+  static AZURE_BASEURL_PRIVATE = "https://mttecloudstorage.blob.core.windows.net/"
 
   private static async _fetch(uri: string, method: string, parameters?: {}, data?:AnyDict) {
     let init:AnyDict = {
@@ -108,12 +109,17 @@ export default class MouCloudClient {
   }
 
   /**
-   * This method doesn't really belong here, but is required for other modules
+   * Note: This method doesn't really belong here, but is required for other modules (moulinette-audio)
    * which need to download assets from the cloud
    */
   getDefaultDownloadFolder(baseUrl: string) {
     const match = baseUrl.match(/https:\/\/[^.]+\.blob\.core\.windows\.net\/(.+)/);
     return `${MouConfig.MOU_DEF_FOLDER}/cloud/${match ? match[1] : "unkown"}`
+  }
+
+  getDefaultDownloadPrivateFolder(baseUrl: string) {
+    const match = baseUrl.match(/https:\/\/[^.]+\.blob\.core\.windows\.net\/user\d+\/(.+)/);
+    return `${MouConfig.MOU_DEF_FOLDER}/cloud-private/${match ? match[1] : "unkown"}`
   }
   
 }

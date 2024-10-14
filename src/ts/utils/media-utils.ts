@@ -37,10 +37,10 @@ export default class MouMediaUtils {
   }
 
   /**
-   * Extracts the file extension from a given file path.
-   * 
-   * @param filepath - The full path of the media file.
-   * @returns The file extension of the media file.
+   * Removes the file extension from a given file path.
+   *
+   * @param filepath - The full path of the file.
+   * @returns The file path without its extension.
    */
   static getBasePath(filepath: string) {
     return filepath.replace(/\.[^/.]+$/, "")
@@ -60,11 +60,15 @@ export default class MouMediaUtils {
   static prettyMediaName(filepath: string) {
     const cleanPath = MouMediaUtils.getCleanURI(filepath)
     const basepath = MouMediaUtils.getBasePath(cleanPath)
+    const ext = cleanPath.split('.').pop() || ""          // keep extension only
     let name = basepath.split("/").pop()                  // keep filename only (not entire path)
     name = name?.replace(/[-_]/g, " ")                    // replace _ and - by spaces
     name = name?.split(' ')                               // capitalize the first letter of each word
       .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(' ');
+    if(MouConfig.MEDIA_AUDIO.includes(ext) || MouConfig.MEDIA_VIDEOS.includes(ext)) {
+      name += ` (${ext})`
+    }
     return name ? name : cleanPath
   }
 

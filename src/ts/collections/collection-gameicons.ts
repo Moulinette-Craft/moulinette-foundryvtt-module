@@ -104,11 +104,6 @@ export default class MouCollectionGameIcons implements MouCollection {
     return assets
   }
 
-  async getRandomAssets(filters: MouCollectionFilters): Promise<MouCollectionAsset[]> {
-    console.log(filters)
-    return [] as MouCollectionAsset[]
-  }
-
   getActions(asset: MouCollectionAsset): MouCollectionAction[] {
     const actions = [] as MouCollectionAction[]
     const assetType = MouCollectionAssetTypeEnum[asset.type]

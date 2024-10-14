@@ -246,10 +246,6 @@ export default class MouCollectionLocal implements MouCollection {
     return results.slice(fromIdx, fromIdx + MouBrowser.PAGE_SIZE)
   }
 
-  getRandomAssets(filters: MouCollectionFilters): Promise<MouCollectionAsset[]> {
-    throw new Error("Method not implemented." + filters);
-  }
-
   getActions(asset: MouCollectionAsset): MouCollectionAction[] {
     const actions = [] as MouCollectionAction[]
     const cAsset = (asset as MouCollectionLocalAsset)

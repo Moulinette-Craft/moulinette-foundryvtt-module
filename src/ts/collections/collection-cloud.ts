@@ -284,17 +284,6 @@ export default class MouCollectionCloud implements MouCollection {
     return results
   }
 
-  async getRandomAssets(filters: MouCollectionFilters): Promise<MouCollectionAsset[]> {
-    const filtersDuplicate = JSON.parse(JSON.stringify(filters));
-    filtersDuplicate["scope"] = this.getScope()
-    const assets = await MouCloudClient.apiPOST(`/assets/random`, filtersDuplicate)
-    const results = []
-    for(const data of assets) {
-      results.push(new MouCollectionCloudAsset(data))
-    }
-    return results
-  }
-
   getActions(asset: MouCollectionAsset): MouCollectionAction[] {
     const actions = [] as MouCollectionAction[]
     const cAsset = (asset as MouCollectionCloudAsset)
@@ -442,7 +431,6 @@ export default class MouCollectionCloud implements MouCollection {
   async executeAction(actionId: number, selAsset: MouCollectionAsset): Promise<void> {
     const asset = await MouCloudClient.apiGET(`/asset/${selAsset.id}`, { session: MouApplication.getSettings(SETTINGS_SESSION_ID) })
     const folderPath = `Moulinette/${asset.creator}/${asset.pack}`
-    console.log("HERE")
     switch(actionId) {
       case CloudAssetAction.DRAG:
         ui.notifications?.info((game as Game).i18n.localize("MOU.dragdrop_instructions"))

@@ -89,7 +89,6 @@ export default class MouBrowser extends MouApplication {
       packs.sort((a, b) => a.name.toLocaleLowerCase().localeCompare(b.name.toLocaleLowerCase()))
       packs = packs.filter(p => p.assetsCount > 0)
       // look for selected pack
-      console.log(this.filters.pack)
       if(this.filters.pack && this.filters.pack.length > 0) {
         for(const pack of packs) {
           if(this.filters.pack.indexOf(pack.id) >= 0) {
@@ -156,6 +155,8 @@ export default class MouBrowser extends MouApplication {
         this.render()
       }, MouBrowser.DEBOUNCE_TIME);
     });
+
+    search.on('mousedown', this._onClearSearchTerms.bind(this));
 
     const focus = this.filters_prefs.focus.split("#")
     switch(focus[0]) {
@@ -329,6 +330,22 @@ export default class MouBrowser extends MouApplication {
         this.filters_prefs.focus = "pack"
       }
       
+      this.render()
+    }
+  }
+
+  /**
+   * Handles the event when the search terms are cleared.
+   * This method is triggered by a right-click (mouse button 2) on the event's current target.
+   * It prevents the default action, clears the search terms, and re-renders the component.
+   *
+   * @param event - The mouse down event triggered by the user.
+   * @returns A promise that resolves when the operation is complete.
+   */
+  async _onClearSearchTerms(event: JQuery.MouseDownEvent): Promise<void> {
+    if(event.button == 2 && event.currentTarget) {
+      event.preventDefault();
+      this.filters.searchTerms = ""
       this.render()
     }
   }

@@ -58,6 +58,7 @@
   "MOU.collection_type_bbc_sounds": "BBC Sound Effects",
   "MOU.collection_type_cloud_all": "Moulinette Cloud (all)",
   "MOU.collection_type_cloud_owned": "Moulinette Cloud (accessible)",
+  "MOU.collection_type_cloud_private": "Moulinette Cloud (private)",
   "MOU.collection_type_cloud_supported": "Moulinette Cloud (supported)",
   "MOU.collection_type_compendiums": "Compendiums (this world)",
   "MOU.collection_type_gameicons": "Game Icons (game-icons.net)",

@@ -118,9 +118,6 @@ export interface MouCollection {
   /** Returns random assets from the collection based on filters */
   getAssets(filters: MouCollectionFilters, page: number): Promise<MouCollectionAsset[]>
 
-  /** Returns random assets from the collection based on filters */
-  getRandomAssets(filters: MouCollectionFilters): Promise<MouCollectionAsset[]>
-
   /** Returns the list of available action  */
   getActions(asset: MouCollectionAsset): MouCollectionAction[]
 

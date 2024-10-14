@@ -126,11 +126,6 @@ export default class MouCollectionBBCSounds implements MouCollection {
     return assets
   }
 
-  async getRandomAssets(filters: MouCollectionFilters): Promise<MouCollectionAsset[]> {
-    console.log(filters)
-    return [] as MouCollectionAsset[]
-  }
-
   getActions(asset: MouCollectionAsset): MouCollectionAction[] {
     const actions = [] as MouCollectionAction[]
     const assetType = MouCollectionAssetTypeEnum[asset.type]
@@ -160,7 +155,6 @@ export default class MouCollectionBBCSounds implements MouCollection {
         break
       
       case BBCAssetAction.CLIPBOARD:
-        //const audioPath = await MouBBCSoundsClient.downloadAudio(asset.url)
         MouMediaUtils.copyToClipboard(asset.url)
         break
       

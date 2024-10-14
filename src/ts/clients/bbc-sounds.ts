@@ -1,7 +1,5 @@
 import MouApplication from "../apps/application";
 import MouBrowser from "../apps/browser";
-import MouConfig from "../constants";
-import MouFileManager from "../utils/file-manager";
 
 export interface MouBBCAudio {
   id: string,
@@ -35,10 +33,5 @@ export class MouBBCSoundsClient {
 
     const responseJSON = await response.json()
     return { sounds: responseJSON.results, count: responseJSON.total }
-  }
-
-  static async downloadAudio(url: string) {
-    const result = await MouFileManager.downloadFile(url, "", `${MouConfig.MOU_DEF_FOLDER}/bbc-sounds`)
-    return result ? result.path : null
   }
 }
