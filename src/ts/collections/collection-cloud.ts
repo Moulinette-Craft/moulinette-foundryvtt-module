@@ -55,11 +55,11 @@ class MouCollectionCloudAsset implements MouCollectionAsset {
   
   constructor(data: AnyDict) {
     this.id = data._id;
-    this.format = [MouCollectionAssetTypeEnum.Scene, MouCollectionAssetTypeEnum.Map].includes(data.type) ? "large" : "small"
+    this.format = [MouCollectionAssetTypeEnum.Scene, MouCollectionAssetTypeEnum.Map, MouCollectionAssetTypeEnum.ScenePacker].includes(data.type) ? "large" : "small"
     const basePath = MouMediaUtils.getBasePath(data.filepath)
     this.url = data.filepath
     this.previewUrl = `${MOU_STORAGE_PUB}${data.pack.creator_ref}/${data.pack.path}/${basePath}.${data.type == MouCollectionAssetTypeEnum.Audio ? "ogg" : "webp"}`
-    this.background_color = [MouCollectionAssetTypeEnum.Scene, MouCollectionAssetTypeEnum.Map].includes(data.type) ? data.main_color : null
+    this.background_color = [MouCollectionAssetTypeEnum.Scene, MouCollectionAssetTypeEnum.Map, MouCollectionAssetTypeEnum.ScenePacker].includes(data.type) ? data.main_color : null
     this.creator = data.pack.creator
     this.creatorUrl = data.creator_url
     this.pack = data.pack.name
@@ -103,6 +103,7 @@ class MouCollectionCloudAsset implements MouCollectionAsset {
           hint: (game as Game).i18n.localize("MOU.meta_audio_duration")
         })
         break
+      case MouCollectionAssetTypeEnum.ScenePacker:
       case MouCollectionAssetTypeEnum.Scene:
         this.meta = []
         if(data.scene.width) {

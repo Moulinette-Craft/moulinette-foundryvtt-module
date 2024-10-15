@@ -13,6 +13,7 @@ export enum MouCollectionAssetTypeEnum {
   Macro = 10,
   RollTable = 11,
   Adventure = 12,
+  ScenePacker = 98,
   Undefined = 99
 }
 

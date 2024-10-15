@@ -167,6 +167,7 @@
   "MOU.type_actor": "Actor",
   "MOU.type_adventure": "Adventure",
   "MOU.type_audio": "Audio",
+  "MOU.type_scenepacker": "ScenePacker",
   "MOU.type_image": "Image",
   "MOU.type_item": "Item",
   "MOU.type_journalentry": "Journal",
