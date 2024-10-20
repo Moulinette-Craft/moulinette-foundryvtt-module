@@ -114,7 +114,8 @@ export default class MouBrowser extends MouApplication {
         packs,
         folders : foldersImproved,
         types1,
-        types2
+        types2,
+        showPacksFilter: (creators && creators.length > 0) || (packs && packs.length > 0)
       }
     };
   }

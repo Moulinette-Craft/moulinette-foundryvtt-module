@@ -28,7 +28,8 @@ enum CloudAssetAction {
   IMPORT,                   // import asset (scenes/...)
   CREATE_ARTICLE,           // create article from asset
   MEMBERSHIP,               // creator support page,
-  PREVIEW,                  // preview audio
+  PREVIEW,                  // preview audio,
+  SCENEPACKER,              // visit scene packer page
 }
 
 class MouCollectionCloudAsset implements MouCollectionAsset {
@@ -47,6 +48,8 @@ class MouCollectionCloudAsset implements MouCollectionAsset {
   meta: MouCollectionAssetMeta[];
   icon: string | null;
   icons?: {descr: string, icon: string}[];
+  iconTL?: {descr: string, icon?: string, text?: string};
+  iconTR?: {descr: string, icon?: string, text?: string};
   draggable?: boolean;
   flags: AnyDict;
 
@@ -104,8 +107,8 @@ class MouCollectionCloudAsset implements MouCollectionAsset {
         })
         break
       case MouCollectionAssetTypeEnum.ScenePacker:
+        this.iconTL = {descr: (game as Game).i18n.localize("MOU.scene_packer"), icon: "mou-icon mou-scenepacker"}
       case MouCollectionAssetTypeEnum.Scene:
-        this.meta = []
         if(data.scene.width) {
           this.meta.push({ 
             icon: "fa-regular fa-border-all", 
@@ -128,6 +131,12 @@ class MouCollectionCloudAsset implements MouCollectionAsset {
         if(data.scene.hasTiles) this.icons.push({descr: (game as Game).i18n.localize("MOU.scene_has_tiles"), icon: "fa-solid fa-cubes"})
         if(data.scene.hasDrawings) this.icons.push({descr: (game as Game).i18n.localize("MOU.scene_has_drawings"), icon: "fa-solid fa-pencil-alt"})
         if(data.scene.hasNotes) this.icons.push({descr: (game as Game).i18n.localize("MOU.scene_has_notes"), icon: "fa-solid fa-bookmark"})
+        if(this.pack.toUpperCase().endsWith("HD") || this.name.toUpperCase().endsWith("HD")) { 
+          this.iconTR = {descr: (game as Game).i18n.localize("MOU.scene_hd"), text: "HD"}
+        }
+        if(this.pack.toUpperCase().endsWith("4K") || this.name.toUpperCase().endsWith("4K")) { 
+          this.iconTR = {descr: (game as Game).i18n.localize("MOU.scene_4k"), text: "4K"}
+        }
         break
       case MouCollectionAssetTypeEnum.Image:
         this.draggable = true
@@ -298,6 +307,9 @@ export default class MouCollectionCloud implements MouCollection {
     
     const assetType = MouCollectionAssetTypeEnum[asset.type]
     switch(cAsset.type) {
+      case MouCollectionAssetTypeEnum.ScenePacker:
+        actions.push({ id: CloudAssetAction.IMPORT, name: (game as Game).i18n.format("MOU.action_import", { type: "w. ScenePacker"}), icon: "fa-solid fa-file-import" })
+        break;
       case MouCollectionAssetTypeEnum.Scene:
       case MouCollectionAssetTypeEnum.Map:
         actions.push({ id: CloudAssetAction.IMPORT, name: (game as Game).i18n.format("MOU.action_import", { type: assetType}), icon: "fa-solid fa-file-import" })
@@ -332,7 +344,11 @@ export default class MouCollectionCloud implements MouCollection {
         break;    
     }
 
-    actions.push({ id: CloudAssetAction.DOWNLOAD, small: true, name: (game as Game).i18n.localize("MOU.action_download"), icon: "fa-solid fa-cloud-arrow-down" })
+    if(cAsset.type != MouCollectionAssetTypeEnum.ScenePacker) {
+      actions.push({ id: CloudAssetAction.DOWNLOAD, small: true, name: (game as Game).i18n.localize("MOU.action_download"), icon: "fa-solid fa-cloud-arrow-down" })
+    } else {
+      actions.push({ id: CloudAssetAction.SCENEPACKER, small: true, name: (game as Game).i18n.localize("MOU.action_scenepacker_page"), icon: "mou-icon mou-scenepacker" })
+    }
     actions.push({ id: CloudAssetAction.MEMBERSHIP, small: true, name: (game as Game).i18n.localize("MOU.action_support"), icon: "fa-solid fa-hands-praying" })
     
     return actions
@@ -385,7 +401,9 @@ export default class MouCollectionCloud implements MouCollection {
           case MouCollectionAssetTypeEnum.Map: 
             return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_preview_asset") }
         }
-        break
+        break;
+      case CloudAssetAction.SCENEPACKER:
+        return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_scene_packer_page") }
     }
     return null
   }
@@ -397,7 +415,15 @@ export default class MouCollectionCloud implements MouCollection {
    *  * UploadResult (with path) for a single file
    *  * AnyDict (JSON) for entities
    */
-  private static async downloadAsset(asset: any): Promise<FilePicker.UploadResult | false> {
+  private async downloadAsset(asset: any): Promise<FilePicker.UploadResult | false> {
+    if(asset.type == MouCollectionAssetTypeEnum.ScenePacker) {
+      const assets = await MouApplication.getModule().cloudclient.apiPOST(`/scenepacker-assets/${asset.pack_ref}`, { scope: this.getScope() })
+      return {
+        path: "",
+        message: JSON.stringify(assets),
+        status: "success",
+      }
+    }
     if(!asset.base_url.startsWith(MouCloudClient.AZURE_BASEURL)) {
       throw new Error("Invalid BaseURL?")
     }
@@ -437,7 +463,7 @@ export default class MouCollectionCloud implements MouCollection {
         ui.notifications?.info((game as Game).i18n.localize("MOU.dragdrop_instructions"))
         break
       case CloudAssetAction.IMPORT:
-        const resultImport = await MouCollectionCloud.downloadAsset(asset)
+        const resultImport = await this.downloadAsset(asset)
         if(resultImport) {
           switch(asset.type) {
             case MouCollectionAssetTypeEnum.Map: MouFoundryUtils.importSceneFromMap(resultImport.path, folderPath); break
@@ -447,11 +473,12 @@ export default class MouCollectionCloud implements MouCollection {
             case MouCollectionAssetTypeEnum.Audio: MouFoundryUtils.playStopSound(resultImport.path, MouCollectionCloud.PLAYLIST_NAME); break
             case MouCollectionAssetTypeEnum.Playlist: MouFoundryUtils.importPlaylist(JSON.parse(resultImport.message), folderPath); break
             case MouCollectionAssetTypeEnum.JournalEntry: MouFoundryUtils.importJournalEntry(JSON.parse(resultImport.message), folderPath); break
+            case MouCollectionAssetTypeEnum.ScenePacker: MouFoundryUtils.importScenePacker(JSON.parse(resultImport.message), asset.scenepacker_ref); break
           }
         }
         break
       case CloudAssetAction.CREATE_ARTICLE:
-        const resultArticle = await MouCollectionCloud.downloadAsset(asset)
+        const resultArticle = await this.downloadAsset(asset)
         if(resultArticle) {
           switch(asset.type) {
             case MouCollectionAssetTypeEnum.Scene: 
@@ -471,7 +498,7 @@ export default class MouCollectionCloud implements MouCollection {
         break
         
       case CloudAssetAction.DOWNLOAD:
-        const resultDownload = await MouCollectionCloud.downloadAsset(asset)
+        const resultDownload = await this.downloadAsset(asset)
         if(resultDownload) {
           let textToCopy = resultDownload.path
           switch(asset.type) {
@@ -540,6 +567,14 @@ export default class MouCollectionCloud implements MouCollection {
         if (win) { 
           win.focus();
         }
+        break;
+      
+      case CloudAssetAction.SCENEPACKER:
+        var win = window.open("https://foundryvtt.com/packages/scene-packer/", '_blank');
+        if (win) { 
+          win.focus();
+        }
+        break;
     }
   }
 
@@ -554,7 +589,7 @@ export default class MouCollectionCloud implements MouCollection {
         case MouCollectionAssetTypeEnum.Macro: 
         case MouCollectionAssetTypeEnum.Actor: 
         case MouCollectionAssetTypeEnum.Item: 
-          const result = await MouCollectionCloud.downloadAsset(asset)  
+          const result = await this.downloadAsset(asset)  
           if(result) {
             data.data = JSON.parse(result.message) as AnyDict
           }
@@ -569,13 +604,13 @@ export default class MouCollectionCloud implements MouCollection {
     if(asset) {
       switch(data.type) {
         case "Image":
-          const resultImg = await MouCollectionCloud.downloadAsset(asset)  
+          const resultImg = await this.downloadAsset(asset)  
           if(resultImg) {
             MouFoundryUtils.createTile(canvas, resultImg.path, position)
           }
           break;
         case "Audio":
-          const resultAudio = await MouCollectionCloud.downloadAsset(asset)  
+          const resultAudio = await this.downloadAsset(asset)  
           if(resultAudio) {
             MouFoundryUtils.createAmbientAudio(canvas, resultAudio.path, position)
           }

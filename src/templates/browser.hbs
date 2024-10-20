@@ -41,6 +41,7 @@
         </ul>
       </div>
       
+      {{#if filters.showPacksFilter}}
       <h2 data-id="packs">{{localize "MOU.packs"}} <i class="fa-regular fa-square-{{mouIf filters.prefs.opensections.packs "minus" "plus"}}"></i></h2>
       <div data-id="packs" class="packs {{#unless filters.prefs.opensections.packs}}collapsed{{/unless}}">
         <div>
@@ -71,6 +72,7 @@
         </div>
         {{/if}}
       </div>
+      {{/if}}
     </aside>
     <main class="content">
     </main>

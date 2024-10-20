@@ -26,6 +26,22 @@
         {{#each a.icons as |i|}}<li title="{{i.descr}}"><i class="{{i.icon}}"></i></li>{{/each}}
       </ul>
       {{/if}}
+      {{#if a.iconTL}}
+        <ul class="icons top-left">
+          <li title="a.iconTL.descr">
+            {{#if a.iconTL.icon}}<i class="{{a.iconTL.icon}}"></i>{{/if}}
+            {{#unless a.iconTL.icon}}{{a.iconTL.text}}{{/unless}}
+          </li>
+        </ul>
+      {{/if}}
+      {{#if a.iconTR}}
+        <ul class="icons top-right">
+          <li title="a.iconTR.descr">
+            {{#if a.iconTR.icon}}<i class="{{a.iconTR.icon}}"></i>{{/if}}
+            {{#unless a.iconTR.icon}}{{a.iconTR.text}}{{/unless}}
+          </li>
+        </ul>
+      {{/if}}
     </div>
     <div class="info">
       <div class="source" title="{{#if a.creator}}{{a.creator}}{{#if a.pack}} - {{/if}}{{/if}}{{a.pack}}" data-creator="{{a.creator}}" data-pack="{{a.pack_id}}">

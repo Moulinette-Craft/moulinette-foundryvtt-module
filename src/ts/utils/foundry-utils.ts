@@ -3,7 +3,11 @@ import MouConfig, { MODULE_ID, SETTINGS_USE_FOLDERS } from "../constants";
 import { AnyDict } from "../types";
 import MouMediaUtils from "./media-utils";
 
+declare var ScenePacker: any;
+
 export default class MouFoundryUtils {
+
+  static APP_NAME = "MouFoundryUtils"
 
   static FOLDER_MAX_LEVELS = 3
   static AUDIO_DEFAULT_RADIUS = 10
@@ -69,7 +73,6 @@ export default class MouFoundryUtils {
     let json_text
     // get extension from path 
     const ext = path.split('.').pop() || "unknown"
-    console.log(ext)
     if(MouConfig.MEDIA_VIDEOS.includes(ext)) {
       json_text = await renderTemplate(`modules/${MODULE_ID}/templates/json/note-video.hbs`, { path: path, folder: folderObj ? `"${folderObj.id}"` : "null", name: articleName })
     }
@@ -132,7 +135,6 @@ export default class MouFoundryUtils {
     // @ts-ignore
     const doc = await Scene.fromImport(sceneData)
     const newScene = await Scene.create(doc) as any
-    console.log(newScene)
     if(newScene) {
       const folderObj = await MouFoundryUtils.getOrCreateFolder("Scene", folder)
       let tData = await newScene.createThumbnail({img: newScene["background.src"] ?? newScene.background.src});
@@ -212,6 +214,29 @@ export default class MouFoundryUtils {
       let tUpdate = { folder: folderObj ? folderObj.id : null } as AnyDict
       await newJournalEntry.update(tUpdate);
       ui.journal?.activate()
+    }
+  }
+
+
+  /**
+   * Creates a new journal entry from the given data
+   */
+  static async importScenePacker(scenepackerData: AnyDict, scenepacker_ref: string) {
+    if(typeof ScenePacker === 'object' && typeof ScenePacker.MoulinetteImporter === 'function') {
+      MouApplication.logInfo(MouFoundryUtils.APP_NAME, "ScenePacker list of assets", scenepackerData)
+      try {
+        const moulinetteImporter = new ScenePacker.MoulinetteImporter({packInfo: scenepackerData, sceneID: scenepacker_ref, actorID: '', overwrite: false})
+        if (moulinetteImporter) {
+          return moulinetteImporter.render(true)
+        }
+      } catch(e) {
+        MouApplication.logInfo(MouFoundryUtils.APP_NAME, `Unhandled exception`, e)  
+        ui.notifications?.error((game as Game).i18n.localize("MOU.error_scenepacker"))
+      }
+      
+    } else {
+      MouApplication.logInfo(MouFoundryUtils.APP_NAME, `ScenePacker module required! See: https://foundryvtt.com/packages/scene-packer.`)
+      return ui.notifications?.error((game as Game).i18n.localize("MOU.error_scenepacker_required"))
     }
   }
 
