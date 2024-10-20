@@ -16,6 +16,7 @@ export const SETTINGS_S3_BUCKET = "s3_bucket"
 export const SETTINGS_COLLECTION_CLOUD = "cloud_collection"
 export const SETTINGS_COLLECTION_LOCAL = "local_collection"
 export const SETTINGS_DATA_EXCLUSION = "dataExclusions"
+export const SETTINGS_PREVS = "prevs"
 
 /**
  * The constants below can be overridden using the following macro :

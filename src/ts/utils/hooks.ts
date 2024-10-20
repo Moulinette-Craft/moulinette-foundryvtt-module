@@ -19,6 +19,7 @@ export default class MouHooks {
    */
   static addMoulinetteControls(buttons: SceneControl[]) {
     const module = MouApplication.getModule()
+    if(!module) return
 
     if((game as Game).user?.isGM) {
       const moulinetteTool = {
@@ -37,7 +38,7 @@ export default class MouHooks {
         visible: true
       }
       
-      const isValidUser = module.cache.user && module.cache.user.fullName
+      const isValidUser = module.cache?.user && module.cache?.user.fullName
       moulinetteTool.tools.push({
         name: "authenticated",
         icon: isValidUser ? "fa-solid fa-user-check" : "fa-solid fa-user-xmark",
@@ -46,8 +47,10 @@ export default class MouHooks {
         onClick: () => { module.user.render(true) }
       });
 
-      for(const tool of module.tools) {
-        moulinetteTool.tools.push(tool)
+      if(module.tools) {
+        for(const tool of module.tools) {
+          moulinetteTool.tools.push(tool)
+        }
       }
   
       buttons.push(moulinetteTool)

@@ -6,7 +6,7 @@ import "../styles/main.scss";
 import MouBrowser from "./apps/browser";
 import MouUser from "./apps/user";
 import MouCloudClient from "./clients/moulinette-cloud";
-import MouConfig, { MODULE_ID, SETTINGS_COLLECTION_CLOUD, SETTINGS_COLLECTION_LOCAL, SETTINGS_DATA_EXCLUSION, SETTINGS_S3_BUCKET, SETTINGS_SESSION_ID, SETTINGS_USE_FOLDERS } from "./constants";
+import MouConfig, { MODULE_ID, SETTINGS_COLLECTION_CLOUD, SETTINGS_COLLECTION_LOCAL, SETTINGS_DATA_EXCLUSION, SETTINGS_PREVS, SETTINGS_S3_BUCKET, SETTINGS_SESSION_ID, SETTINGS_USE_FOLDERS } from "./constants";
 import MouLayer from "./layers/mou-layer";
 import { AnyDict, MouModule } from "./types";
 import MouCache from "./apps/cache";
@@ -29,22 +29,11 @@ let module: MouModule;
 
 Hooks.once("init", () => {
   console.log(`Initializing ${MODULE_ID}`);
-
-  module = MouApplication.getModule();
-  module.browser = new MouBrowser();
-  module.user = new MouUser();
-  module.cloudclient = new MouCloudClient();
-  module.cache = new MouCache();
-  module.collections = [] as MouCollection[]
-  module.eventHandler = new MouEventHandler();
-  module.tools = [];
-  module.compendiumMappings = { mappings: MouCompendiumsDefaults.metadataMappings, formatters: MouCompendiumsDefaults.metadataMappingsFormatters }
-  module.utils = { media: MouMediaUtils, filemanager: MouFileManager, foundry: MouFoundryUtils }
-  module.debug = true;
   
   (game as Game).settings.register(MODULE_ID, SETTINGS_SESSION_ID, { scope: "world", config: false, type: String, default: "anonymous" });
   (game as Game).settings.register(MODULE_ID, SETTINGS_DATA_EXCLUSION, { scope: "world", config: false, type: Object, default: {} });
-
+  (game as Game).settings.register(MODULE_ID, SETTINGS_PREVS, { scope: "client", config: false, type: Object, default: {} });
+  
   (game as Game).settings.register(MODULE_ID, SETTINGS_USE_FOLDERS, {
     name: (game as Game).i18n.localize("MOU.settings_use_folders"),
     hint: (game as Game).i18n.localize("MOU.settings_use_folders_hint"),
@@ -85,9 +74,22 @@ Hooks.once("init", () => {
     return value + valueAdd;
   });
 
+  module = MouApplication.getModule();
+  module.browser = new MouBrowser();
+  module.user = new MouUser();
+  module.cloudclient = new MouCloudClient();
+  module.cache = new MouCache();
+  module.collections = [] as MouCollection[]
+  module.eventHandler = new MouEventHandler();
+  module.tools = [];
+  module.compendiumMappings = { mappings: MouCompendiumsDefaults.metadataMappings, formatters: MouCompendiumsDefaults.metadataMappingsFormatters }
+  module.utils = { media: MouMediaUtils, filemanager: MouFileManager, foundry: MouFoundryUtils }
+  module.debug = true;
+
   module.getSessionId = () => {
     return (game as Game).settings.get(MODULE_ID, SETTINGS_SESSION_ID) as string
   }
+
 });
 
 Hooks.once("ready", () => {

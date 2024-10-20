@@ -1,4 +1,4 @@
-import MouConfig, { MODULE_ID } from "../constants";
+import MouConfig, { MODULE_ID, SETTINGS_PREVS } from "../constants";
 import { AnyDict } from "../types";
 import MouFileManager from "../utils/file-manager";
 import MouMediaUtils from "../utils/media-utils";
@@ -8,7 +8,9 @@ import { MouCollection, MouCollectionAsset, MouCollectionAssetTypeEnum, MouColle
 
 export default class MouBrowser extends MouApplication {
   
-  override APP_NAME = "MouBrowser"
+  static override APP_NAME = "MouBrowser"
+  override APP_NAME = MouBrowser.APP_NAME
+
   static PAGE_SIZE = 100
   static DEBOUNCE_TIME = 500 // delay (in ms) before executing search
   
@@ -21,12 +23,7 @@ export default class MouBrowser extends MouApplication {
   private currentFoldersScroll = { top: 0, left: 0 }
   
   /* Filter preferences */
-  private filters_prefs:AnyDict = {
-    visible: true,
-    opensections: { collection: true, asset_type: true, packs: true },
-    collection: "mou-compendiums",
-    focus: "search"
-  }
+  private filters_prefs:AnyDict | null = null
 
   /* Filters */
   private filters: MouCollectionFilters = {
@@ -42,25 +39,45 @@ export default class MouBrowser extends MouApplication {
   }
 
   static override get defaultOptions(): ApplicationOptions {
-    return foundry.utils.mergeObject(super.defaultOptions, {
+    const options = foundry.utils.mergeObject(super.defaultOptions, {
       id: "mou-browser",
       classes: ["mou"],
       template: `modules/${MODULE_ID}/templates/browser.hbs`,
+      resizable: true,
       width: 1250,
-      height: 1000,
-      resizable: true
+      height: 1000
     }) as ApplicationOptions;
+    super.adjustPosition(options, MouBrowser.APP_NAME)
+    return options
   }
 
   override async getData() {
+    // initialize filter prefs 
+    const prevSettings = MouApplication.getSettings(SETTINGS_PREVS) as AnyDict
+    if(!this.filters_prefs) {
+      if("filterPrefs" in prevSettings) {
+        this.filters_prefs = prevSettings["filterPrefs"]
+      } else {
+        this.filters_prefs = {
+          visible: true,
+          opensections: { collection: true, asset_type: true, packs: true },
+          collection: "mou-compendiums",
+          focus: "search"
+        }
+      }
+      if("filters" in prevSettings) {
+        this.filters = prevSettings["filters"]
+      }
+    }
+
     // check that module and collections are properly loaded
     const module = MouApplication.getModule()
     if(!module || !module.collections || module.collections.length == 0) 
       throw new Error(`${this.APP_NAME} | Module ${MODULE_ID} not found or no collection loaded`);
     // check that selected collection exists
-    this.collection = module.collections.find( c => c.getId() == this.filters_prefs.collection)
+    this.collection = module.collections.find( c => c.getId() == this.filters_prefs!.collection)
     if(!this.collection) {
-      throw new Error(`${this.APP_NAME} | Collection ${this.filters_prefs.collection} couldn't be found!`);
+      throw new Error(`${this.APP_NAME} | Collection ${this.filters_prefs!.collection} couldn't be found!`);
     }
     await this.collection.initialize()
 
@@ -152,14 +169,14 @@ export default class MouBrowser extends MouApplication {
       clearTimeout(typingTimer);
       typingTimer = setTimeout(() => {
         this.filters.searchTerms = search.val() as string
-        this.filters_prefs.focus = "search#" + search.prop("selectionStart")
+        this.filters_prefs!.focus = "search#" + search.prop("selectionStart")
         this.render()
       }, MouBrowser.DEBOUNCE_TIME);
     });
 
     search.on('mousedown', this._onClearSearchTerms.bind(this));
 
-    const focus = this.filters_prefs.focus.split("#")
+    const focus = this.filters_prefs!.focus.split("#")
     switch(focus[0]) {
       case "search": 
         search.trigger("focus"); 
@@ -267,7 +284,7 @@ export default class MouBrowser extends MouApplication {
         if(filter && icon) {
           filter.toggleClass("collapsed")
           icon.attr('class', icon.hasClass("fa-square-minus") ? "fa-regular fa-square-plus" : "fa-regular fa-square-minus")
-          this.filters_prefs.opensections[id] = icon.hasClass("fa-square-minus")
+          this.filters_prefs!.opensections[id] = icon.hasClass("fa-square-minus")
         }
       }
     }
@@ -295,10 +312,10 @@ export default class MouBrowser extends MouApplication {
       if(combo.attr('id') == "creator-select") {
         this.filters.creator = String(combo.val());
         this.filters.pack = ""
-        this.filters_prefs.focus = "creator"
+        this.filters_prefs!.focus = "creator"
       } else if(combo.attr('id') == "pack-select") {
         this.filters.pack = String(combo.val());
-        this.filters_prefs.focus = "pack"
+        this.filters_prefs!.focus = "pack"
       }
       
       this.render()
@@ -325,10 +342,10 @@ export default class MouBrowser extends MouApplication {
       if(combo.attr('id') == "creator-select") {
         this.filters.creator = "";
         this.filters.pack = ""
-        this.filters_prefs.focus = "creator"
+        this.filters_prefs!.focus = "creator"
       } else if(combo.attr('id') == "pack-select") {
         this.filters.pack = "";
-        this.filters_prefs.focus = "pack"
+        this.filters_prefs!.focus = "pack"
       }
       
       this.render()
@@ -372,7 +389,7 @@ export default class MouBrowser extends MouApplication {
         filters.toggleClass("collapsed")
         toggle.toggleClass("collapsed")
         toggle.find("i")?.attr('class', filters.is(":visible") ? "fa-solid fa-angles-left" : "fa-solid fa-angles-right")
-        this.filters_prefs.visible = filters.is(":visible")
+        this.filters_prefs!.visible = filters.is(":visible")
       }
     }
   }
@@ -380,12 +397,12 @@ export default class MouBrowser extends MouApplication {
   /** Chnage collection */
   async _onClickCollection(): Promise<void> {
     const selCollection = this.html?.find('.filters input[name=collection]:checked').attr('id')
-    if(selCollection && this.filters_prefs.collection != selCollection) {
-      this.filters_prefs.collection = selCollection
+    if(selCollection && this.filters_prefs!.collection != selCollection) {
+      this.filters_prefs!.collection = selCollection
       this.filters.creator = ""
       this.filters.pack = ""
       this.filters.folder = ""
-      this.filters_prefs.focus = "collection#" + selCollection
+      this.filters_prefs!.focus = "collection#" + selCollection
       this.render()
     }
   }
@@ -395,7 +412,7 @@ export default class MouBrowser extends MouApplication {
     const selType = Number(this.html?.find('.filters input[name=asset_type]:checked').attr('id'))
     if(selType && this.filters.type != selType) {
       this.filters.type = selType as MouCollectionAssetTypeEnum
-      this.filters_prefs.focus = "type#" + selType
+      this.filters_prefs!.focus = "type#" + selType
       this.render()
     }
   }
@@ -632,5 +649,16 @@ export default class MouBrowser extends MouApplication {
   _callbackAfterConfiguration(): void {
     this.render()
   }
+
+  override async close(options?: Application.CloseOptions): Promise<void> {
+    await this.storePosition()
+    super.close(options);
+    const prevSettings = MouApplication.getSettings(SETTINGS_PREVS) as AnyDict
+    prevSettings["filterPrefs"] = this.filters_prefs
+    prevSettings["filters"] = this.filters
+    await MouApplication.setSettings(SETTINGS_PREVS, prevSettings)
+  }
+
+  
 
 }
