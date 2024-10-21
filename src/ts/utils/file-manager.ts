@@ -259,7 +259,9 @@ export default class MouFileManager {
     
     let list = [] as string[]
     if(debug) MouApplication.logInfo(MouFileManager.APP_NAME, `Assets: scanning ${path} ...`)
-    const base = await FilePicker.browse(source, path, MouFileManager.getOptions());
+    const options = MouFileManager.getOptions() as AnyDict
+    options.recursive = true
+    const base = await FilePicker.browse(source, path, options);
     
     // stop scanning if ignore.info file found
     if(base.files.find(f => f.endsWith("/ignore.info"))) {
@@ -269,6 +271,15 @@ export default class MouFileManager {
     
     if(debug) MouApplication.logInfo(MouFileManager.APP_NAME, `Assets: ${base.files.length} assets found`)
     list.push(...base.files)
+
+    // check if recursive (only supported on The Forge)
+    for(const f of base.files) {
+      const basepath = f.substring(0, f.lastIndexOf("/"))
+      if(basepath.length > 0 && !basepath.endsWith(path)) {
+        MouApplication.logWarn(MouFileManager.APP_NAME, `Recursive scan detected`)
+        return list
+      }
+    }
     
     for(const d of base.dirs) {
       const subpath = MouMediaUtils.getCleanURI(d)

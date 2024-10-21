@@ -12,7 +12,6 @@ export default class MouLocalClient {
   static APP_NAME = "MouLocalClient"
   static INDEX_COMPENDIUMS = "index-compendiums.json"
   static INDEX_LOCAL_ASSETS = "index-localassets.json"
-  static LOOP_PROCESS_ASSETS = 100 // number of assets to process before updating
 
   /**
    * Recursively build the folder path
@@ -253,12 +252,12 @@ export default class MouLocalClient {
                     fileData.duration = meta.duration
                   }
                 }
-                assets.push(fileData)
               }
+              assets.push(fileData)
             }
             i++;
             if (i >= files.length) break
-            if (i % MouLocalClient.LOOP_PROCESS_ASSETS == 0) {
+            if (i % MouConfig.FILEMANAGER_LOOP_UPDATE == 0) {
               const message = (game as Game).i18n.format("MOU.index_folders_assets", { 
                 index: MouMediaUtils.prettyNumber(i, true), 
                 count: MouMediaUtils.prettyNumber(files.length, true) 

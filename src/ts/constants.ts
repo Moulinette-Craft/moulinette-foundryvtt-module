@@ -44,4 +44,7 @@ export default class MouConfig {
 
   // starting from which dimension, image is considered a map
   static MEDIA_MAP_THRESHOLD = 1000
+
+  // after how many entries, the progress bar gets updated
+  static FILEMANAGER_LOOP_UPDATE = 100
 }
