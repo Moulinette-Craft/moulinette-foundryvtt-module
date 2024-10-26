@@ -386,6 +386,10 @@ export default class MouCollectionCompendiums implements MouCollection {
     return false;
   }
 
+  isBrowsable(): boolean {
+    return true;
+  }
+
   configure(callback: Function): void {
     if(callback) {
       return callback()

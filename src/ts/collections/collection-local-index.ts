@@ -384,6 +384,10 @@ export default class MouCollectionLocal implements MouCollection {
     return true;
   }
 
+  isBrowsable(): boolean {
+    return true;
+  }
+
   private refreshSettings() {
     
   }

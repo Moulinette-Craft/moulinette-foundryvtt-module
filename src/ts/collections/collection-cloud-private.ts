@@ -454,6 +454,10 @@ export default class MouCollectionCloudPrivate implements MouCollection {
     return false
   }
 
+  isBrowsable(): boolean {
+    return true;
+  }
+
   configure(): void {
   }  
 

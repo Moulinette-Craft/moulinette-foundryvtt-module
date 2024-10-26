@@ -139,6 +139,9 @@ export interface MouCollection {
   /** Must return true if source has configurations/options */
   isConfigurable(): boolean
 
+  /** Must return true if source is browsable (without searching) */
+  isBrowsable(): boolean
+
   /** Opens UI for configuring source settings */
   configure(callback: Function): void
 }

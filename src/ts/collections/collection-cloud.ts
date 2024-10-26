@@ -626,6 +626,10 @@ export default class MouCollectionCloud implements MouCollection {
     return true
   }
 
+  isBrowsable(): boolean {
+    return true;
+  }
+
   /** Opens Configuration UI */
   configure(callback: Function): void {
     const parent = this

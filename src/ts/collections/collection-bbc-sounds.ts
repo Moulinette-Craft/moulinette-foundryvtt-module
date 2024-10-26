@@ -191,12 +191,12 @@ export default class MouCollectionBBCSounds implements MouCollection {
     return false
   }
 
+  isBrowsable(): boolean {
+    return false;
+  }
+
   configure(callback: Function): void {
     console.log(callback)
   }
 
-  
-
-  
-  
 }

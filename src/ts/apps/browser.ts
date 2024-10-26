@@ -223,7 +223,11 @@ export default class MouBrowser extends MouApplication {
     }
     if(assets.length == 0) {
       if(this.page == 0) {
-        this.html?.find(".content").append(await renderTemplate(`modules/${MODULE_ID}/templates/browser-nomatch.hbs`, {}))
+        if(!this.collection.isBrowsable() && (!this.filters.searchTerms || this.filters.searchTerms.length < 3)) {
+          this.html?.find(".content").append(await renderTemplate(`modules/${MODULE_ID}/templates/browser-searchrequired.hbs`, {}))
+        } else {
+          this.html?.find(".content").append(await renderTemplate(`modules/${MODULE_ID}/templates/browser-nomatch.hbs`, {}))
+        }
       }
       this.page = -1
       this.logInfo("No more content!")

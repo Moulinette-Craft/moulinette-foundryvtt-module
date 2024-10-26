@@ -90,7 +90,7 @@ export default class MouCollectionGameIcons implements MouCollection {
 
   async getAssets(filters: MouCollectionFilters, page: number): Promise<MouCollectionAsset[]> {
     const assets = [] as MouCollectionGameIconsAsset[]
-    if(filters.searchTerms && filters.searchTerms.length > 0) {
+    if(filters.searchTerms && filters.searchTerms.length > 2) {
       // if max page reached, return empty array
       if(page > 0 && page * MouBrowser.PAGE_SIZE > this.currentHits) {
         return [] as MouCollectionAsset[]
@@ -147,6 +147,10 @@ export default class MouCollectionGameIcons implements MouCollection {
   }
 
   isConfigurable(): boolean {
+    return false
+  }
+
+  isBrowsable(): boolean {
     return false
   }
 
