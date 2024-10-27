@@ -127,9 +127,12 @@ export default class MouCollectionBBCSounds implements MouCollection {
   }
 
   getActions(asset: MouCollectionAsset): MouCollectionAction[] {
+    const isGM = (game as Game).user?.isGM
     const actions = [] as MouCollectionAction[]
     const assetType = MouCollectionAssetTypeEnum[asset.type]
-    actions.push({ id: BBCAssetAction.IMPORT, name: (game as Game).i18n.localize("MOU.action_audio_play"), icon: "fa-solid fa-play-pause" })
+    if(isGM) {
+      actions.push({ id: BBCAssetAction.IMPORT, name: (game as Game).i18n.localize("MOU.action_audio_play"), icon: "fa-solid fa-play-pause" })
+    }
     actions.push({ id: BBCAssetAction.PREVIEW, name: (game as Game).i18n.localize("MOU.action_preview"), icon: "fa-solid fa-headphones" })
     actions.push({ id: BBCAssetAction.DRAG, small: true, drag: true, name: (game as Game).i18n.format("MOU.action_drag", { type: assetType}), icon: "fa-solid fa-hand" })
     actions.push({ id: BBCAssetAction.CLIPBOARD, small: true, name: (game as Game).i18n.localize("MOU.action_clipboard"), icon: "fa-solid fa-clipboard" })

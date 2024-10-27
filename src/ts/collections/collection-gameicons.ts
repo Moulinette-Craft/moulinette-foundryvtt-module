@@ -2,6 +2,7 @@ import MouBrowser from "../apps/browser";
 import { MouCollection, MouCollectionAction, MouCollectionActionHint, MouCollectionAsset, MouCollectionAssetMeta, MouCollectionAssetType, MouCollectionAssetTypeEnum, MouCollectionCreator, MouCollectionDragData, MouCollectionFilters, MouCollectionPack } from "../apps/collection";
 import { MouGameIcon, MouGameIconsClient } from "../clients/gameicons";
 import { AnyDict } from "../types";
+import MouFoundryUtils from "../utils/foundry-utils";
 import MouMediaUtils from "../utils/media-utils";
 
 enum GameIconsAssetAction {
@@ -41,6 +42,7 @@ class MouCollectionGameIconsAsset implements MouCollectionAsset {
     this.name = asset.name
     this.meta = [] as MouCollectionAssetMeta[]
     this.icon = null
+    this.draggable = true
     this.flags = {}
   }
 }
@@ -108,7 +110,9 @@ export default class MouCollectionGameIcons implements MouCollection {
     const actions = [] as MouCollectionAction[]
     const assetType = MouCollectionAssetTypeEnum[asset.type]
     actions.push({ id: GameIconsAssetAction.DRAG, small: true, drag: true, name: (game as Game).i18n.format("MOU.action_drag", { type: assetType}), icon: "fa-solid fa-hand" })
-    actions.push({ id: GameIconsAssetAction.CLIPBOARD, small: true, name: (game as Game).i18n.localize("MOU.action_clipboard"), icon: "fa-solid fa-clipboard" })
+    if(MouFoundryUtils.userCanUpload()) {
+      actions.push({ id: GameIconsAssetAction.CLIPBOARD, small: true, name: (game as Game).i18n.localize("MOU.action_clipboard"), icon: "fa-solid fa-clipboard" })
+    }
     return actions
   }
 

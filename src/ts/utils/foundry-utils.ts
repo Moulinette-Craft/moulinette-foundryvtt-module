@@ -429,4 +429,11 @@ export default class MouFoundryUtils {
     return null
   }
 
+  /**
+   * @returns true if user can upload files to the server
+   */
+  static userCanUpload() {
+    return (game as Game).user?.isGM || (game as Game).permissions?.FILES_UPLOAD.includes((game as Game).user!.role)
+  }
+
 }

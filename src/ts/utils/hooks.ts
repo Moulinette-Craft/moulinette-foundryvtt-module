@@ -1,4 +1,5 @@
 import MouApplication from "../apps/application";
+import { MODULE_ID, SETTINGS_ENABLE_PLAYERS } from "../constants";
 
 declare var libWrapper: any;
 
@@ -21,7 +22,10 @@ export default class MouHooks {
     const module = MouApplication.getModule()
     if(!module) return
 
-    if((game as Game).user?.isGM) {
+    const isGM = (game as Game).user?.isGM
+    const enablePlayers = (game as Game).settings.get(MODULE_ID, SETTINGS_ENABLE_PLAYERS)
+
+    if(isGM || enablePlayers) {
       const moulinetteTool = {
         activeTool: "",
         icon: "mou-icon mou-logo",
@@ -38,21 +42,23 @@ export default class MouHooks {
         visible: true
       }
       
-      const isValidUser = module.cache?.user && module.cache?.user.fullName
-      moulinetteTool.tools.push({
-        name: "authenticated",
-        icon: isValidUser ? "fa-solid fa-user-check" : "fa-solid fa-user-xmark",
-        title: (game as Game).i18n.localize("MOU.user_authenticated"),
-        button: true,
-        onClick: () => { module.user.render(true) }
-      });
+      if(isGM) {
+        const isValidUser = module.cache?.user && module.cache?.user.fullName
+        moulinetteTool.tools.push({
+          name: "authenticated",
+          icon: isValidUser ? "fa-solid fa-user-check" : "fa-solid fa-user-xmark",
+          title: (game as Game).i18n.localize("MOU.user_authenticated"),
+          button: true,
+          onClick: () => { module.user.render(true) }
+        });
 
-      if(module.tools) {
-        for(const tool of module.tools) {
-          moulinetteTool.tools.push(tool)
+        if(module.tools) {
+          for(const tool of module.tools) {
+            moulinetteTool.tools.push(tool)
+          }
         }
       }
-  
+
       buttons.push(moulinetteTool)
     }
   }

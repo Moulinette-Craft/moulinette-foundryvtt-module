@@ -6,7 +6,7 @@ import "../styles/main.scss";
 import MouBrowser from "./apps/browser";
 import MouUser from "./apps/user";
 import MouCloudClient from "./clients/moulinette-cloud";
-import MouConfig, { MODULE_ID, SETTINGS_COLLECTION_CLOUD, SETTINGS_COLLECTION_LOCAL, SETTINGS_DATA_EXCLUSION, SETTINGS_PREVS, SETTINGS_S3_BUCKET, SETTINGS_SESSION_ID, SETTINGS_USE_FOLDERS } from "./constants";
+import MouConfig, { MODULE_ID, SETTINGS_COLLECTION_CLOUD, SETTINGS_COLLECTION_LOCAL, SETTINGS_DATA_EXCLUSION, SETTINGS_ENABLE_PLAYERS, SETTINGS_PREVS, SETTINGS_S3_BUCKET, SETTINGS_SESSION_ID, SETTINGS_USE_FOLDERS } from "./constants";
 import MouLayer from "./layers/mou-layer";
 import { AnyDict, MouModule } from "./types";
 import MouCache from "./apps/cache";
@@ -40,6 +40,15 @@ Hooks.once("init", () => {
     scope: "world",
     config: true,
     default: true,
+    type: Boolean
+  });
+
+  (game as Game).settings.register(MODULE_ID, SETTINGS_ENABLE_PLAYERS, {
+    name: (game as Game).i18n.localize("MOU.settings_enable_players"),
+    hint: (game as Game).i18n.localize("MOU.settings_enable_players_hint"),
+    scope: "world",
+    config: true,
+    default: false,
     type: Boolean
   });
 

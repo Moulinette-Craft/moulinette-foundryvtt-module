@@ -12,6 +12,7 @@ export const DISCORD_CLIENT_ID = "1104472072853405706"
 
 export const SETTINGS_SESSION_ID = "session_ID"
 export const SETTINGS_USE_FOLDERS = "use_folders"
+export const SETTINGS_ENABLE_PLAYERS = "enable_players"
 export const SETTINGS_S3_BUCKET = "s3_bucket"
 export const SETTINGS_COLLECTION_CLOUD = "cloud_collection"
 export const SETTINGS_COLLECTION_LOCAL = "local_collection"
