@@ -41,10 +41,7 @@ export class MouGameIconsClient {
     // execute search
     const headers = { 'Accept': 'application/json', 'Content-Type': 'application/json' }
     const params = `x-algolia-application-id=9HQ1YXUKVC&x-algolia-api-key=fa437c6f1fcba0f93608721397cd515d`
-    const response = await fetch("https://9hq1yxukvc-3.algolianet.com/1/indexes/*/queries?" + params, { method: "POST", headers: headers, body: JSON.stringify(request)}).catch(function(e) {
-      MouApplication.logError(MouGameIconsClient.APP_NAME, "Cannot establish connection to server game-icons.net (algolianet)", e)
-      return null;
-    });
+    const response = await fetch("https://9hq1yxukvc-3.algolianet.com/1/indexes/*/queries?" + params, { method: "POST", headers: headers, body: JSON.stringify(request)});
     if(!response) {
       MouApplication.logError(MouGameIconsClient.APP_NAME, "Invalid (empty) response from server game-icons.net (algolianet)")
       return null

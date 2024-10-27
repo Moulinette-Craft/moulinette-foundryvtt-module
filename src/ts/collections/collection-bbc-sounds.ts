@@ -1,3 +1,4 @@
+import MouApplication from "../apps/application";
 import MouBrowser from "../apps/browser";
 import { MouCollection, MouCollectionAction, MouCollectionActionHint, MouCollectionAsset, MouCollectionAssetMeta, MouCollectionAssetType, MouCollectionAssetTypeEnum, MouCollectionCreator, MouCollectionDragData, MouCollectionFilters, MouCollectionPack } from "../apps/collection";
 import { MouBBCSoundsClient } from "../clients/bbc-sounds";
@@ -69,8 +70,11 @@ export default class MouCollectionBBCSounds implements MouCollection {
   APP_NAME = "MouCollectionBBCSound"
   static PLAYLIST_NAME = "BBC Sounds Effects"
 
+  static ERROR_SERVER_CNX = 1
+
   private curPreview?: string
   private currentHits: number = 0
+  private error: number = 0
 
   getId(): string {
     return "mou-bbc-sounds"
@@ -117,11 +121,16 @@ export default class MouCollectionBBCSounds implements MouCollection {
       if(page > 0 && page * MouBrowser.PAGE_SIZE > this.currentHits) {
         return [] as MouCollectionAsset[]
       }
-      const results = await MouBBCSoundsClient.searchAudio(filters.searchTerms, page)
-      for(const result of results.sounds) {
-        assets.push(new MouCollectionBBCAsset(result))
+      try {
+        const results = await MouBBCSoundsClient.searchAudio(filters.searchTerms, page)
+        for(const result of results.sounds) {
+          assets.push(new MouCollectionBBCAsset(result))
+        }
+        this.currentHits = results.count
+      } catch(error) {
+        this.error = MouCollectionBBCSounds.ERROR_SERVER_CNX
+        MouApplication.logError(this.APP_NAME, `Not able to get sounds from BBC Sound Effects`, error)
       }
-      this.currentHits = results.count
     }
     return assets
   }
@@ -200,6 +209,13 @@ export default class MouCollectionBBCSounds implements MouCollection {
 
   configure(callback: Function): void {
     console.log(callback)
+  }
+
+  getCollectionError(): string | null {
+    if(this.error == MouCollectionBBCSounds.ERROR_SERVER_CNX) {
+      return (game as Game).i18n.localize("MOU.error_bbcsounds_connection")
+    }
+    return null;
   }
 
 }

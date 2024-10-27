@@ -22,10 +22,7 @@ export class MouBBCSoundsClient {
    */
   static async searchAudio(query: string, page: number) : Promise<{ sounds: MouBBCAudio[], count: number }> {
     const content = {"criteria": { "from": page * MouBrowser.PAGE_SIZE, "size": MouBrowser.PAGE_SIZE, "query": query } }
-    const response = await fetch(MouBBCSoundsClient.API, { method:'POST', headers: MouBBCSoundsClient.HEADERS, body: JSON.stringify(content)}).catch(function(e) {
-      MouApplication.logError(MouBBCSoundsClient.APP_NAME, "Cannot establish connection to server BBC Sound Effects (aws)", e)
-      return null
-    });
+    const response = await fetch(MouBBCSoundsClient.API, { method:'POST', headers: MouBBCSoundsClient.HEADERS, body: JSON.stringify(content)})
     if(!response) {
       MouApplication.logError(MouBBCSoundsClient.APP_NAME, "Invalid (empty) response from server BBC Sound Effects (aws)")
       return { sounds: [], count: 0 }

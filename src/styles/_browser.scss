@@ -458,7 +458,7 @@
           background: black;
           border-top-left-radius: 5px;
           border-bottom-left-radius: 5px;
-          width: calc(100% - 140px);
+          width: calc(100% - 180px);
           height: 100%;
           opacity: 75%;
         }  
@@ -469,7 +469,7 @@
           align-items: center;
           z-index: 25;
           position: absolute;
-          width: calc(100% - 140px);
+          width: calc(100% - 180px);
           padding: 5px 10px;
 
           button {
@@ -502,7 +502,7 @@
           font-size: 12px;
           color: #777;
           overflow: hidden;
-          max-width: 140px;
+          max-width: 180px;
           
           span {
             white-space: nowrap;

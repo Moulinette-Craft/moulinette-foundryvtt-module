@@ -1,3 +1,4 @@
+import MouApplication from "../apps/application";
 import MouBrowser from "../apps/browser";
 import { MouCollection, MouCollectionAction, MouCollectionActionHint, MouCollectionAsset, MouCollectionAssetMeta, MouCollectionAssetType, MouCollectionAssetTypeEnum, MouCollectionCreator, MouCollectionDragData, MouCollectionFilters, MouCollectionPack } from "../apps/collection";
 import { MouGameIcon, MouGameIconsClient } from "../clients/gameicons";
@@ -50,8 +51,11 @@ class MouCollectionGameIconsAsset implements MouCollectionAsset {
 export default class MouCollectionGameIcons implements MouCollection {
   
   APP_NAME = "MouCollectionGameIcons"
+  
+  static ERROR_SERVER_CNX = 1
 
   private currentHits: number = 0
+  private error: number = 0 
 
   getId(): string {
     return "mou-gameicons"
@@ -63,6 +67,7 @@ export default class MouCollectionGameIcons implements MouCollection {
 
   async initialize(): Promise<void> {
     // do nothing
+    this.error = 0
   }
   
   /**
@@ -70,7 +75,12 @@ export default class MouCollectionGameIcons implements MouCollection {
    */
   async getTypes(): Promise<MouCollectionAssetType[]> {
     const results = [] as MouCollectionAssetType[]
-    results.push({ id: MouCollectionAssetTypeEnum.Image, assetsCount: await MouGameIconsClient.getIconsCount() })
+    try {
+      results.push({ id: MouCollectionAssetTypeEnum.Image, assetsCount: await MouGameIconsClient.getIconsCount() })
+    } catch(error) {
+      this.error = MouCollectionGameIcons.ERROR_SERVER_CNX
+      MouApplication.logError(this.APP_NAME, `Not able to get icons count from game-icons.net`, error)
+    }
     return results
   }
 
@@ -97,11 +107,17 @@ export default class MouCollectionGameIcons implements MouCollection {
       if(page > 0 && page * MouBrowser.PAGE_SIZE > this.currentHits) {
         return [] as MouCollectionAsset[]
       }
-      const results = await MouGameIconsClient.searchIcons(filters.searchTerms, page)
-      for(const result of results.icons) {
-        assets.push(new MouCollectionGameIconsAsset(result))
+      
+      try {
+        const results = await MouGameIconsClient.searchIcons(filters.searchTerms, page)
+        for(const result of results.icons) {
+          assets.push(new MouCollectionGameIconsAsset(result))
+        }
+        this.currentHits = results.count
+      } catch(error) {
+        this.error = MouCollectionGameIcons.ERROR_SERVER_CNX
+        MouApplication.logError(this.APP_NAME, `Not able to search icons on game-icons.net`, error)
       }
-      this.currentHits = results.count
     }
     return assets
   }
@@ -162,7 +178,12 @@ export default class MouCollectionGameIcons implements MouCollection {
     console.log(callback)
   }
 
-  
+  getCollectionError(): string | null {
+    if(this.error == MouCollectionGameIcons.ERROR_SERVER_CNX) {
+      return (game as Game).i18n.localize("MOU.error_gameicons_connection")
+    }
+    return null;
+  }
 
   
   

@@ -211,6 +211,7 @@ export default class MouBrowser extends MouApplication {
   /** Load more assets and activate events */
   async loadMoreAssets() {
     if(this.page < 0 || !this.collection) return
+    
     let assets: MouCollectionAsset[] = [];
     try {
       assets = await this.collection.getAssets(this.filters, this.page);
@@ -221,6 +222,14 @@ export default class MouBrowser extends MouApplication {
       this.logError("Error loading assets:", error)
       ui.notifications?.error((game as Game).i18n.localize("MOU.error_loading_assets"));
     }
+
+    // handle collection errors (like server connection errors)
+    if(this.collection.getCollectionError()) {
+      this.html?.find(".content").append(await renderTemplate(`modules/${MODULE_ID}/templates/browser-error.hbs`, { error: this.collection.getCollectionError() }))
+      this.page = -1
+      return
+    }
+
     if(assets.length == 0) {
       if(this.page == 0) {
         if(!this.collection.isBrowsable() && (!this.filters.searchTerms || this.filters.searchTerms.length < 3)) {

@@ -144,6 +144,9 @@ export interface MouCollection {
 
   /** Opens UI for configuring source settings */
   configure(callback: Function): void
+
+  /** Must return an error message if something is going wrong with the collection. Or null if everything is fine. */
+  getCollectionError(): string | null
 }
 
 

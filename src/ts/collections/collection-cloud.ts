@@ -77,12 +77,16 @@ class MouCollectionCloudAsset implements MouCollectionAsset {
     if(data.perms == 0) {
       this.icons.push({descr: (game as Game).i18n.localize("MOU.pack_is_free"), icon: "fa-solid fa-gift"})
       this.cloud_type = CloudAssetType.FREE
-      this.previewUrl = `${MOU_STORAGE}${data.pack.creator_ref}/${data.pack.path}/${data.thumb}`
+      if(data.type != MouCollectionAssetTypeEnum.Audio) {
+        this.previewUrl = `${MOU_STORAGE}${data.pack.creator_ref}/${data.pack.path}/${data.thumb}`
+      }
     } else if (data.perms < 0) {
       this.cloud_type = CloudAssetType.PREVIEW
     } else {
       this.cloud_type = CloudAssetType.AVAILABLE
-      this.previewUrl = `${MOU_STORAGE}${data.pack.creator_ref}/${data.pack.path}/${data.thumb}`
+      if(data.type != MouCollectionAssetTypeEnum.Audio) {
+        this.previewUrl = `${MOU_STORAGE}${data.pack.creator_ref}/${data.pack.path}/${data.thumb}`
+      }
     }
     
     switch(data.type) {
@@ -186,11 +190,15 @@ export default class MouCollectionCloud implements MouCollection {
 
   static PLAYLIST_NAME = "Moulinette Cloud"
 
+  static ERROR_SERVER_CNX = 1
+
   private mode: CloudMode
+  private error: number
 
   constructor() {
     this.mode = CloudMode.ALL
     this.refreshSettings();
+    this.error = 0
   }
   
   async initialize(): Promise<void> {
@@ -225,51 +233,69 @@ export default class MouCollectionCloud implements MouCollection {
     const filtersDuplicate = JSON.parse(JSON.stringify(filters));
     filtersDuplicate["scope"] = this.getScope()
     // returns a dict with key = asset type and value = count
-    const results = await MouCloudClient.apiPOST("/assets/types", filtersDuplicate)
-    return Object.entries(results).map( entry => { return {
-          id: Number(entry[0]),
-          assetsCount: entry[1]
-        } as MouCollectionAssetType
-      })
+    try {
+      const results = await MouCloudClient.apiPOST("/assets/types", filtersDuplicate)
+      return Object.entries(results).map( entry => { return {
+            id: Number(entry[0]),
+            assetsCount: entry[1]
+          } as MouCollectionAssetType
+        })
+    } catch(error: any) {
+      this.error = MouCollectionCloud.ERROR_SERVER_CNX
+      MouApplication.logError(this.APP_NAME, `Not able to retrieve asset types`, error)
+      return []
+    }
   }
 
   async getCreators(filters: MouCollectionFilters): Promise<MouCollectionCreator[]> {
     const filtersDuplicate = JSON.parse(JSON.stringify(filters));
     filtersDuplicate["scope"] = this.getScope()
-    const creators = await MouCloudClient.apiPOST("/creators", filtersDuplicate)
-    const results = []
-    for(const c of creators) {
-      const creator : MouCollectionCreator = {
-        id: c.name,
-        name: c.name,
-        assetsCount: c.assets
-      }  
-      results.push(creator)
+    try {
+      const creators = await MouCloudClient.apiPOST("/creators", filtersDuplicate)
+      const results = []
+      for(const c of creators) {
+        const creator : MouCollectionCreator = {
+          id: c.name,
+          name: c.name,
+          assetsCount: c.assets
+        }  
+        results.push(creator)
+      }
+      return results
+    } catch(error: any) {
+      this.error = MouCollectionCloud.ERROR_SERVER_CNX
+      MouApplication.logError(this.APP_NAME, `Not able to retrieve creators`, error)
+      return []
     }
-    return results
   }
   
   async getPacks(filters: MouCollectionFilters): Promise<MouCollectionPack[]> {
     const filtersDuplicate = JSON.parse(JSON.stringify(filters));
     filtersDuplicate["scope"] = this.getScope()
     if(!filters.creator || filters.creator.length == 0) return [];
-    const packs = await MouCloudClient.apiPOST("/packs", filtersDuplicate)
-    
-    const results: { [key: string]: MouCollectionPack } = {};
-    for(const p of packs) {
-      if(p.name in results) {
-        const existing = results[p.name]
-        existing.assetsCount += p.assets
-        existing.id += `;${p.pack_ref}`
-      } else {
-        results[p.name] = {
-          id: `${p.pack_ref}`,
-          name: p.name,
-          assetsCount: p.assets
+    try {
+      const packs = await MouCloudClient.apiPOST("/packs", filtersDuplicate)
+      
+      const results: { [key: string]: MouCollectionPack } = {};
+      for(const p of packs) {
+        if(p.name in results) {
+          const existing = results[p.name]
+          existing.assetsCount += p.assets
+          existing.id += `;${p.pack_ref}`
+        } else {
+          results[p.name] = {
+            id: `${p.pack_ref}`,
+            name: p.name,
+            assetsCount: p.assets
+          }
         }
       }
+      return Object.values(results)
+    } catch(error: any) {
+      this.error = MouCollectionCloud.ERROR_SERVER_CNX
+      MouApplication.logError(this.APP_NAME, `Not able to retrieve packs`, error)
+      return []
     }
-    return Object.values(results)
   }
 
   async getFolders(): Promise<string[]> {
@@ -286,12 +312,18 @@ export default class MouCollectionCloud implements MouCollection {
     filtersDuplicate["scope"] = this.getScope()
     filtersDuplicate["pack"] = filtersDuplicate["pack"].length == 0 ? null : filtersDuplicate["pack"]
     
-    const assets = await MouCloudClient.apiPOST(`/assets`, filtersDuplicate)
-    const results = []
-    for(const data of assets) {
-      results.push(new MouCollectionCloudAsset(data))
+    try {
+      const assets = await MouCloudClient.apiPOST(`/assets`, filtersDuplicate)
+      const results = []
+      for(const data of assets) {
+        results.push(new MouCollectionCloudAsset(data))
+      }
+      return results
+    } catch(error: any) {
+      this.error = MouCollectionCloud.ERROR_SERVER_CNX
+      MouApplication.logError(this.APP_NAME, `Not able to retrieve assets`, error)
+      return []
     }
-    return results
   }
 
   getActions(asset: MouCollectionAsset): MouCollectionAction[] {
@@ -433,20 +465,17 @@ export default class MouCollectionCloud implements MouCollection {
 
     // FVTT entity
     if(asset.filepath.endsWith(".json")) {
-      if(await MouFileManager.downloadAllFiles(asset.deps, asset.base_url, targetPath)) {
-        const entityString = await MouFileManager.downloadFileAsString(`${asset.base_url}/${asset.file_url}`)
-        if(entityString.length > 0) {
-          // replace all #DEPS#
-          return {
-            path: targetPathBaseURL,
-            message: entityString.replace(new RegExp("#DEP#", "g"), targetPathBaseURL + "/"),
-            status: "success",
-          }
+      await MouFileManager.downloadAllFiles(asset.deps, asset.base_url, targetPath)
+      const entityString = await MouFileManager.downloadFileAsString(`${asset.base_url}/${asset.file_url}`)
+      if(entityString.length > 0) {
+        // replace all #DEPS#
+        return {
+          path: targetPathBaseURL,
+          message: entityString.replace(new RegExp("#DEP#", "g"), targetPathBaseURL + "/"),
+          status: "success",
         }
-        return false
-      } else {
-        return false
       }
+      return false
     }
     // single file 
     else {
@@ -522,6 +551,7 @@ export default class MouCollectionCloud implements MouCollection {
         switch(asset.type) {
           case MouCollectionAssetTypeEnum.Audio:
             const audio_url = selAsset.previewUrl
+            console.log(selAsset)
             // assuming there is an audio preview and there is a audio#audiopreview element on the page
             const audio = $("#audiopreview")[0] as HTMLAudioElement
             if(MouMediaUtils.getCleanURI(audio.src) != MouMediaUtils.getCleanURI(audio_url)) {
@@ -639,5 +669,11 @@ export default class MouCollectionCloud implements MouCollection {
     }).render(true)
   }  
 
+  getCollectionError(): string | null {
+    if(this.error == MouCollectionCloud.ERROR_SERVER_CNX) {
+      return (game as Game).i18n.localize("MOU.error_server_connection")
+    }
+    return null;
+  }
   
 }

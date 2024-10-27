@@ -214,6 +214,7 @@ export default class MouFoundryUtils {
       let tUpdate = { folder: folderObj ? folderObj.id : null } as AnyDict
       await newJournalEntry.update(tUpdate);
       ui.journal?.activate()
+      newJournalEntry?.sheet?.render(true)
     }
   }
 

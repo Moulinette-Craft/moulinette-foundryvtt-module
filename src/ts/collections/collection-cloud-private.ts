@@ -93,9 +93,13 @@ export default class MouCollectionCloudPrivate implements MouCollection {
 
   APP_NAME = "MouCollectionCloudPrivate"
 
+  private error: number;
+
   static PLAYLIST_NAME = "Moulinette Cloud (Private)"
+  static ERROR_SERVER_CNX = 1
 
   constructor() {
+    this.error = 0
   }
   
   async initialize(): Promise<void> {
@@ -103,17 +107,23 @@ export default class MouCollectionCloudPrivate implements MouCollection {
     if(!module.cache.privateAssets) {
       // retrieve private assets from Moulinette Cloud
       const params = { scope: this.getScope() }
-      const results = await MouCloudClient.apiPOST("/private-assets", params)
-      const assets = []
-      let idx = 0
-      for(const creator of results) {
-        for(const pack of creator.packs) {
-          for(const a of pack.assets) {
-            assets.push(new MouCollectionCloudPrivateAsset(idx++, a, creator, pack))
+      try {
+        const results = await MouCloudClient.apiPOST("/private-assets", params)
+        const assets = []
+        let idx = 0
+        for(const creator of results) {
+          for(const pack of creator.packs) {
+            for(const a of pack.assets) {
+              assets.push(new MouCollectionCloudPrivateAsset(idx++, a, creator, pack))
+            }
           }
         }
+        module.cache.privateAssets = assets
+      } catch(error: any) {
+        this.error = MouCollectionCloudPrivate.ERROR_SERVER_CNX
+        MouApplication.logError(this.APP_NAME, `Not able to retrieve asset types`, error)
+        module.cache.privateAssets = []
       }
-      module.cache.privateAssets = assets
     }
   }
   
@@ -303,20 +313,17 @@ export default class MouCollectionCloudPrivate implements MouCollection {
     // FVTT entity
     if(asset.type == MouCollectionAssetTypeEnum.Scene) {
       const deps = asset.deps!.map(d => `${d}?${asset.sas}`)
-      if(await MouFileManager.downloadAllFiles(deps, asset.baseUrl, targetPath)) {
-        const entityString = await MouFileManager.downloadFileAsString(`${asset.baseUrl}/${asset.url}?${asset.sas}`)
-        if(entityString.length > 0) {
-          // replace all #DEPS#
-          return {
-            path: targetPath,
-            message: entityString.replace(new RegExp("#DEP#", "g"), targetPath + "/"),
-            status: "success",
-          }
+      await MouFileManager.downloadAllFiles(deps, asset.baseUrl, targetPath)
+      const entityString = await MouFileManager.downloadFileAsString(`${asset.baseUrl}/${asset.url}?${asset.sas}`)
+      if(entityString.length > 0) {
+        // replace all #DEPS#
+        return {
+          path: targetPath,
+          message: entityString.replace(new RegExp("#DEP#", "g"), targetPath + "/"),
+          status: "success",
         }
-        return false
-      } else {
-        return false
       }
+      return false
     }
     // single file 
     else {
@@ -461,5 +468,11 @@ export default class MouCollectionCloudPrivate implements MouCollection {
   configure(): void {
   }  
 
+  getCollectionError(): string | null {
+    if(this.error == MouCollectionCloudPrivate.ERROR_SERVER_CNX) {
+      return (game as Game).i18n.localize("MOU.error_server_connection")
+    }
+    return null;
+  }
   
 }

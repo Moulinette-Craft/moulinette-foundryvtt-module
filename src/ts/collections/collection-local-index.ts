@@ -407,6 +407,8 @@ export default class MouCollectionLocal implements MouCollection {
     }).render(true)
   }
 
-
+  getCollectionError(): string | null {
+    return null;
+  }
   
 }
