@@ -145,6 +145,7 @@ export default class MouFoundryUtils {
         tUpdate.height = tData.height;
       }  
       await newScene.update(tUpdate); // force generating the thumbnail and width/height (if needsDims)
+      newScene?.view()
       ui.scenes?.activate()
     }
   }
