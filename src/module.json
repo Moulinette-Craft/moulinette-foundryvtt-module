@@ -20,5 +20,8 @@
     }
   ],
   "styles": ["style.css"],
-  "esmodules": ["scripts/module.js"]
+  "esmodules": ["scripts/module.js"],
+  "url": "https://www.moulinette.cloud",
+  "manifest": "https://moulinette-demo.nyc3.digitaloceanspaces.com/moulinette-module.json",
+  "download": "https://moulinette-demo.nyc3.digitaloceanspaces.com/moulinette.zip"
 }
