@@ -89,8 +89,6 @@ export default class MouUser extends MouApplication {
       }
       this.logInfo(`Signing in with ${authSource?.capitalize()}...`)
       
-      //game.moulinette.cache.clear()
-
       await MouApplication.setSettings(SETTINGS_SESSION_ID, newGUID)
       window.open(authURL, '_blank');
 
@@ -110,6 +108,7 @@ export default class MouUser extends MouApplication {
         progress?.html(String(parent.timerSecondsLeft))
 
         if(parent.timerSecondsLeft <= 0 || await MouApplication.getModule().cloudclient.isUserAuthenticated(newGUID, authSource)) {
+          MouApplication.getModule().cache.clearCache()
           parent._resetTimer()
           parent.render()
         }

@@ -234,6 +234,7 @@ export default class MouFileManager {
           const blob = await res.blob()
           const uploadResult = await MouFileManager.uploadFile(new File([blob], filename, { type: blob.type, lastModified: new Date().getTime() }), filename, targetFolder, force)
           if(uploadResult && uploadResult.status == "success") {
+            uploadResult.path = decodeURI(uploadResult.path)
             return uploadResult
           }
           else {
