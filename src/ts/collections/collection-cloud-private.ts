@@ -476,7 +476,11 @@ export default class MouCollectionCloudPrivate implements MouCollection {
   }
 
   supportsType(type: MouCollectionAssetTypeEnum): boolean {
-    return [MouCollectionAssetTypeEnum.Audio, MouCollectionAssetTypeEnum.Image, MouCollectionAssetTypeEnum.Scene, MouCollectionAssetTypeEnum.Map].includes(type)
+    return [
+      MouCollectionAssetTypeEnum.Audio, 
+      MouCollectionAssetTypeEnum.Image, 
+      MouCollectionAssetTypeEnum.Scene, 
+      MouCollectionAssetTypeEnum.Map].includes(type)
   }
   
   async selectAsset(asset: MouCollectionAsset): Promise<string | null> {

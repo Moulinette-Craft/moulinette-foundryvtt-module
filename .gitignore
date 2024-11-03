@@ -7,6 +7,10 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Scripts
+scripts/fa-search.py
+scripts/extract-icon-list.sh
+
 node_modules
 dist
 dist-ssr

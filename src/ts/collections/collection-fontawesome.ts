@@ -2,9 +2,11 @@ import MouBrowser from "../apps/browser";
 import { MouCollection, MouCollectionAction, MouCollectionActionHint, MouCollectionAsset, MouCollectionAssetMeta, MouCollectionAssetType, MouCollectionAssetTypeEnum, MouCollectionCreator, MouCollectionDragData, MouCollectionFilters, MouCollectionPack } from "../apps/collection";
 import { MODULE_ID } from "../constants";
 import { AnyDict } from "../types";
+import MouMediaUtils from "../utils/media-utils";
 
 enum FontAwesomeAssetAction {
   CLIPBOARD,                // copy path to clipboard
+  FONTAWESOME,              // open FontAwesome website
 }
 
 class MouCollectionFontAwesomeAsset implements MouCollectionAsset {
@@ -39,7 +41,7 @@ class MouCollectionFontAwesomeAsset implements MouCollectionAsset {
     this.type = MouCollectionAssetTypeEnum.Icon
     this.format = "tiny"
     this.creator = "FontAwesome"
-    this.creatorUrl = "https://fontawesome.com"
+    this.creatorUrl = `https://fontawesome.com/icons/${icon}?f=${family}&s=${style ? style : ""}`
     this.pack = null
     this.pack_id = null
     this.name = icon
@@ -68,7 +70,6 @@ export default class MouCollectionFontAwesome implements MouCollection {
   async initialize(): Promise<void> {
     const response = await fetch(`modules/${MODULE_ID}/data/fa-icons.json`);
     this.iconList = await response.json();
-    console.log(this.iconList)
   }
   
   /**
@@ -175,28 +176,26 @@ export default class MouCollectionFontAwesome implements MouCollection {
     asset; // unused
     const actions = [] as MouCollectionAction[]
     actions.push({ id: FontAwesomeAssetAction.CLIPBOARD, small: true, name: (game as Game).i18n.localize("MOU.action_clipboard"), icon: "fa-solid fa-clipboard" })
+    actions.push({ id: FontAwesomeAssetAction.FONTAWESOME, small: true, name: (game as Game).i18n.localize("MOU.action_fontawesome"), icon: "fa-brands fa-font-awesome" })
     return actions
   }
 
-  getActionHint(asset: MouCollectionAsset, actionId: number): MouCollectionActionHint | null {
-    const action = this.getActions(asset).find(a => a.id == actionId)
-    if(!action) return null
-    switch(actionId) {
-      case FontAwesomeAssetAction.CLIPBOARD: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_clipboard") }
-    }
+  getActionHint(): MouCollectionActionHint | null {
     return null
   }
 
   async executeAction(actionId: number, asset: MouCollectionAsset): Promise<void> {
-    asset; // unused
-    //const folderPath = `Moulinette/Game Icons`
     switch(actionId) {
       case FontAwesomeAssetAction.CLIPBOARD:
-        // const imagePath = await MouGameIconsClient.downloadIcon(asset.id, "#ffffff", "#000000")
-        // if(imagePath) {
-        //   MouMediaUtils.copyToClipboard(imagePath)
-        // }
+        MouMediaUtils.copyToClipboard(asset.id)
         break
+      case FontAwesomeAssetAction.FONTAWESOME:
+        if(asset.creatorUrl) {
+          var win = window.open(asset.creatorUrl, '_blank');
+          if (win) { 
+            win.focus();
+          }
+        }
     }
   }
 
@@ -217,7 +216,7 @@ export default class MouCollectionFontAwesome implements MouCollection {
   }
 
   configure(callback: Function): void {
-    console.log(callback)
+    callback; // unused
   }
 
   getCollectionError(): string | null {
@@ -229,7 +228,6 @@ export default class MouCollectionFontAwesome implements MouCollection {
   }
 
   async selectAsset(asset: MouCollectionAsset): Promise<string | null> {
-    asset; // unused
-    return null
+    return asset.id
   }
 }

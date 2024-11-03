@@ -676,8 +676,22 @@ export default class MouCollectionCloud implements MouCollection {
     return null;
   }
 
-  supportsType(): boolean {
-    return true
+  supportsType(type: MouCollectionAssetTypeEnum): boolean {
+    return [
+      MouCollectionAssetTypeEnum.Actor, 
+      MouCollectionAssetTypeEnum.Adventure, 
+      MouCollectionAssetTypeEnum.Audio, 
+      //MouCollectionAssetTypeEnum.Icon, 
+      MouCollectionAssetTypeEnum.Image, 
+      MouCollectionAssetTypeEnum.Item, 
+      MouCollectionAssetTypeEnum.JournalEntry, 
+      MouCollectionAssetTypeEnum.Macro, 
+      MouCollectionAssetTypeEnum.Map, 
+      MouCollectionAssetTypeEnum.PDF, 
+      MouCollectionAssetTypeEnum.Playlist, 
+      MouCollectionAssetTypeEnum.RollTable,
+      MouCollectionAssetTypeEnum.Scene,
+      MouCollectionAssetTypeEnum.ScenePacker].includes(type)
   }
   
   async selectAsset(asset: MouCollectionAsset): Promise<string | null> {

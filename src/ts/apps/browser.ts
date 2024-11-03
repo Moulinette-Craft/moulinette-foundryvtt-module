@@ -61,6 +61,15 @@ export default class MouBrowser extends MouApplication {
   }
 
   override async getData() {
+    // check that module and collections are properly loaded
+    const module = MouApplication.getModule()
+    if(!module || !module.collections || module.collections.length == 0) 
+      throw new Error(`${this.APP_NAME} | Module ${MODULE_ID} not found or no collection loaded`);
+    const collections = module.collections.filter( col => !this.pickerType || col.supportsType(this.pickerType))
+    if(collections.length == 0) {
+      throw new Error(`${this.APP_NAME} | No collection available!`);
+    }
+
     // initialize filter prefs 
     const prevSettings = MouApplication.getSettings(SETTINGS_PREVS) as AnyDict
     if(!this.filters_prefs) {
@@ -70,7 +79,7 @@ export default class MouBrowser extends MouApplication {
         this.filters_prefs = {
           visible: true,
           opensections: { collection: true, asset_type: true, packs: true },
-          collection: "mou-compendiums",
+          collection: collections[0].getId(),
           focus: "search"
         }
       }
@@ -82,14 +91,11 @@ export default class MouBrowser extends MouApplication {
       }
     }
 
-    // check that module and collections are properly loaded
-    const module = MouApplication.getModule()
-    if(!module || !module.collections || module.collections.length == 0) 
-      throw new Error(`${this.APP_NAME} | Module ${MODULE_ID} not found or no collection loaded`);
     // check that selected collection exists
-    this.collection = module.collections.find( c => c.getId() == this.filters_prefs!.collection)
+    this.collection = collections.find( c => c.getId() == this.filters_prefs!.collection)
     if(!this.collection) {
-      throw new Error(`${this.APP_NAME} | Collection ${this.filters_prefs!.collection} couldn't be found!`);
+      this.collection = collections[0]
+      this.filters_prefs!.collection = this.collection.getId()
     }
     await this.collection.initialize()
 
@@ -140,9 +146,7 @@ export default class MouBrowser extends MouApplication {
       pickerMode: this.pickerType,
       user: module.cache.user,
       filters: {
-        collections: module.collections
-          .filter( col => !this.pickerType || col.supportsType(this.pickerType))
-          .map( col => ( {id: col.getId(), name: col.getName(), configurable: col.isConfigurable() } )),
+        collections: collections.map( col => ( {id: col.getId(), name: col.getName(), configurable: col.isConfigurable() } )),
         prefs: this.filters_prefs,
         values: this.filters,
         creators,
@@ -699,8 +703,7 @@ export default class MouBrowser extends MouApplication {
 
   override async close(options?: Application.CloseOptions): Promise<void> {
     // in picker mode, we don't store the position nor the filters
-    if(this.pickerType) return super.close(options);
-
+    //if(this.pickerType) return super.close(options);
     await this.storePosition()
     super.close(options);
     const prevSettings = MouApplication.getSettings(SETTINGS_PREVS) as AnyDict

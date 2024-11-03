@@ -392,7 +392,15 @@ export default class MouCollectionCompendiums implements MouCollection {
   }
   
   supportsType(type: MouCollectionAssetTypeEnum): boolean {
-    return ![MouCollectionAssetTypeEnum.Audio, MouCollectionAssetTypeEnum.Image, MouCollectionAssetTypeEnum.Map, MouCollectionAssetTypeEnum.PDF].includes(type)
+    return [
+      MouCollectionAssetTypeEnum.Actor, 
+      MouCollectionAssetTypeEnum.Adventure, 
+      MouCollectionAssetTypeEnum.Item, 
+      MouCollectionAssetTypeEnum.JournalEntry, 
+      MouCollectionAssetTypeEnum.Macro, 
+      MouCollectionAssetTypeEnum.Playlist, 
+      MouCollectionAssetTypeEnum.RollTable,
+      MouCollectionAssetTypeEnum.Scene].includes(type)
   }
 
   async selectAsset(asset: MouCollectionAsset): Promise<string | null> {
