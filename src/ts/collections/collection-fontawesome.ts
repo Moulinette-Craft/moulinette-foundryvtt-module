@@ -180,7 +180,13 @@ export default class MouCollectionFontAwesome implements MouCollection {
     return actions
   }
 
-  getActionHint(): MouCollectionActionHint | null {
+  getActionHint(asset: MouCollectionAsset, actionId: number): MouCollectionActionHint | null {
+    const action = this.getActions(asset).find(a => a.id == actionId)
+    if(!action) return null
+    switch(actionId) {
+      case FontAwesomeAssetAction.FONTAWESOME: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_fontawesome") }
+      case FontAwesomeAssetAction.CLIPBOARD: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_clipboard_icon") }
+    }
     return null
   }
 

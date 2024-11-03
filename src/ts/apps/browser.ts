@@ -609,7 +609,12 @@ export default class MouBrowser extends MouApplication {
       if(!hint) return;
       actionHint.find("h3").html(hint.name)
       actionHint.find(".description").html(hint.description)
-      actionHint.find(".thumbnail").css("background-image", `url('${selAsset.previewUrl}')`)
+      actionHint.find(".thumbnail").html()
+      if(this.filters.type == MouCollectionAssetTypeEnum.Icon) {
+        actionHint.find(".thumbnail").html(`<i class="${selAsset.id}"></i>`)
+      } else {
+        actionHint.find(".thumbnail").css("background-image", `url('${selAsset.previewUrl}')`)
+      }
       // Show hint (to the right if enough space, otherwise to the left)
       let posTop = 0
       let posLeft = 0
