@@ -13,6 +13,7 @@ export enum MouCollectionAssetTypeEnum {
   Macro = 10,
   RollTable = 11,
   Adventure = 12,
+  Icon = 97,
   ScenePacker = 98,
   Undefined = 99
 }
@@ -147,6 +148,12 @@ export interface MouCollection {
 
   /** Must return an error message if something is going wrong with the collection. Or null if everything is fine. */
   getCollectionError(): string | null
+
+  /** Must return true if collection supports the type */
+  supportsType(type: MouCollectionAssetTypeEnum): boolean
+
+  /** Must download or handle selected asset and return its path or relevant text to copy */
+  selectAsset(asset: MouCollectionAsset): Promise<string | null>
 }
 
 

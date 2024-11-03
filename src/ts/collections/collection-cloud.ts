@@ -675,5 +675,14 @@ export default class MouCollectionCloud implements MouCollection {
     }
     return null;
   }
+
+  supportsType(): boolean {
+    return true
+  }
   
+  async selectAsset(asset: MouCollectionAsset): Promise<string | null> {
+    const assetData = await MouCloudClient.apiGET(`/asset/${asset.id}`, { session: MouApplication.getSettings(SETTINGS_SESSION_ID) })
+    const resultDownload = await this.downloadAsset(assetData)
+    return resultDownload ? resultDownload.path : null
+  }
 }

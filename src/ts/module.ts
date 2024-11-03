@@ -24,6 +24,7 @@ import MouFoundryUtils from "./utils/foundry-utils";
 import MouCollectionGameIcons from "./collections/collection-gameicons";
 import MouCollectionBBCSounds from "./collections/collection-bbc-sounds";
 import MouCollectionCloudPrivate from "./collections/collection-cloud-private";
+import MouCollectionFontAwesome from "./collections/collection-fontawesome";
 
 let module: MouModule;
 
@@ -92,7 +93,7 @@ Hooks.once("init", () => {
   module.eventHandler = new MouEventHandler();
   module.tools = [];
   module.compendiumMappings = { mappings: MouCompendiumsDefaults.metadataMappings, formatters: MouCompendiumsDefaults.metadataMappingsFormatters }
-  module.utils = { media: MouMediaUtils, filemanager: MouFileManager, foundry: MouFoundryUtils }
+  module.utils = { media: MouMediaUtils, filemanager: MouFileManager, foundry: MouFoundryUtils, browser: MouBrowser }
   module.debug = true;
 
   module.getSessionId = () => {
@@ -111,6 +112,7 @@ Hooks.once("ready", () => {
   module.collections.push(new MouCollectionLocal())
   module.collections.push(new MouCollectionGameIcons())
   module.collections.push(new MouCollectionBBCSounds())
+  module.collections.push(new MouCollectionFontAwesome())
   // make config available
   module.configs = MouConfig
   // hooks some FVTT functions

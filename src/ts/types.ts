@@ -35,7 +35,8 @@ export interface MouModule extends Game.ModuleData<ModuleData> {
   utils: {
     media: MouMediaUtils,
     foundry: MouFoundryUtils,
-    filemanager: MouFileManager
+    filemanager: MouFileManager,
+    browser: any
   }
 
   getSessionId(): string;

@@ -22,12 +22,21 @@ export default class MouBrowser extends MouApplication {
   private currentAssets = [] as MouCollectionAsset[];
   private currentFoldersScroll = { top: 0, left: 0 }
   
+  private pickerType?: MouCollectionAssetTypeEnum; // picker mode : no filter and only action is to download and return the asset path
+  private pickerCallback?: (path: string) => void;
+  
+  constructor(options?: ApplicationOptions, pickerType?: string, pickerCallback?: (path: string) => void) {
+    super(options);
+    this.pickerType = MouCollectionAssetTypeEnum[pickerType as keyof typeof MouCollectionAssetTypeEnum];
+    this.pickerCallback = pickerCallback;
+  }
+
   /* Filter preferences */
   private filters_prefs:AnyDict | null = null
 
   /* Filters */
   private filters: MouCollectionFilters = {
-    type: MouCollectionAssetTypeEnum.Actor,
+    type: MouCollectionAssetTypeEnum.Map,
     creator: "",
     pack: "",
     searchTerms: "",
@@ -68,6 +77,9 @@ export default class MouBrowser extends MouApplication {
       if("filters" in prevSettings) {
         this.filters = prevSettings["filters"]
       }
+      if(this.pickerType) {
+        this.filters.type = this.pickerType
+      }
     }
 
     // check that module and collections are properly loaded
@@ -81,10 +93,13 @@ export default class MouBrowser extends MouApplication {
     }
     await this.collection.initialize()
 
+    // picker mode
     this.page = 0
     this.currentAssets = []
     const types = await this.collection.getTypes(this.filters)
-    const typesObj = types.map( type => ({ id: Number(type.id), name: MouCollectionUtils.getTranslatedType(Number(type.id)), assetsCount: type.assetsCount}))
+    const typesObj = types
+      .filter( type => !this.pickerType ||  this.pickerType == Number(type.id))
+      .map( type => ({ id: Number(type.id), name: MouCollectionUtils.getTranslatedType(Number(type.id)), assetsCount: type.assetsCount}))
     typesObj.sort((a, b) => a.name.localeCompare(b.name))
     
     // change type if selected type not available for current collection
@@ -122,9 +137,12 @@ export default class MouBrowser extends MouApplication {
     const types2 = typesObj.slice(middleIndex);
     
     return {
+      pickerMode: this.pickerType,
       user: module.cache.user,
       filters: {
-        collections: module.collections.map( col => ( {id: col.getId(), name: col.getName(), configurable: col.isConfigurable() } )),
+        collections: module.collections
+          .filter( col => !this.pickerType || col.supportsType(this.pickerType))
+          .map( col => ( {id: col.getId(), name: col.getName(), configurable: col.isConfigurable() } )),
         prefs: this.filters_prefs,
         values: this.filters,
         creators,
@@ -251,18 +269,34 @@ export default class MouBrowser extends MouApplication {
         case MouCollectionAssetTypeEnum.Macro: 
         case MouCollectionAssetTypeEnum.Playlist: 
         case MouCollectionAssetTypeEnum.Audio: 
-          html = await renderTemplate(`modules/${MODULE_ID}/templates/browser-assets-rows.hbs`, { MOU_DEF_NOTHUMB: MouConfig.MOU_DEF_NOTHUMB, assets, index })
+          html = await renderTemplate(`modules/${MODULE_ID}/templates/browser-assets-rows.hbs`, { 
+            MOU_DEF_NOTHUMB: MouConfig.MOU_DEF_NOTHUMB, 
+            assets, 
+            index, 
+            pickerMode: this.pickerType
+          })
           break
         default:
-          html = await renderTemplate(`modules/${MODULE_ID}/templates/browser-assets-blocks.hbs`, { MOU_DEF_NOTHUMB: MouConfig.MOU_DEF_NOTHUMB, assets, index })
+          html = await renderTemplate(`modules/${MODULE_ID}/templates/browser-assets-blocks.hbs`, { 
+            MOU_DEF_NOTHUMB: MouConfig.MOU_DEF_NOTHUMB, 
+            assets, 
+            index, 
+            pickerMode: this.pickerType,
+            isIcons: this.filters.type == MouCollectionAssetTypeEnum.Icon 
+          })
       }
       this.html?.find(".content").append(html)
       Array.prototype.push.apply(this.currentAssets, assets);
     }
     // activate listeners
     this.html?.find(".asset").off()
-    this.html?.find(".asset").on("mouseenter", this._onShowMenu.bind(this));
-    this.html?.find(".asset").on("mouseleave", this._onHideMenu.bind(this));
+
+    if(!this.pickerType) {
+      this.html?.find(".asset").on("mouseenter", this._onShowMenu.bind(this));
+      this.html?.find(".asset").on("mouseleave", this._onHideMenu.bind(this));
+    } else {
+      this.html?.find(".asset").on("click", this._onSelectAsset.bind(this));
+    }
     this.html?.find(".asset a.creator").on("click", this._onClickAssetCreator.bind(this));
     this.html?.find(".asset a.pack").on("click", this._onClickAssetPack.bind(this));
     this.html?.find(".asset.draggable").on("dragstart", this._onDragStart.bind(this));
@@ -664,6 +698,9 @@ export default class MouBrowser extends MouApplication {
   }
 
   override async close(options?: Application.CloseOptions): Promise<void> {
+    // in picker mode, we don't store the position nor the filters
+    if(this.pickerType) return super.close(options);
+
     await this.storePosition()
     super.close(options);
     const prevSettings = MouApplication.getSettings(SETTINGS_PREVS) as AnyDict
@@ -672,6 +709,30 @@ export default class MouBrowser extends MouApplication {
     await MouApplication.setSettings(SETTINGS_PREVS, prevSettings)
   }
 
-  
+ 
+  /** User clicked on item asset */
+  async _onSelectAsset(event: Event): Promise<void> {
+    event.preventDefault();
+    event.stopPropagation();
+    if(!this.pickerType) return;
+    if(event.currentTarget) {
+      const target = $(event.currentTarget)
+      const assetId = target.closest(".asset").data("id")
+      const selAsset = this.currentAssets.find((a) => a.id == assetId)
+      if(selAsset) {
+        const path = await this.collection?.selectAsset(selAsset)  
+        if(path && this.pickerCallback) {
+          this.pickerCallback(path)
+          this.close()
+          return
+        } else {
+          this.logError(`Collection didn't return path ${path} properly or empty callback ${this.pickerCallback}.`)
+        }
+      } else {
+        this.logError(`Asset '${assetId}' not found. This must be a bug in Moulinette.`)
+      }
+    }
+    ui.notifications?.error((game as Game).i18n.localize("MOU.error_selecting_asset"))
+  }
 
 }

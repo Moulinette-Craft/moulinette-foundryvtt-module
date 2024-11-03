@@ -8,7 +8,7 @@
 </div>
 
 {{#each assets as |a|}}
-  <div class="asset inline draggable" data-id="{{a.id}}" draggable="true">
+  <div class="asset inline {{#if pickerMode}}draggable{{/if}}" data-id="{{a.id}}" {{#if pickerMode}}draggable="true"{{/if}}>
     <div class="overlay"></div>
     <div class="menu"></div>
     <div class="row">

@@ -185,6 +185,11 @@ export default class MouCollectionGameIcons implements MouCollection {
     return null;
   }
 
-  
-  
+  supportsType(type: MouCollectionAssetTypeEnum): boolean {
+    return type == MouCollectionAssetTypeEnum.Image
+  }
+
+  async selectAsset(asset: MouCollectionAsset): Promise<string | null> {
+    return await MouGameIconsClient.downloadIcon(asset.id, "#ffffff", "#000000")
+  }
 }

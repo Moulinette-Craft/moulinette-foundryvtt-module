@@ -474,5 +474,14 @@ export default class MouCollectionCloudPrivate implements MouCollection {
     }
     return null;
   }
+
+  supportsType(type: MouCollectionAssetTypeEnum): boolean {
+    return [MouCollectionAssetTypeEnum.Audio, MouCollectionAssetTypeEnum.Image, MouCollectionAssetTypeEnum.Scene, MouCollectionAssetTypeEnum.Map].includes(type)
+  }
   
+  async selectAsset(asset: MouCollectionAsset): Promise<string | null> {
+    const cAsset = (asset as MouCollectionCloudPrivateAsset);
+    const resultDownload = await MouCollectionCloudPrivate.downloadAsset(cAsset)
+    return resultDownload ? resultDownload.path : null
+  }
 }

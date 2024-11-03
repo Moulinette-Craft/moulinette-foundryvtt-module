@@ -42,6 +42,10 @@
     }
   }
 
+  .pickermode .asset {
+    cursor: pointer;
+  }
+
   .container {
     position: relative;
     display: flex;
@@ -253,6 +257,10 @@
           display: flex;
           justify-content: center;
           align-items: center;
+          
+          .icon {
+            font-size: 36px;
+          }
         }
 
         video {

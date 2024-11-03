@@ -411,4 +411,11 @@ export default class MouCollectionLocal implements MouCollection {
     return null;
   }
   
+  supportsType(type: MouCollectionAssetTypeEnum): boolean {
+    return [MouCollectionAssetTypeEnum.Audio, MouCollectionAssetTypeEnum.Image, MouCollectionAssetTypeEnum.Map].includes(type)
+  }
+
+  async selectAsset(asset: MouCollectionAsset): Promise<string | null> {
+    return asset.url;
+  }
 }

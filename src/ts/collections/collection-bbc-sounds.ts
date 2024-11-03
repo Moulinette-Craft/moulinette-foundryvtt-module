@@ -218,4 +218,11 @@ export default class MouCollectionBBCSounds implements MouCollection {
     return null;
   }
 
+  supportsType(type: MouCollectionAssetTypeEnum): boolean {
+    return type == MouCollectionAssetTypeEnum.Audio
+  }
+
+  async selectAsset(asset: MouCollectionAsset): Promise<string | null> {
+    return asset.url
+  }
 }
