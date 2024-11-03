@@ -143,7 +143,7 @@ export default class MouBrowser extends MouApplication {
     const types2 = typesObj.slice(middleIndex);
     
     return {
-      pickerMode: this.pickerType,
+      pickerMode: this.pickerType != undefined && this.pickerType != null,
       user: module.cache.user,
       filters: {
         collections: collections.map( col => ( {id: col.getId(), name: col.getName(), configurable: col.isConfigurable() } )),
@@ -648,6 +648,7 @@ export default class MouBrowser extends MouApplication {
   }
 
   override _onDragStart(event: Event): void {
+    console.log("HERE")
     if(event.currentTarget) {
       const target = $(event.currentTarget) // target can be asset itself or button
       const assetId = target.closest(".asset").data("id")

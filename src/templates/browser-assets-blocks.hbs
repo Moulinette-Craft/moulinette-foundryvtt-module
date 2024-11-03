@@ -9,7 +9,7 @@
 </div>
 
 {{#each assets as |a|}}
-  <div class="asset block {{a.format}}{{#if a.draggable}} {{#if pickerMode}}draggable{{/if}}{{/if}}" data-id="{{a.id}}" {{#if pickerMode}}{{#if a.draggable}}draggable="true"{{/if}}{{/if}}>
+  <div class="asset block {{a.format}} {{#if a.draggable}}{{#unless pickerMode}}draggable{{/unless}}{{/if}}" data-id="{{a.id}}" {{#unless pickerMode}}{{#if a.draggable}}draggable="true"{{/if}}{{/unless}}>
     <div class="overlay"></div>
     <div class="menu"></div>
     <div class="preview" {{#if a.background_color}}style="background-color: #{{a.background_color}}"{{/if}}>
