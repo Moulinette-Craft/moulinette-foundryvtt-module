@@ -255,6 +255,10 @@ export default class MouLocalClient {
               }
               assets.push(fileData)
             }
+            else if (MouConfig.MEDIA_OTHER.includes(ext)) {
+              assetsCount++
+              assets.push(fileData)
+            }
             i++;
             if (i >= files.length) break
             if (i % MouConfig.FILEMANAGER_LOOP_UPDATE == 0) {

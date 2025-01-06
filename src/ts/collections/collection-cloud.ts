@@ -67,7 +67,7 @@ class MouCollectionCloudAsset implements MouCollectionAsset {
     this.creatorUrl = data.creator_url
     this.pack = data.pack.name
     this.pack_id = data.pack_ref
-    this.name = MouMediaUtils.prettyMediaName(data.filepath)
+    this.name = data.name && data.name.length > 0 ? data.name : MouMediaUtils.prettyMediaName(data.filepath)
     this.type = data.type;
     this.meta = []
     this.icon = MouMediaUtils.getIcon(data.type)
@@ -90,6 +90,7 @@ class MouCollectionCloudAsset implements MouCollectionAsset {
     }
     
     switch(data.type) {
+      case MouCollectionAssetTypeEnum.Macro:
       case MouCollectionAssetTypeEnum.Item:
       case MouCollectionAssetTypeEnum.Actor:
         this.draggable = true
@@ -616,8 +617,17 @@ export default class MouCollectionCloud implements MouCollection {
     if(asset) {
       MouApplication.logDebug(this.APP_NAME, `fromDropData for asset ${assetId}`, data)
       switch(asset.type) {
-        case MouCollectionAssetTypeEnum.Macro: 
         case MouCollectionAssetTypeEnum.Actor: 
+          const folderPath = `Moulinette/${asset.creator}/${asset.pack}`
+          const resultActor = await this.downloadAsset(asset)
+          if(resultActor) {
+            const actor = await MouFoundryUtils.importActor(JSON.parse(resultActor.message), folderPath, false) as AnyDict;
+            if(actor) {
+              data.uuid = actor.uuid
+            }
+          }
+          break
+        case MouCollectionAssetTypeEnum.Macro: 
         case MouCollectionAssetTypeEnum.Item: 
           const result = await this.downloadAsset(asset)  
           if(result) {
@@ -646,7 +656,7 @@ export default class MouCollectionCloud implements MouCollection {
           }
           break;
         default:
-          throw new Error(`Method not implemented for ${data.type}`);
+          MouApplication.logWarn(this.APP_NAME, `Method not implemented for ${data.type}`)
       }
     }
   }

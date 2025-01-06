@@ -66,9 +66,7 @@ export default class MouMediaUtils {
     name = name?.split(' ')                               // capitalize the first letter of each word
       .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(' ');
-    if(MouConfig.MEDIA_AUDIO.includes(ext) || MouConfig.MEDIA_VIDEOS.includes(ext)) {
-      name += ` (${ext})`
-    }
+    name += ` (${ext})`
     return name ? name : cleanPath
   }
 

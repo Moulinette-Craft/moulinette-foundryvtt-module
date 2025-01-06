@@ -170,7 +170,7 @@ export default class MouFoundryUtils {
   /**
    * Creates a new actor from the given data
    */
-  static async importActor(actorData: AnyDict, folder:string) {
+  static async importActor(actorData: AnyDict, folder:string, renderSheet = false) {
     if (!(game as Game).user?.isGM) return;
     // @ts-ignore
     const doc = await Actor.fromImport(actorData)
@@ -180,8 +180,11 @@ export default class MouFoundryUtils {
       let tUpdate = { folder: folderObj ? folderObj.id : null } as AnyDict
       await newActor.update(tUpdate);
       ui.actors?.activate()
-      newActor?.sheet?.render(true)
+      if(renderSheet) {
+        newActor?.sheet?.render(true)
+      }
     }
+    return newActor
   }
 
   /**

@@ -154,13 +154,14 @@ export default class MouFileManager {
    * This function downloads a file and uploads it to FVTT server
    */
   static async downloadAllFiles(urls: string[], packPath: string, folder: string, force=false): Promise<boolean> {
+    let success = true
     for(const url of urls) {
       const result = await MouFileManager.downloadFile(url, packPath, folder, force)
       if(!result) {
-        return false
+        success = false
       }
     }
-    return true
+    return success
   }
 
   /**

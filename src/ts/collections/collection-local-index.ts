@@ -271,6 +271,11 @@ export default class MouCollectionLocal implements MouCollection {
           actions.push({ id: LocalAssetAction.IMPORT, name: (game as Game).i18n.localize("MOU.action_audio_play"), icon: "fa-solid fa-play-pause" })
         }
         actions.push({ id: LocalAssetAction.PREVIEW, name: (game as Game).i18n.localize("MOU.action_preview"), icon: "fa-solid fa-headphones" })
+        break;   
+      case MouCollectionAssetTypeEnum.PDF:
+        if(isGM) {
+          actions.push({ id: LocalAssetAction.CREATE_ARTICLE, name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
+        }
         break;    
     }
     actions.push({ id: LocalAssetAction.CLIPBOARD, small: true, name: (game as Game).i18n.localize("MOU.action_clipboard"), icon: "fa-solid fa-clipboard" })
@@ -339,6 +344,9 @@ export default class MouCollectionLocal implements MouCollection {
           case MouCollectionAssetTypeEnum.Image: 
             MouFoundryUtils.createJournalImageOrVideo(asset.url, folderPath);
             break
+          case MouCollectionAssetTypeEnum.PDF:
+            MouFoundryUtils.createJournalPDF(asset.url, folderPath); 
+              break
         }
         break
       
@@ -415,7 +423,8 @@ export default class MouCollectionLocal implements MouCollection {
     return [
       MouCollectionAssetTypeEnum.Audio, 
       MouCollectionAssetTypeEnum.Image, 
-      MouCollectionAssetTypeEnum.Map].includes(type)
+      MouCollectionAssetTypeEnum.Map,
+      MouCollectionAssetTypeEnum.PDF].includes(type)
   }
 
   async selectAsset(asset: MouCollectionAsset): Promise<string | null> {

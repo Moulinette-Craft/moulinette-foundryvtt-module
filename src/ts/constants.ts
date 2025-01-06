@@ -2,7 +2,7 @@ import { id } from "../module.json";
 
 
 export const MODULE_ID = id;
-export const MOU_SERVER_URL = "https://assets-dev.moulinette.cloud"
+export const MOU_SERVER_URL = "https://assets.moulinette.cloud"
 //export const MOU_SERVER_URL = "http://127.0.0.1:5000"
 export const MOU_API = `${MOU_SERVER_URL}/api/v2`
 export const MOU_STORAGE = "https://mttestorage.blob.core.windows.net/"
@@ -43,6 +43,7 @@ export default class MouConfig {
   static MEDIA_IMAGES = ["apng", "avif", "bmp", "gif", "jpeg", "jpg", "png", "svg", "tiff", "webp"]
   static MEDIA_VIDEOS = ["m4v", "mp4", "ogv", "webm"]
   static MEDIA_AUDIO = ["aac", "flac", "m4a", "mid", "mp3", "ogg", "opus", "wav", "webm"]
+  static MEDIA_OTHER = ["pdf"]
 
   // starting from which dimension, image is considered a map
   static MEDIA_MAP_THRESHOLD = 1000
