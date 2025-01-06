@@ -1,1 +1,5 @@
 yarn.lock linguist-generated
+.gitattributes  export-ignore
+.gitignore      export-ignore
+docs            export-ignore
+src             export-ignore
