@@ -1,7 +1,7 @@
 # Moulinette TTRPG Media Search (FoundryVTT module)
 
 [![GitHub tags (latest by date)](https://img.shields.io/github/v/tag/SvenWerlen/moulinette-foundryvtt-module)](https://github.com/SvenWerlen/moulinette-foundryvtt-module/releases)
-[![License](https://img.shields.io/github/license/SvenWerlen/moulinette-foundryvtt-module)](https://github.com/SvenWerlen/moulinette-foundryvtt-module/LICENSE.txt)
+[![License](https://img.shields.io/github/license/SvenWerlen/moulinette-foundryvtt-module)](https://github.com/SvenWerlen/moulinette-foundryvtt-module/blob/main/LICENSE.txt)
 [![GitHub Download](https://img.shields.io/badge/foundryvtt-Download-important)](#install)
 ![Tested on fvtt-vtt.com](https://img.shields.io/badge/Forge-supported-success)
 [![Support me on Patreon](https://img.shields.io/badge/patreon-Support%20me-informational)](https://www.patreon.com/moulinette)
