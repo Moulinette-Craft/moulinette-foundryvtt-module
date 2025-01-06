@@ -3,7 +3,7 @@
   "id": "moulinette",
   "title": "Moulinette Media Search",
   "description": "A powerful and versatile search engine. Easily find the content you own. Browse and search for content on the internet (Moulinette Cloud, Game Icons, etc.)",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "packs": [],
   "relationships": {},
   "scripts": [],
@@ -22,6 +22,6 @@
   "styles": ["style.css"],
   "esmodules": ["scripts/module.js"],
   "url": "https://www.moulinette.cloud",
-  "manifest": "https://moulinette-demo.nyc3.digitaloceanspaces.com/moulinette-module.json",
+  "manifest": "https://raw.githubusercontent.com/SvenWerlen/moulinette-foundryvtt-module/refs/heads/main/src/module.json",
   "download": "https://moulinette-demo.nyc3.digitaloceanspaces.com/moulinette.zip"
 }
