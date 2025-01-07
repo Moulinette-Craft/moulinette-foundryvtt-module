@@ -10,6 +10,19 @@ This module is part of the [Moulinette suite](https://www.moulinette.cloud) of t
 
 The module is designed for [FoundryVTT](https://foundryvtt.com/). Quickly and easily search through your own content (indexed by Moulinette) or the content from creators you support.
 
+#### Features
+* Browse, search, download, and import directly from [Moulinette Cloud](https://assets.moulinette.cloud/marketplace/creators). (1)
+* Browse, search and import from your world's **compendiums**.
+* Browse, search, and import from your **locally stored assets** with ease.
+* Search, download and use icons from [Game-icons.net](https://gameicons.net)
+* Search, download and use sound effects from [BBC Sounds Effects](https://sound-effects.bbcrewind.co.uk/) for non-commercial use (see [Licensing](https://sound-effects.bbcrewind.co.uk/licensing)).
+* Search and select icons from the [Font Awesome](https://fontawesome.com/) collection, pre-installed in FoundryVTT.
+
+*(1) : Accessing content from creators requires supporting both them and Moulinette. The usage rights for the content are specific to each creator.*
+
+<img src="docs/img/browser-overview.jpg" height="240" title="Search and import a map from Moulinette Cloud" /> <img src="docs/img/browser-overview2.jpg" height="240" title="Drag & drop asset from Moulinette Cloud on your scene"/> 
+
+
 ## <a name=""/>Screenshots
 
 <img src="docs/img/browser-maps.jpg" width="200" /> <img src="docs/img/browser-audio.jpg" width="200" /> <img src="docs/img/browser-image.jpg" width="200" />
