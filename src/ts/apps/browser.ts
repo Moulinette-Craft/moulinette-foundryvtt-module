@@ -707,17 +707,27 @@ export default class MouBrowser extends MouApplication {
     this.render()
   }
 
-  override async close(options?: Application.CloseOptions): Promise<void> {
-    // in picker mode, we don't store the position nor the filters
-    //if(this.pickerType) return super.close(options);
-    await this.storePosition()
-    super.close(options);
+
+  /**
+   * Asynchronously stores the current filter settings.
+   * 
+   * This method retrieves the previous settings, updates them with the current
+   * filter preferences and filters, and then saves the updated settings.
+   * 
+   * @returns {Promise<void>} A promise that resolves when the settings have been successfully stored.
+   */
+  async _storeSettings() {
     const prevSettings = MouApplication.getSettings(SETTINGS_PREVS) as AnyDict
     prevSettings["filterPrefs"] = this.filters_prefs
     prevSettings["filters"] = this.filters
     await MouApplication.setSettings(SETTINGS_PREVS, prevSettings)
   }
 
+  override async close(options?: Application.CloseOptions): Promise<void> {
+    await this.storePosition()
+    super.close(options);
+    await this._storeSettings()
+  }
  
   /** User clicked on item asset */
   async _onSelectAsset(event: Event): Promise<void> {
@@ -742,6 +752,21 @@ export default class MouBrowser extends MouApplication {
       }
     }
     ui.notifications?.error((game as Game).i18n.localize("MOU.error_selecting_asset"))
+  }
+
+  /**
+   * Overrides the render method to disable the search bar and asset click events.
+   * This avoids the user from triggering more rendering while the current one is still processing.
+   */
+  override render(force?: boolean, options?: Application.RenderOptions<ApplicationOptions> | undefined): unknown {
+    if(this.html) {
+      this.html.find(".asset").off()
+      this.html.find("input").off()
+      this.html.find("select").off()
+      this.html.find(".search-bar input").prop("readonly", true);
+      this._storeSettings()
+    }
+    return super.render(force, options)
   }
 
 }

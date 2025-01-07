@@ -129,6 +129,10 @@ class MouCollectionCloudAsset implements MouCollectionAsset {
             })
           }
         }
+        if(!this.pack) {
+          console.error("Scene without pack", data)
+        }
+
         if(data.scene.hasWalls) this.icons.push({descr: (game as Game).i18n.localize("MOU.scene_has_walls"), icon: "fa-solid fa-block-brick"})
         if(data.scene.hasLights) this.icons.push({descr: (game as Game).i18n.localize("MOU.scene_has_lights"), icon: "fa-regular fa-lightbulb"})
         if(data.scene.hasSounds) this.icons.push({descr: (game as Game).i18n.localize("MOU.scene_has_sounds"), icon: "fa-solid fa-music"})
@@ -136,10 +140,10 @@ class MouCollectionCloudAsset implements MouCollectionAsset {
         if(data.scene.hasTiles) this.icons.push({descr: (game as Game).i18n.localize("MOU.scene_has_tiles"), icon: "fa-solid fa-cubes"})
         if(data.scene.hasDrawings) this.icons.push({descr: (game as Game).i18n.localize("MOU.scene_has_drawings"), icon: "fa-solid fa-pencil-alt"})
         if(data.scene.hasNotes) this.icons.push({descr: (game as Game).i18n.localize("MOU.scene_has_notes"), icon: "fa-solid fa-bookmark"})
-        if(this.pack.toUpperCase().endsWith("HD") || this.name.toUpperCase().endsWith("HD")) { 
+        if(this.pack && this.pack.toUpperCase().endsWith("HD") || this.name.toUpperCase().endsWith("HD")) { 
           this.iconTR = {descr: (game as Game).i18n.localize("MOU.scene_hd"), text: "HD"}
         }
-        if(this.pack.toUpperCase().endsWith("4K") || this.name.toUpperCase().endsWith("4K")) { 
+        if(this.pack && this.pack.toUpperCase().endsWith("4K") || this.name.toUpperCase().endsWith("4K")) { 
           this.iconTR = {descr: (game as Game).i18n.localize("MOU.scene_4k"), text: "4K"}
         }
         break

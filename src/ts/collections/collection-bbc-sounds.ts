@@ -33,13 +33,12 @@ class MouCollectionBBCAsset implements MouCollectionAsset {
   flags: AnyDict;
 
   constructor(asset: AnyDict) {
-    console.log(asset)
     this.id = asset.id
     this.url = `https://sound-effects-media.bbcrewind.co.uk/mp3/${asset.id}.mp3`
     this.previewUrl = this.url
     this.type = MouCollectionAssetTypeEnum.Audio
     this.format = "large"
-    this.creator = "BBC Sound Effects"
+    this.creator = `BBC Sound Effects (bbc.co.uk – © copyright ${new Date().getFullYear()} BBC)`
     this.creatorUrl = "https://sound-effects.bbcrewind.co.uk"
     this.pack = null
     this.pack_id = null
