@@ -20,7 +20,7 @@ The module is designed for [FoundryVTT](https://foundryvtt.com/). Quickly and ea
 
 *(1) : Accessing content from creators requires supporting both them and Moulinette. The usage rights for the content are specific to each creator.*
 
-<img src="docs/img/browser-overview.jpg" height="240" title="Search and import a map from Moulinette Cloud" /> <img src="docs/img/browser-overview2.jpg" height="240" title="Drag & drop asset from Moulinette Cloud on your scene"/> 
+<img src="docs/img/browser-overview.jpg" height="220" title="Search and import a map from Moulinette Cloud" /> <img src="docs/img/browser-overview2.jpg" height="220" title="Drag & drop asset from Moulinette Cloud on your scene"/> 
 
 
 ## <a name=""/>Screenshots
