@@ -2,14 +2,9 @@ import * as fsPromises from "fs/promises";
 import copy from "rollup-plugin-copy";
 import scss from "rollup-plugin-scss";
 import { defineConfig, normalizePath, Plugin } from "vite";
-import * as path from 'path'
-import * as url from 'url'
 
 const moduleVersion = process.env.MODULE_VERSION;
 const githubProject = process.env.GH_PROJECT;
-const githubTag = process.env.GH_TAG;
-
-console.log(process.env.VSCODE_INJECTION);
 
 export default defineConfig({
   build: {
@@ -61,15 +56,11 @@ function updateModuleManifestPlugin(): Plugin {
         unknown
       >;
       manifestJson["version"] = version;
-      if (githubProject) {
-        const baseUrl = `https://github.com/${githubProject}/releases`;
-        manifestJson["manifest"] = `${baseUrl}/latest/download/module.json`;
-        if (githubTag) {
-          manifestJson[
-            "download"
-          ] = `${baseUrl}/download/${githubTag}/module.zip`;
-        }
-      }
+      const baseUrl = `https://github.com/${githubProject}/releases`;
+      manifestJson["manifest"] = `${baseUrl}/latest/download/module.json`;
+      manifestJson[
+        "download"
+      ] = `${baseUrl}/download/v-${version}/${manifestJson["id"]}.zip`;
       await fsPromises.writeFile(
         "dist/module.json",
         JSON.stringify(manifestJson, null, 4)
