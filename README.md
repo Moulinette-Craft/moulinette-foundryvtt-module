@@ -6,7 +6,7 @@
 ![Tested on fvtt-vtt.com](https://img.shields.io/badge/Forge-supported-success)
 [![Support me on Patreon](https://img.shields.io/badge/patreon-Support%20me-informational)](https://www.patreon.com/moulinette)
 
-This module is part of the [Moulinette suite](https://www.moulinette.cloud) of tools designed to simplify the search and use of content for game masters, helping them prepare their game sessions and even manage their games in real time.
+This module is part of the [Moulinette suite](https://www.moulinette.cloud) of tools designed to simplify the search and use of [TTRPG](https://en.wikipedia.org/wiki/Tabletop_role-playing_game) content for game masters, helping them prepare their game sessions and even manage their games in real time.
 
 The module is designed for [FoundryVTT](https://foundryvtt.com/). Quickly and easily search through your own content (indexed by Moulinette) or the content from creators you support.
 
@@ -42,7 +42,7 @@ The module is designed for [FoundryVTT](https://foundryvtt.com/). Quickly and ea
 1. Launch Foundry VTT and navigate to the "Add-on Modules" tab in the Setup menu.
 2. Click the "Install Module" button and enter the following URL as "Manifest URL":
 
-`https://raw.githubusercontent.com/SvenWerlen/moulinette-foundryvtt-module/refs/heads/main/src/module.json`
+`https://github.com/SvenWerlen/moulinette-foundryvtt-module/releases/latest/download/module.json`
 
 3. Click Install and wait for the process to complete.
 
