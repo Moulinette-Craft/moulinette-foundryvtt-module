@@ -99,21 +99,20 @@ export default class MouBrowser extends MouApplication {
     }
     await this.collection.initialize()
 
-    // picker mode
+    
+    const results = await this.collection.searchAssets(this.filters, 0)
+    
     this.page = 0
-    this.currentAssets = []
-    const types = await this.collection.getTypes(this.filters)
+    this.currentAssets = results.assets
+
+    const types = results.types
     const typesObj = types
       .filter( type => !this.pickerType ||  this.pickerType == Number(type.id))
       .map( type => ({ id: Number(type.id), name: MouCollectionUtils.getTranslatedType(Number(type.id)), assetsCount: type.assetsCount}))
     typesObj.sort((a, b) => a.name.localeCompare(b.name))
     
-    // change type if selected type not available for current collection
-    if(!types.find(t => t.id == this.filters.type)) {
-      this.filters.type = types.length > 0 ? types[0].id : MouCollectionAssetTypeEnum.Image
-    }
-    const creators = this.filters.type ? await this.collection.getCreators(this.filters) : null
-    let packs = this.filters.type ? await this.collection.getPacks(this.filters) : null
+    const creators = results.creators
+    let packs = foundry.utils.duplicate(results.packs)
     const folders = await this.collection.getFolders(this.filters);
 
     // improve folders by removing common path
@@ -236,15 +235,22 @@ export default class MouBrowser extends MouApplication {
     
     let assets: MouCollectionAsset[] = [];
     try {
-      assets = await this.collection.getAssets(this.filters, this.page);
+      
       if(this.page == 0) {
+        assets = this.currentAssets
+        this.currentAssets = []
         this.currentAssetsCount = await this.collection.getAssetsCount(this.filters)
+      } else {
+        const results = await this.collection.searchAssets(this.filters, this.page);
+        if(results) {
+          assets = results.assets
+        }
       }
     } catch (error) {
       this.logError("Error loading assets:", error)
       ui.notifications?.error((game as Game).i18n.localize("MOU.error_loading_assets"));
     }
-
+    
     // handle collection errors (like server connection errors)
     if(this.collection.getCollectionError()) {
       this.html?.find(".content").append(await renderTemplate(`modules/${MODULE_ID}/templates/browser-error.hbs`, { error: this.collection.getCollectionError() }))

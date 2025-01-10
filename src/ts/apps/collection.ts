@@ -59,7 +59,15 @@ export interface MouCollectionCreator {
 export interface MouCollectionPack {
   id: string
   name: string
+  creator: string
   assetsCount: number
+}
+
+export interface MouCollectionSearchResults {
+  types: MouCollectionAssetType[],
+  creators: MouCollectionCreator[],
+  packs: MouCollectionPack[],
+  assets: MouCollectionAsset[]
 }
 
 export interface MouCollectionFilters {
@@ -121,6 +129,9 @@ export interface MouCollection {
 
   /** Returns random assets from the collection based on filters */
   getAssets(filters: MouCollectionFilters, page: number): Promise<MouCollectionAsset[]>
+
+  /** Returns the results including facets */
+  searchAssets(filters: MouCollectionFilters, page: number): Promise<MouCollectionSearchResults>
 
   /** Returns the list of available action  */
   getActions(asset: MouCollectionAsset): MouCollectionAction[]

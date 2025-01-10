@@ -3,7 +3,7 @@ import MouCloudClient from "../clients/moulinette-cloud";
 import MouFileManager from "../utils/file-manager";
 import MouMediaUtils from "../utils/media-utils";
 
-import { MouCollection, MouCollectionAction, MouCollectionActionHint, MouCollectionAsset, MouCollectionAssetMeta, MouCollectionAssetType, MouCollectionAssetTypeEnum, MouCollectionCreator, MouCollectionDragData, MouCollectionFilters, MouCollectionPack } from "../apps/collection";
+import { MouCollection, MouCollectionAction, MouCollectionActionHint, MouCollectionAsset, MouCollectionAssetMeta, MouCollectionAssetType, MouCollectionAssetTypeEnum, MouCollectionCreator, MouCollectionDragData, MouCollectionFilters, MouCollectionPack, MouCollectionSearchResults } from "../apps/collection";
 import { MOU_STORAGE, MOU_STORAGE_PUB, SETTINGS_COLLECTION_CLOUD, SETTINGS_SESSION_ID } from "../constants";
 import { AnyDict } from "../types";
 import MouFoundryUtils from "../utils/foundry-utils";
@@ -189,6 +189,15 @@ class MouCollectionCloudAsset implements MouCollectionAsset {
   }
 }
 
+interface MouCollectionCloudCache {
+  currentSearchTerms?: string,
+  curScope?: CloudMode,
+  curType?: number,
+  curTypes?: MouCollectionAssetType[],
+  curCreators?: MouCollectionCreator[],
+  curPacks?: MouCollectionPack[],
+}
+
 export default class MouCollectionCloud implements MouCollection {
 
   APP_NAME = "MouCollectionCloud"
@@ -200,10 +209,13 @@ export default class MouCollectionCloud implements MouCollection {
   private mode: CloudMode
   private error: number
 
+  private cache: MouCollectionCloudCache
+
   constructor() {
     this.mode = CloudMode.ALL
     this.refreshSettings();
     this.error = 0
+    this.cache = {}
   }
   
   async initialize(): Promise<void> {
@@ -318,6 +330,7 @@ export default class MouCollectionCloud implements MouCollection {
     filtersDuplicate["pack"] = filtersDuplicate["pack"].length == 0 ? null : filtersDuplicate["pack"]
     
     try {
+      this.error = 0;
       const assets = await MouCloudClient.apiPOST(`/assets`, filtersDuplicate)
       const results = []
       for(const data of assets) {
@@ -328,6 +341,106 @@ export default class MouCollectionCloud implements MouCollection {
       this.error = MouCollectionCloud.ERROR_SERVER_CNX
       MouApplication.logError(this.APP_NAME, `Not able to retrieve assets`, error)
       return []
+    }
+  }
+
+  /**
+   * Search assets based on filters
+   * 
+   * Caching optimizing the results
+   * * If the search terms or the scope changed   => type + packs facets (ie full search)
+   * * If the type changed                        => pack facet only
+   * * If only the page changed                   => no facet at all (ie only results)
+   */
+  async searchAssets(filters: MouCollectionFilters, page: number): Promise<MouCollectionSearchResults> {
+    const filtersDuplicate = foundry.utils.duplicate(filters) as AnyDict;
+    filtersDuplicate["page"] = page
+    filtersDuplicate["scope"] = this.getScope()
+    filtersDuplicate["pack"] = filtersDuplicate["pack"].length == 0 ? null : filtersDuplicate["pack"]
+    filtersDuplicate["facets"] = { types: false, packs: false }
+
+    // enable/disable facets based on cache
+    if((this.cache.curScope == undefined || this.cache.curScope != this.mode) || (!this.cache.currentSearchTerms == undefined || this.cache.currentSearchTerms != filters.searchTerms)) {
+      filtersDuplicate["facets"]["types"] = true
+      filtersDuplicate["facets"]["packs"] = true
+    }
+    else if(!this.cache.curType == undefined || this.cache.curType != filters.type) {
+      filtersDuplicate["facets"]["packs"] = true
+    }
+    this.cache.currentSearchTerms = filters.searchTerms
+    this.cache.curScope = this.mode
+    this.cache.curType = filters.type
+
+    try {
+      this.error = 0;
+      const results = await MouCloudClient.apiPOST(`/search`, filtersDuplicate)
+      
+      // process types facets
+      if("types" in results) {
+        results["types"] = results["types"].map( (entry:AnyDict) => { return {
+            id: Number(entry._id),
+            assetsCount: entry.total_assets
+          } as MouCollectionAssetType
+        })
+        this.cache.curTypes = results["types"]
+      } else {
+        results["types"] =  foundry.utils.duplicate(this.cache.curTypes)
+      }
+      // process packs facets
+      if("packs" in results) {
+        const packs: { [key: string]: MouCollectionPack } = {};
+        // merge packs with same name
+        for(const p of results["packs"]) {
+          if(p.name in packs) {
+            const existing = packs[p.name]
+            existing.assetsCount += p.assets
+            existing.id += `;${p.pack_ref}`
+          } else {
+            packs[p.name] = {
+              id: `${p.pack_ref}`,
+              name: p.name,
+              creator: p.creator,
+              assetsCount: p.total_assets
+            }
+          }
+        }
+        results["packs"] = Object.values(packs)
+        this.cache.curPacks = results["packs"]
+
+        // process creators
+        results["creators"] = results["creators"].map( (entry:AnyDict) => { return {
+            id: entry.name,
+            name: entry.name,
+            assetsCount: entry.total_assets
+          } as MouCollectionCreator
+        })
+        this.cache.curCreators = results["creators"]
+
+      } else {
+        results["creators"] = foundry.utils.duplicate(this.cache.curCreators)
+        results["packs"] = foundry.utils.duplicate(this.cache.curPacks)
+      }
+      
+      // prepare filter packs for selected creator
+      if(filters.creator && filters.creator.length > 0) {
+        results["packs"] = results["packs"].filter((p : MouCollectionPack) => p.creator == filters.creator)
+      } else {
+        results["packs"] = []
+      }
+      
+      // prepare results
+      const assets : MouCollectionCloudAsset[] = []
+      for(const asset of results["assets"]) {
+        assets.push(new MouCollectionCloudAsset(asset))
+      }
+      results["assets"] = assets
+
+      return results
+
+    } catch(error: any) {
+      this.error = MouCollectionCloud.ERROR_SERVER_CNX
+      MouApplication.logError(this.APP_NAME, `Not able to search assets`, error)
+      return {} as MouCollectionSearchResults
     }
   }
 
