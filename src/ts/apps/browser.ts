@@ -3,7 +3,7 @@ import { AnyDict } from "../types";
 import MouFileManager from "../utils/file-manager";
 import MouMediaUtils from "../utils/media-utils";
 import MouApplication from "./application";
-import { MouCollection, MouCollectionAsset, MouCollectionAssetTypeEnum, MouCollectionDragData, MouCollectionFilters, MouCollectionUtils } from "./collection";
+import { MouCollection, MouCollectionAsset, MouCollectionAssetTypeEnum, MouCollectionDragData, MouCollectionFilters, MouCollectionSearchResults, MouCollectionUtils } from "./collection";
 
 
 export default class MouBrowser extends MouApplication {
@@ -100,14 +100,18 @@ export default class MouBrowser extends MouApplication {
 
     // reset type if not supported by collection
     if(this.filters.type && !this.collection.supportsType(this.filters.type)) {
-      console.log("NOT SUPPORTED!")
       this.filters.type = this.collection.getSupportedTypes()[0]
       this.filters.creator = ""
       this.filters.pack = ""
     }
-    console.log("FILTERS", foundry.utils.duplicate(this.filters))
     
-    const results = await this.collection.searchAssets(this.filters, 0)
+    let results : MouCollectionSearchResults = { assets: [], types: [], creators: [], packs: [] }
+    try {
+      results = await this.collection.searchAssets(this.filters, 0)
+    } catch(error: any) {
+      this.logError("Unexpected exception while searching assets", error)
+      ui.notifications?.error((game as Game).i18n.localize("MOU.error_loading_assets"))
+    }
     
     this.page = 0
     this.currentAssets = results.assets
@@ -195,11 +199,15 @@ export default class MouBrowser extends MouApplication {
   
     search.on('keypress', async (event) => {
       if(event.key === 'Enter') {
-      this.filters.searchTerms = search.val() as string;
-      await this.render();
+        this.filters.searchTerms = search.val() as string;
+        await this.render();
       }
     });
     search.on('mousedown', this._onClearSearchTerms.bind(this));
+    html.find(".search-bar button").on('click', async () => {
+      this.filters.searchTerms = search.val() as string;
+      await this.render();
+    });
 
     const focus = this.filters_prefs!.focus.split("#")
     switch(focus[0]) {

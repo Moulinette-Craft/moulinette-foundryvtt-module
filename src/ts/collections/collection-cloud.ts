@@ -455,8 +455,9 @@ export default class MouCollectionCloud implements MouCollection {
 
     } catch(error: any) {
       this.error = MouCollectionCloud.ERROR_SERVER_CNX
-      MouApplication.logError(this.APP_NAME, `Not able to search assets`, error)
-      return {} as MouCollectionSearchResults
+      this.cache = {}
+      MouApplication.logError(this.APP_NAME, `Failed to search on Moulinette Cloud`, error)
+      return { types: [], creators: [], packs: [], assets: [] }
     }
   }
 

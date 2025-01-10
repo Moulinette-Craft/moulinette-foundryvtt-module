@@ -14,12 +14,24 @@
   .search-bar {
     padding: var(--mou-browser-padding-parts);
     height: var(--mou-browser-header-height);
+    display: flex;
+    align-items: center;
 
     input {
       width: 100%;
       padding: 8px;
       font-size: 16px;
       box-sizing: border-box;
+      flex-grow: 1;
+      margin-right: 5px;
+    }
+
+    button {
+      width: revert;
+      height: 28px;
+      white-space: nowrap;
+
+      i { margin: 0px; }
     }
   }
 

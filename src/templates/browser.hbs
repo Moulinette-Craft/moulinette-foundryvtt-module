@@ -1,6 +1,7 @@
 <div class="browser {{#if pickerMode}}pickermode{{/if}}">
-  <header class="search-bar">
-    <input type="text" placeholder="{{localize "MOU.search"}}" aria-label="Search" value="{{filters.values.searchTerms}}">
+  <header class="search-bar form-group">
+    <input type="text" placeholder="{{localize "MOU.search_placeholder"}}" aria-label="Search" value="{{filters.values.searchTerms}}">
+    <button class="search"><i class="fa-regular fa-magnifying-glass"></i> {{localize "MOU.search"}}</button>
   </header>
   <div class="container">
     <div class="filters-toggle {{#unless filters.prefs.visible}}collapsed{{/unless}}"><i class="fa-solid fa-angles-{{mouIf filters.prefs.visible "left" "right"}}"></i></div>
@@ -43,7 +44,7 @@
       
       {{#if filters.showPacksFilter}}
       <h2 data-id="packs">{{localize "MOU.packs"}} <i class="fa-regular fa-square-{{mouIf filters.prefs.opensections.packs "minus" "plus"}}"></i></h2>
-      <div data-id="packs" class="packs {{#unless filters.prefs.opensections.packs}}collapsed{{/unless}}">
+      <div data-id="packs" class="packs {{#unless filters.prefs.opensections.packs}}collapsed{{/unless}} form-group">
         <div>
           {{#if filters.creators}}
           <select name="creators" id="creator-select">
