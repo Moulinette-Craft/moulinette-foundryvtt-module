@@ -1,5 +1,5 @@
 import MouBrowser from "../apps/browser";
-import { MouCollection, MouCollectionAction, MouCollectionActionHint, MouCollectionAsset, MouCollectionAssetMeta, MouCollectionAssetType, MouCollectionAssetTypeEnum, MouCollectionCreator, MouCollectionDragData, MouCollectionFilters, MouCollectionPack } from "../apps/collection";
+import { MouCollection, MouCollectionAction, MouCollectionActionHint, MouCollectionAsset, MouCollectionAssetMeta, MouCollectionAssetType, MouCollectionAssetTypeEnum, MouCollectionCreator, MouCollectionDragData, MouCollectionFilters, MouCollectionPack, MouCollectionSearchResults } from "../apps/collection";
 import { MODULE_ID } from "../constants";
 import { AnyDict } from "../types";
 import MouMediaUtils from "../utils/media-utils";
@@ -72,8 +72,12 @@ export default class MouCollectionFontAwesome implements MouCollection {
     this.iconList = await response.json();
   }
   
+  getSupportedTypes(): MouCollectionAssetTypeEnum[] {
+    return [MouCollectionAssetTypeEnum.Icon];
+  }
+
   /**
-   * Game Icons are exclusively images.
+   * Font Awesome supports only Icons
    */
   async getTypes(): Promise<MouCollectionAssetType[]> {
     return [{ id: MouCollectionAssetTypeEnum.Icon, assetsCount: await this.getTotalAssetsCount() }]
@@ -137,6 +141,15 @@ export default class MouCollectionFontAwesome implements MouCollection {
       }
     }
     return total
+  }
+
+  async searchAssets(filters: MouCollectionFilters, page: number): Promise<MouCollectionSearchResults> {
+    return {
+      types: await this.getTypes(),
+      creators: await this.getCreators(),
+      packs: await this.getPacks(filters),
+      assets: await this.getAssets(filters, page)
+    }
   }
 
   async getAssets(filters: MouCollectionFilters, page: number): Promise<MouCollectionAsset[]> {

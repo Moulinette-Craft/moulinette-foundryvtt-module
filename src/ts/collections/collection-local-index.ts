@@ -1,5 +1,5 @@
 import MouBrowser from "../apps/browser";
-import { MouCollection, MouCollectionAction, MouCollectionActionHint, MouCollectionAsset, MouCollectionAssetMeta, MouCollectionAssetType, MouCollectionAssetTypeEnum, MouCollectionCreator, MouCollectionDragData, MouCollectionFilters, MouCollectionPack } from "../apps/collection";
+import { MouCollection, MouCollectionAction, MouCollectionActionHint, MouCollectionAsset, MouCollectionAssetMeta, MouCollectionAssetType, MouCollectionAssetTypeEnum, MouCollectionCreator, MouCollectionDragData, MouCollectionFilters, MouCollectionPack, MouCollectionSearchResults } from "../apps/collection";
 import MouPreview from "../apps/preview";
 import MouLocalClient from "../clients/moulinette-local";
 import MouConfig from "../constants";
@@ -146,6 +146,14 @@ export default class MouCollectionLocal implements MouCollection {
     return (game as Game).i18n.localize("MOU.collection_type_local");
   }
 
+  getSupportedTypes(): MouCollectionAssetTypeEnum[] {
+    return [
+      MouCollectionAssetTypeEnum.Image, 
+      MouCollectionAssetTypeEnum.Audio, 
+      MouCollectionAssetTypeEnum.Map
+    ];
+  }
+
   /**
    * Types are generated based on file extensions
    */
@@ -160,9 +168,10 @@ export default class MouCollectionLocal implements MouCollection {
       maps += pack.assets.filter((a: MouCollectionLocalAsset) => a.type == MouCollectionAssetTypeEnum.Map).length
       audio += pack.assets.filter((a: MouCollectionLocalAsset) => a.type == MouCollectionAssetTypeEnum.Audio).length
     }
-    results.push({ id: MouCollectionAssetTypeEnum.Image, assetsCount: images })
-    results.push({ id: MouCollectionAssetTypeEnum.Map, assetsCount: maps })
-    results.push({ id: MouCollectionAssetTypeEnum.Audio, assetsCount: audio })
+    if(images > 0) results.push({ id: MouCollectionAssetTypeEnum.Image, assetsCount: images })
+    if(maps > 0)   results.push({ id: MouCollectionAssetTypeEnum.Map, assetsCount: maps })
+    if(audio > 0)  results.push({ id: MouCollectionAssetTypeEnum.Audio, assetsCount: audio })
+
     return results
   }
 
@@ -244,6 +253,15 @@ export default class MouCollectionLocal implements MouCollection {
     const fromIdx = page * MouBrowser.PAGE_SIZE
     if(fromIdx >= results.length) return []
     return results.slice(fromIdx, fromIdx + MouBrowser.PAGE_SIZE)
+  }
+
+  async searchAssets(filters: MouCollectionFilters, page: number): Promise<MouCollectionSearchResults> {
+    return {
+      types: await this.getTypes(),
+      creators: await this.getCreators(),
+      packs: await this.getPacks(filters),
+      assets: await this.getAssets(filters, page)
+    }
   }
 
   getActions(asset: MouCollectionAsset): MouCollectionAction[] {

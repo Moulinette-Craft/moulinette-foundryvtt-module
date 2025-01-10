@@ -1,6 +1,6 @@
 import MouApplication from "../apps/application";
 import MouBrowser from "../apps/browser";
-import { MouCollection, MouCollectionAction, MouCollectionActionHint, MouCollectionAsset, MouCollectionAssetMeta, MouCollectionAssetType, MouCollectionAssetTypeEnum, MouCollectionCreator, MouCollectionDragData, MouCollectionFilters, MouCollectionPack } from "../apps/collection";
+import { MouCollection, MouCollectionAction, MouCollectionActionHint, MouCollectionAsset, MouCollectionAssetMeta, MouCollectionAssetType, MouCollectionAssetTypeEnum, MouCollectionCreator, MouCollectionDragData, MouCollectionFilters, MouCollectionPack, MouCollectionSearchResults } from "../apps/collection";
 import MouLocalClient from "../clients/moulinette-local";
 import { AnyDict } from "../types";
 import MouFoundryUtils from "../utils/foundry-utils";
@@ -101,6 +101,19 @@ export default class MouCollectionCompendiums implements MouCollection {
     return (game as Game).i18n.localize("MOU.collection_type_compendiums");
   }
 
+  getSupportedTypes(): MouCollectionAssetTypeEnum[] {
+    return [
+      MouCollectionAssetTypeEnum.Actor, 
+      MouCollectionAssetTypeEnum.Adventure, 
+      MouCollectionAssetTypeEnum.Item, 
+      MouCollectionAssetTypeEnum.JournalEntry, 
+      MouCollectionAssetTypeEnum.Macro, 
+      MouCollectionAssetTypeEnum.Playlist, 
+      MouCollectionAssetTypeEnum.RollTable,
+      MouCollectionAssetTypeEnum.Scene, 
+    ];
+  }
+
   async getTypes(): Promise<MouCollectionAssetType[]> {
     const types = {} as AnyDict
     //console.log(this.compendiums.packs)
@@ -181,6 +194,15 @@ export default class MouCollectionCompendiums implements MouCollection {
    */
   async getAssetsCount(): Promise<number> {
     return this.filteredAssets ? this.filteredAssets.length : 0
+  }
+
+  async searchAssets(filters: MouCollectionFilters, page: number): Promise<MouCollectionSearchResults> {
+    return {
+      types: await this.getTypes(),
+      creators: await this.getCreators(filters),
+      packs: await this.getPacks(filters),
+      assets: await this.getAssets(filters, page)
+    }
   }
 
   /**

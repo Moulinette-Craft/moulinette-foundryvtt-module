@@ -246,6 +246,22 @@ export default class MouCollectionCloud implements MouCollection {
     }
   }
 
+  getSupportedTypes(): MouCollectionAssetTypeEnum[] {
+    return [
+      MouCollectionAssetTypeEnum.Actor, 
+      MouCollectionAssetTypeEnum.Adventure, 
+      MouCollectionAssetTypeEnum.Audio, 
+      MouCollectionAssetTypeEnum.Image, 
+      MouCollectionAssetTypeEnum.Item, 
+      MouCollectionAssetTypeEnum.JournalEntry, 
+      MouCollectionAssetTypeEnum.Macro, 
+      MouCollectionAssetTypeEnum.Map, 
+      MouCollectionAssetTypeEnum.PDF, 
+      MouCollectionAssetTypeEnum.Playlist, 
+      MouCollectionAssetTypeEnum.RollTable
+    ];
+  }
+
   async getTypes(filters: MouCollectionFilters): Promise<MouCollectionAssetType[]> {
     const filtersDuplicate = JSON.parse(JSON.stringify(filters));
     filtersDuplicate["scope"] = this.getScope()

@@ -1,6 +1,6 @@
 import MouApplication from "../apps/application";
 import MouBrowser from "../apps/browser";
-import { MouCollection, MouCollectionAction, MouCollectionActionHint, MouCollectionAsset, MouCollectionAssetMeta, MouCollectionAssetType, MouCollectionAssetTypeEnum, MouCollectionCreator, MouCollectionDragData, MouCollectionFilters, MouCollectionPack } from "../apps/collection";
+import { MouCollection, MouCollectionAction, MouCollectionActionHint, MouCollectionAsset, MouCollectionAssetMeta, MouCollectionAssetType, MouCollectionAssetTypeEnum, MouCollectionCreator, MouCollectionDragData, MouCollectionFilters, MouCollectionPack, MouCollectionSearchResults } from "../apps/collection";
 import { MouGameIcon, MouGameIconsClient } from "../clients/gameicons";
 import { AnyDict } from "../types";
 import MouFoundryUtils from "../utils/foundry-utils";
@@ -70,6 +70,10 @@ export default class MouCollectionGameIcons implements MouCollection {
     this.error = 0
   }
   
+  getSupportedTypes(): MouCollectionAssetTypeEnum[] {
+    return [MouCollectionAssetTypeEnum.Image];
+  }
+
   /**
    * Game Icons are exclusively images.
    */
@@ -98,6 +102,15 @@ export default class MouCollectionGameIcons implements MouCollection {
 
   async getAssetsCount(): Promise<number> {
     return this.currentHits
+  }
+
+  async searchAssets(filters: MouCollectionFilters, page: number): Promise<MouCollectionSearchResults> {
+    return {
+      types: await this.getTypes(),
+      creators: await this.getCreators(),
+      packs: await this.getPacks(),
+      assets: await this.getAssets(filters, page)
+    }
   }
 
   async getAssets(filters: MouCollectionFilters, page: number): Promise<MouCollectionAsset[]> {

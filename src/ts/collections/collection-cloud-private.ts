@@ -3,7 +3,7 @@ import MouCloudClient from "../clients/moulinette-cloud";
 import MouFileManager from "../utils/file-manager";
 import MouMediaUtils from "../utils/media-utils";
 
-import { MouCollection, MouCollectionAction, MouCollectionActionHint, MouCollectionAsset, MouCollectionAssetMeta, MouCollectionAssetType, MouCollectionAssetTypeEnum, MouCollectionCreator, MouCollectionFilters, MouCollectionPack } from "../apps/collection";
+import { MouCollection, MouCollectionAction, MouCollectionActionHint, MouCollectionAsset, MouCollectionAssetMeta, MouCollectionAssetType, MouCollectionAssetTypeEnum, MouCollectionCreator, MouCollectionFilters, MouCollectionPack, MouCollectionSearchResults } from "../apps/collection";
 import MouConfig, { SETTINGS_SESSION_ID } from "../constants";
 import { AnyDict } from "../types";
 import MouFoundryUtils from "../utils/foundry-utils";
@@ -148,12 +148,16 @@ export default class MouCollectionCloudPrivate implements MouCollection {
       if(filters.creator && filters.creator != "" && asset.creator != filters.creator) return false
       if(filters.pack && filters.pack != "" && asset.pack_id != filters.pack) return false
       if(filters.searchTerms && filters.searchTerms.length > 0) {
-        for(const term of filters.searchTerms) {
+        for(const term of filters.searchTerms.split(" ")) {
           if(!asset.name.toLowerCase().includes(term.toLowerCase())) return false
         }
       }
       return true
     })
+  }
+
+  getSupportedTypes(): MouCollectionAssetTypeEnum[] {
+    return [MouCollectionAssetTypeEnum.Image, MouCollectionAssetTypeEnum.Audio, MouCollectionAssetTypeEnum.Scene]
   }
 
   async getTypes(filters: MouCollectionFilters): Promise<MouCollectionAssetType[]> {
@@ -189,6 +193,15 @@ export default class MouCollectionCloudPrivate implements MouCollection {
     return creators
   }
   
+  async searchAssets(filters: MouCollectionFilters, page: number): Promise<MouCollectionSearchResults> {
+    return {
+      types: await this.getTypes(filters),
+      creators: await this.getCreators(filters),
+      packs: await this.getPacks(filters),
+      assets: await this.getAssets(filters, page)
+    }
+  }
+
   async getPacks(filters: MouCollectionFilters): Promise<MouCollectionPack[]> {
     if(!filters.creator || filters.creator == "") return []
     const filterDuplicates = foundry.utils.duplicate(filters)

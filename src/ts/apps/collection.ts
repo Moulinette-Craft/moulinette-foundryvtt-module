@@ -59,7 +59,7 @@ export interface MouCollectionCreator {
 export interface MouCollectionPack {
   id: string
   name: string
-  creator: string
+  creator?: string
   assetsCount: number
 }
 
@@ -112,23 +112,14 @@ export interface MouCollection {
   /** Initializes the collection (retrieving data if required) */
   initialize(): Promise<void>
   
-  /** Returns the list of types */
-  getTypes(filters: MouCollectionFilters): Promise<MouCollectionAssetType[]>
-  
-  /** Returns the list of creators (for a specific type) or empty list (collection doesn't support creators) */
-  getCreators(filters: MouCollectionFilters): Promise<MouCollectionCreator[]>
-
-  /** Returns the list of packs (for a specific type and creator) or empty list (collection doesn't support packs) */
-  getPacks(filters: MouCollectionFilters): Promise<MouCollectionPack[]>
+  /** Returns the list of supported types */
+  getSupportedTypes(): MouCollectionAssetTypeEnum[]
 
   /** Returns the list of folders */
   getFolders(filters: MouCollectionFilters): Promise<string[]>
 
   /** Returns the total number of assets based on filters */
   getAssetsCount(filters: MouCollectionFilters): Promise<number>
-
-  /** Returns random assets from the collection based on filters */
-  getAssets(filters: MouCollectionFilters, page: number): Promise<MouCollectionAsset[]>
 
   /** Returns the results including facets */
   searchAssets(filters: MouCollectionFilters, page: number): Promise<MouCollectionSearchResults>

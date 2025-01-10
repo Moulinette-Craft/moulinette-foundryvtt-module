@@ -12,7 +12,6 @@ export default class MouBrowser extends MouApplication {
   override APP_NAME = MouBrowser.APP_NAME
 
   static PAGE_SIZE = 100
-  static DEBOUNCE_TIME = 500 // delay (in ms) before executing search
   
   private html?: JQuery<HTMLElement>;
   private ignoreScroll: boolean = false;
@@ -99,6 +98,14 @@ export default class MouBrowser extends MouApplication {
     }
     await this.collection.initialize()
 
+    // reset type if not supported by collection
+    if(this.filters.type && !this.collection.supportsType(this.filters.type)) {
+      console.log("NOT SUPPORTED!")
+      this.filters.type = this.collection.getSupportedTypes()[0]
+      this.filters.creator = ""
+      this.filters.pack = ""
+    }
+    console.log("FILTERS", foundry.utils.duplicate(this.filters))
     
     const results = await this.collection.searchAssets(this.filters, 0)
     
@@ -185,16 +192,13 @@ export default class MouBrowser extends MouApplication {
     
     // input triggers searches
     const search = html.find(".search-bar input")
-    let typingTimer: ReturnType<typeof setTimeout>;
-    search.on('input', () => {
-      clearTimeout(typingTimer);
-      typingTimer = setTimeout(() => {
-        this.filters.searchTerms = search.val() as string
-        this.filters_prefs!.focus = "search#" + search.prop("selectionStart")
-        this.render()
-      }, MouBrowser.DEBOUNCE_TIME);
+  
+    search.on('keypress', async (event) => {
+      if(event.key === 'Enter') {
+      this.filters.searchTerms = search.val() as string;
+      await this.render();
+      }
     });
-
     search.on('mousedown', this._onClearSearchTerms.bind(this));
 
     const focus = this.filters_prefs!.focus.split("#")

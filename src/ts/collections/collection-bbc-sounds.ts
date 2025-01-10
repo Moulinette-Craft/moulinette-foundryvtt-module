@@ -1,6 +1,6 @@
 import MouApplication from "../apps/application";
 import MouBrowser from "../apps/browser";
-import { MouCollection, MouCollectionAction, MouCollectionActionHint, MouCollectionAsset, MouCollectionAssetMeta, MouCollectionAssetType, MouCollectionAssetTypeEnum, MouCollectionCreator, MouCollectionDragData, MouCollectionFilters, MouCollectionPack } from "../apps/collection";
+import { MouCollection, MouCollectionAction, MouCollectionActionHint, MouCollectionAsset, MouCollectionAssetMeta, MouCollectionAssetType, MouCollectionAssetTypeEnum, MouCollectionCreator, MouCollectionDragData, MouCollectionFilters, MouCollectionPack, MouCollectionSearchResults } from "../apps/collection";
 import { MouBBCSoundsClient } from "../clients/bbc-sounds";
 import { AnyDict } from "../types";
 import MouFoundryUtils from "../utils/foundry-utils";
@@ -87,6 +87,10 @@ export default class MouCollectionBBCSounds implements MouCollection {
     // do nothing
   }
   
+  getSupportedTypes(): MouCollectionAssetTypeEnum[] {
+    return [MouCollectionAssetTypeEnum.Audio]
+  }
+
   /**
    * Game Icons are exclusively images.
    */
@@ -110,6 +114,15 @@ export default class MouCollectionBBCSounds implements MouCollection {
 
   async getAssetsCount(): Promise<number> {
     return this.currentHits
+  }
+
+  async searchAssets(filters: MouCollectionFilters, page: number): Promise<MouCollectionSearchResults> {
+    return {
+      types: await this.getTypes(),
+      creators: await this.getCreators(),
+      packs: await this.getPacks(),
+      assets: await this.getAssets(filters, page)
+    }
   }
 
   async getAssets(filters: MouCollectionFilters, page: number): Promise<MouCollectionAsset[]> {
