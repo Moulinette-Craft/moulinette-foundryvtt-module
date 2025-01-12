@@ -1,81 +1,14 @@
 <div class="browser {{#if pickerMode}}pickermode{{/if}}">
   <header class="search-bar form-group">
-    <input type="text" placeholder="{{localize "MOU.search_placeholder"}}" aria-label="Search" value="{{filters.values.searchTerms}}">
+    <div class="indicator"><i class="mou-icon mou-logo"></i></div>
+    <input type="text" placeholder="{{localize "MOU.search_placeholder"}}" aria-label="Search" value="{{searchTerms}}">
     <button class="search"><i class="fa-regular fa-magnifying-glass"></i> {{localize "MOU.search"}}</button>
   </header>
   <div class="container">
-    <div class="filters-toggle {{#unless filters.prefs.visible}}collapsed{{/unless}}"><i class="fa-solid fa-angles-{{mouIf filters.prefs.visible "left" "right"}}"></i></div>
-    <aside class="filters {{#unless filters.prefs.visible}}collapsed{{/unless}}">
-      <div class="clear"><a href>{{localize "MOU.clear_filters"}}</a></div>
-      <h2 data-id="collection">{{localize "MOU.collection"}} <i class="fa-regular fa-square-{{mouIf filters.prefs.opensections.collection "minus" "plus"}}"></i></h2>
-      <div id="filterCollections" data-id="collection" class="{{#unless filters.prefs.opensections.collection}}collapsed{{/unless}}">
-        <ul>
-          {{#each filters.collections as |c|}}
-          <li>
-            <input type="radio" name="collection" id="{{c.id}}" {{#if (eq ../filters.prefs.collection c.id)}}checked{{/if}}>
-            <label for="{{c.id}}">{{c.name}}</label>
-            {{#if c.configurable}}
-            <div class="action" data-col="{{c.id}}"><a href><i class="fa-solid fa-gears" title="{{localize "MOU.configure_collection"}}"></i></a></div>
-            {{/if}}
-          </li>
-          {{/each}}
-        </ul>
-      </div>
-      
-      <h2 data-id="asset_type">{{localize "MOU.asset_type"}} <i class="fa-regular fa-square-{{mouIf filters.prefs.opensections.asset_type "minus" "plus"}}"></i></h2>
-      <div id="filterTypes" class="options {{#unless filters.prefs.opensections.asset_type}}collapsed{{/unless}}" data-id="asset_type">
-        <ul>
-          {{#each filters.types1 as |t|}}
-          <li>
-            <input type="radio" name="asset_type" id="{{t.id}}" {{#if (eq ../filters.values.type t.id)}}checked{{/if}}>
-            <label for="{{t.id}}">{{t.name}} ({{prettyNumber t.assetsCount false}})</label>
-          </li>
-          {{/each}}
-        </ul>
-        <ul>
-          {{#each filters.types2 as |t|}}
-          <li>
-            <input type="radio" name="asset_type" id="{{t.id}}" {{#if (eq ../filters.values.type t.id)}}checked{{/if}}>
-            <label for="{{t.id}}">{{t.name}} ({{prettyNumber t.assetsCount false}})</label>
-          </li>
-          {{/each}}
-        </ul>
-      </div>
-      
-      {{#if filters.showPacksFilter}}
-      <h2 data-id="packs">{{localize "MOU.packs"}} <i class="fa-regular fa-square-{{mouIf filters.prefs.opensections.packs "minus" "plus"}}"></i></h2>
-      <div data-id="packs" class="packs {{#unless filters.prefs.opensections.packs}}collapsed{{/unless}} form-group">
-        <div>
-          {{#if filters.creators}}
-          <select name="creators" id="creator-select">
-            <option value="">{{localize "MOU.please_choose"}}</option>
-            {{#each filters.creators as |c|}}
-              <option value="{{c.id}}" {{#if (eq ../filters.values.creator c.id)}}selected{{/if}}>{{c.name}} ({{prettyNumber c.assetsCount true}})</option>
-            {{/each}}
-          </select>
-          {{/if}}
-          {{#if filters.packs}}
-          <select name="packs" id="pack-select">
-            <option value="">{{localize "MOU.please_choose"}}</option>
-            {{#each filters.packs as |p|}}
-              <option value="{{p.id}}" {{#if p.selected}}selected{{/if}}>{{p.name}} ({{prettyNumber p.assetsCount true}})</option>
-            {{/each}}
-          </select>
-          {{/if}}
-        </div>
-        {{#if filters.folders}}
-        <div class="folders">
-          <ol>
-          {{#each filters.folders as |f|}}
-          <li {{#if (eq ../filters.values.folder f.id)}}class="selected"{{/if}}><i class="fa-solid fa-folder{{#if (eq ../filters.values.folder f.id)}}-open{{/if}}"></i>&nbsp;<a data-path="{{f.id}}">{{f.name}}</a></li>
-          {{/each}}
-          </ol>
-        </div>
-        {{/if}}
-      </div>
-      {{/if}}
-    </aside>
+    <div class="filters-toggle {{#unless filtersVisible}}collapsed{{/unless}}"><i class="fa-solid fa-angles-{{mouIf filtersVisible "left" "right"}}"></i></div>
+    <aside class="filters {{#unless filtersVisible}}collapsed{{/unless}}">{{{filters}}}</aside>
     <main class="content">
+      <div class="loader"><i class="fa-regular fa-hourglass-start"></i> {{localize "MOU.loading"}}</div>
     </main>
   </div>
   <footer class="status">

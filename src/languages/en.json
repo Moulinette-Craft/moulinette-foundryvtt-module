@@ -116,6 +116,7 @@
   "MOU.isnot_patron": "You are not currently supporting Moulinette, so you won't have access to any content from the creators listed below.",
   "MOU.link_discord": "Link Moulinette with Discord",
   "MOU.link_patreon": "Link Moulinette with Patreon",
+  "MOU.loading": "Loading... Please wait",
   "MOU.localcollection_config": "Configure your local asset collection",
   "MOU.localcollection_config_source": "Add/Modify source",
   "MOU.meta_audio_duration": "Audio duration",

@@ -13,9 +13,14 @@ export default class MouBrowser extends MouApplication {
 
   static PAGE_SIZE = 100
   
+  private fastLoad: boolean = true; // the very first load is fast, then we load assets before refreshing the page
+  private loadInProgress: NodeJS.Timeout | null = null;
+  private loadInProgressState: number = 0;
+
   private html?: JQuery<HTMLElement>;
   private ignoreScroll: boolean = false;
   private page: number = 0; // -1 means = ignore. Otherwise, increments the page and loads more data
+  private collections?: MouCollection[];
   private collection?: MouCollection;
   private currentAssetsCount: number = 0;
   private currentAssets = [] as MouCollectionAsset[];
@@ -64,21 +69,22 @@ export default class MouBrowser extends MouApplication {
     const module = MouApplication.getModule()
     if(!module || !module.collections || module.collections.length == 0) 
       throw new Error(`${this.APP_NAME} | Module ${MODULE_ID} not found or no collection loaded`);
-    const collections = module.collections.filter( col => !this.pickerType || col.supportsType(this.pickerType))
-    if(collections.length == 0) {
+
+    this.collections = module.collections.filter( col => !this.pickerType || col.supportsType(this.pickerType))
+    if(this.collections.length == 0) {
       throw new Error(`${this.APP_NAME} | No collection available!`);
     }
 
-    // initialize filter prefs 
+    // initialize filter prefs
     const prevSettings = MouApplication.getSettings(SETTINGS_PREVS) as AnyDict
     if(!this.filters_prefs) {
-      if("filterPrefs" in prevSettings) {
+      if("filterPrefs" in prevSettings && prevSettings["filterPrefs"]) {
         this.filters_prefs = prevSettings["filterPrefs"]
       } else {
         this.filters_prefs = {
           visible: true,
           opensections: { collection: true, asset_type: true, packs: true },
-          collection: collections[0].getId(),
+          collection: this.collections[0].getId(),
           focus: "search"
         }
       }
@@ -90,12 +96,41 @@ export default class MouBrowser extends MouApplication {
       }
     }
 
+    let filtersHTML = ""
+    if(!this.fastLoad) {
+      filtersHTML = await this.generateFiltersHTML()
+    }
+
+    return {
+      pickerMode: this.pickerType != undefined && this.pickerType != null,
+      user: MouApplication.getModule().cache.user,
+      searchTerms: this.filters.searchTerms,
+      filtersVisible: this.filters_prefs!.visible,
+      filters: filtersHTML,
+    };
+  }
+
+  /**
+   * Initializes the filters and collections for the browser.
+   */
+  async generateFiltersHTML(): Promise<string> {
+    if(!this.collections) {
+      this.logError("No collections found. This must be a bug in Moulinette.")
+      return ""
+    }
+    
     // check that selected collection exists
-    this.collection = collections.find( c => c.getId() == this.filters_prefs!.collection)
+    this.collection = this.collections.find( c => c.getId() == this.filters_prefs!.collection)
     if(!this.collection) {
-      this.collection = collections[0]
+      this.collection = this.collections[0]
       this.filters_prefs!.collection = this.collection.getId()
     }
+
+    if(!this.collection) {
+      this.logError("Collection not found. This must be a bug in Moulinette.")
+      return ""
+    }
+
     await this.collection.initialize()
 
     // reset type if not supported by collection
@@ -104,7 +139,7 @@ export default class MouBrowser extends MouApplication {
       this.filters.creator = ""
       this.filters.pack = ""
     }
-    
+
     let results : MouCollectionSearchResults = { assets: [], types: [], creators: [], packs: [] }
     try {
       results = await this.collection.searchAssets(this.filters, 0)
@@ -151,27 +186,34 @@ export default class MouBrowser extends MouApplication {
     const middleIndex = Math.ceil(typesObj.length/2);
     const types1 = typesObj.slice(0, middleIndex);
     const types2 = typesObj.slice(middleIndex);
-    
-    return {
-      pickerMode: this.pickerType != undefined && this.pickerType != null,
-      user: module.cache.user,
-      filters: {
-        collections: collections.map( col => ( {id: col.getId(), name: col.getName(), configurable: col.isConfigurable() } )),
-        prefs: this.filters_prefs,
-        values: this.filters,
-        creators,
-        packs,
-        folders : foldersImproved,
-        types1,
-        types2,
-        showPacksFilter: (creators && creators.length > 0) || (packs && packs.length > 0)
-      }
-    };
+
+    const filtersHTML = await renderTemplate(`modules/${MODULE_ID}/templates/browser-filters.hbs`, {
+      collections: this.collections.map( col => ( {id: col.getId(), name: col.getName(), configurable: col.isConfigurable() } )),
+      prefs: this.filters_prefs,
+      values: this.filters,
+      creators,
+      packs,
+      folders : foldersImproved,
+      types1,
+      types2,
+      showPacksFilter: (creators && creators.length > 0) || (packs && packs.length > 0)
+    })
+    return filtersHTML;
   }
 
-  override activateListeners(html: JQuery<HTMLElement>): void {
+  override async activateListeners(html: JQuery<HTMLElement>): Promise<void> {
     super.activateListeners(html);
     this.html = html
+    
+    /** Very first load must be fast */
+    if(this.fastLoad) {
+      const filtersHTML = await this.generateFiltersHTML()
+      html.find(".filters").html(filtersHTML)
+      this.fastLoad = false
+    }
+
+    this._stopLoading()
+    
     html.find(".filters h2")
       .on("click", this._onClickFilterSection.bind(this));
     html.find(".filters .clear a")
@@ -200,16 +242,18 @@ export default class MouBrowser extends MouApplication {
     search.on('keypress', async (event) => {
       if(event.key === 'Enter') {
         this.filters.searchTerms = search.val() as string;
+        this.filters_prefs!.focus = "search"
         await this.render();
       }
     });
     search.on('mousedown', this._onClearSearchTerms.bind(this));
     html.find(".search-bar button").on('click', async () => {
       this.filters.searchTerms = search.val() as string;
+      this.filters_prefs!.focus = "search"
       await this.render();
     });
 
-    const focus = this.filters_prefs!.focus.split("#")
+    const focus = this.filters_prefs?.focus.split("#")
     switch(focus[0]) {
       case "search": 
         search.trigger("focus"); 
@@ -262,6 +306,8 @@ export default class MouBrowser extends MouApplication {
       this.logError("Error loading assets:", error)
       ui.notifications?.error((game as Game).i18n.localize("MOU.error_loading_assets"));
     }
+
+    this.html?.find(".content .loader").remove()
     
     // handle collection errors (like server connection errors)
     if(this.collection.getCollectionError()) {
@@ -319,6 +365,7 @@ export default class MouBrowser extends MouApplication {
     } else {
       this.html?.find(".asset").on("click", this._onSelectAsset.bind(this));
     }
+    this.html?.find(".asset .menu").on("mousedown", (event) => { if (event.button == 2) this._onHideMenu(event as any) });
     this.html?.find(".asset a.creator").on("click", this._onClickAssetCreator.bind(this));
     this.html?.find(".asset a.pack").on("click", this._onClickAssetPack.bind(this));
     this.html?.find(".asset.draggable").on("dragstart", this._onDragStart.bind(this));
@@ -742,6 +789,8 @@ export default class MouBrowser extends MouApplication {
   }
 
   override async close(options?: Application.CloseOptions): Promise<void> {
+    this._stopLoading()
+    this.fastLoad = true
     await this.storePosition()
     super.close(options);
     await this._storeSettings()
@@ -772,16 +821,37 @@ export default class MouBrowser extends MouApplication {
     ui.notifications?.error((game as Game).i18n.localize("MOU.error_selecting_asset"))
   }
 
+  
+  _stopLoading() {
+    if(this.loadInProgress) {
+      clearInterval(this.loadInProgress)
+      this.loadInProgress = null
+      this.loadInProgressState = 0
+    }
+  }
+
   /**
    * Overrides the render method to disable the search bar and asset click events.
    * This avoids the user from triggering more rendering while the current one is still processing.
    */
   override render(force?: boolean, options?: Application.RenderOptions<ApplicationOptions> | undefined): unknown {
     if(this.html) {
+      const parent = this
+      this.html.find(".search-bar .indicator").html('<i class="fa-solid fa-hourglass-start"></i>')
+      this.loadInProgress = setInterval(function() {
+        let icon = "start"
+        switch(parent.loadInProgressState) {
+          case 0: icon = "half"; break;
+          case 1: icon = "end"; break;
+        }
+        parent.html!.find(".search-bar .indicator").html(`<i class="fa-solid fa-hourglass-${icon}"></i>`)
+        parent.loadInProgressState = (parent.loadInProgressState + 1) % 3
+      }, 1000);
       this.html.find(".asset").off()
       this.html.find("input").off()
+      this.html.find("input").prop("readonly", true);
       this.html.find("select").off()
-      this.html.find(".search-bar input").prop("readonly", true);
+      this.html.find("select").prop("readonly", true);
       this._storeSettings()
     }
     return super.render(force, options)

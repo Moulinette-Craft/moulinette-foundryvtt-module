@@ -1,0 +1,68 @@
+<div class="clear"><a href>{{localize "MOU.clear_filters"}}</a></div>
+<h2 data-id="collection">{{localize "MOU.collection"}} <i class="fa-regular fa-square-{{mouIf prefs.opensections.collection "minus" "plus"}}"></i></h2>
+<div id="filterCollections" data-id="collection" class="{{#unless prefs.opensections.collection}}collapsed{{/unless}}">
+  <ul>
+    {{#each collections as |c|}}
+    <li>
+      <input type="radio" name="collection" id="{{c.id}}" {{#if (eq ../prefs.collection c.id)}}checked{{/if}}>
+      <label for="{{c.id}}">{{c.name}}</label>
+      {{#if c.configurable}}
+      <div class="action" data-col="{{c.id}}"><a href><i class="fa-solid fa-gears" title="{{localize "MOU.configure_collection"}}"></i></a></div>
+      {{/if}}
+    </li>
+    {{/each}}
+  </ul>
+</div>
+
+<h2 data-id="asset_type">{{localize "MOU.asset_type"}} <i class="fa-regular fa-square-{{mouIf prefs.opensections.asset_type "minus" "plus"}}"></i></h2>
+<div id="filterTypes" class="options {{#unless prefs.opensections.asset_type}}collapsed{{/unless}}" data-id="asset_type">
+  <ul>
+    {{#each types1 as |t|}}
+    <li>
+      <input type="radio" name="asset_type" id="{{t.id}}" {{#if (eq ../values.type t.id)}}checked{{/if}}>
+      <label for="{{t.id}}">{{t.name}} ({{prettyNumber t.assetsCount false}})</label>
+    </li>
+    {{/each}}
+  </ul>
+  <ul>
+    {{#each types2 as |t|}}
+    <li>
+      <input type="radio" name="asset_type" id="{{t.id}}" {{#if (eq ../values.type t.id)}}checked{{/if}}>
+      <label for="{{t.id}}">{{t.name}} ({{prettyNumber t.assetsCount false}})</label>
+    </li>
+    {{/each}}
+  </ul>
+</div>
+
+{{#if showPacksFilter}}
+<h2 data-id="packs">{{localize "MOU.packs"}} <i class="fa-regular fa-square-{{mouIf prefs.opensections.packs "minus" "plus"}}"></i></h2>
+<div data-id="packs" class="packs {{#unless prefs.opensections.packs}}collapsed{{/unless}} form-group">
+  <div>
+    {{#if creators}}
+    <select name="creators" id="creator-select">
+      <option value="">{{localize "MOU.please_choose"}}</option>
+      {{#each creators as |c|}}
+        <option value="{{c.id}}" {{#if (eq ../values.creator c.id)}}selected{{/if}}>{{c.name}} ({{prettyNumber c.assetsCount true}})</option>
+      {{/each}}
+    </select>
+    {{/if}}
+    {{#if packs}}
+    <select name="packs" id="pack-select">
+      <option value="">{{localize "MOU.please_choose"}}</option>
+      {{#each packs as |p|}}
+        <option value="{{p.id}}" {{#if p.selected}}selected{{/if}}>{{p.name}} ({{prettyNumber p.assetsCount true}})</option>
+      {{/each}}
+    </select>
+    {{/if}}
+  </div>
+  {{#if folders}}
+  <div class="folders">
+    <ol>
+    {{#each folders as |f|}}
+    <li {{#if (eq ../values.folder f.id)}}class="selected"{{/if}}><i class="fa-solid fa-folder{{#if (eq ../values.folder f.id)}}-open{{/if}}"></i>&nbsp;<a data-path="{{f.id}}">{{f.name}}</a></li>
+    {{/each}}
+    </ol>
+  </div>
+  {{/if}}
+</div>
+{{/if}}
