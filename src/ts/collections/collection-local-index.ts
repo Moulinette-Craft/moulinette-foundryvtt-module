@@ -111,7 +111,12 @@ export default class MouCollectionLocal implements MouCollection {
   }
 
   async initialize(): Promise<void> {
-    const assets = await MouLocalClient.getAllAssets()
+    let assets : AnyDict = {}
+    try {
+      assets = await MouLocalClient.getAllAssets()
+    } catch(err) {
+      console.warn("MouCollectionLocal | Cannot load local index", err)
+    }
     let idx = 0
     for(const packId of Object.keys(assets)) {
       const results = [] as MouCollectionAsset[]
