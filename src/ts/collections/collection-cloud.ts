@@ -93,10 +93,10 @@ class MouCollectionCloudAsset implements MouCollectionAsset {
       case MouCollectionAssetTypeEnum.Macro:
       case MouCollectionAssetTypeEnum.Item:
       case MouCollectionAssetTypeEnum.Actor:
-        this.draggable = true
+        this.draggable = true && data.perms >= 0
         break
       case MouCollectionAssetTypeEnum.Audio:
-        this.draggable = true
+        this.draggable = true && data.perms >= 0
         if(data.audio.duration >= 45) {
           this.flags["hasAudioPreview"] = true
           this.meta.push({ 
@@ -148,7 +148,7 @@ class MouCollectionCloudAsset implements MouCollectionAsset {
         }
         break
       case MouCollectionAssetTypeEnum.Image:
-        this.draggable = true
+        this.draggable = true && data.perms >= 0
       case MouCollectionAssetTypeEnum.Map:  
         this.meta.push({ 
           icon: "fa-regular fa-expand-wide", 
@@ -591,7 +591,7 @@ export default class MouCollectionCloud implements MouCollection {
         status: "success",
       }
     }
-    if(!asset.base_url.startsWith(MouCloudClient.AZURE_BASEURL)) {
+    if(!asset.base_url?.startsWith(MouCloudClient.AZURE_BASEURL)) {
       throw new Error("Invalid BaseURL?")
     }
     const targetPath = MouApplication.getModule().cloudclient.getDefaultDownloadFolder(asset.base_url)
