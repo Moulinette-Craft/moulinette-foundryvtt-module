@@ -6,6 +6,10 @@
   <audio id="audiopreview" style="display: none">
     <source src="" type="audio/ogg">
   </audio>
+  <div class="asset-info">
+    <div><i class="fa-solid fa-image"></i> <div class="asset-name"></div></div>
+    <div><i class="fa-solid fa-palette"></i> <div class="asset-creator"></div></div>
+  </div>
 </div>
 
 {{#each assets as |a|}}
@@ -48,16 +52,18 @@
         </ul>
       {{/if}}
     </div>
-    <div class="info">
-      <div class="source" title="{{#if a.creator}}{{a.creator}}{{#if a.pack}} - {{/if}}{{/if}}{{a.pack}}" data-creator="{{a.creator}}" data-pack="{{a.pack_id}}">
-        {{#if a.creator}}<a class="creator" href>{{a.creator}}</a> {{#if a.pack}} - {{/if}}{{/if}}<a class="pack" href>{{a.pack}}</a>
+    {{#unless (eq a.format "tiny")}}
+      <div class="info">
+        <div class="source" title="{{#if a.creator}}{{a.creator}}{{#if a.pack}} - {{/if}}{{/if}}{{a.pack}}" data-creator="{{a.creator}}" data-pack="{{a.pack_id}}">
+          {{#if a.creator}}<a class="creator" href>{{a.creator}}</a> {{#if a.pack}} - {{/if}}{{/if}}<a class="pack" href>{{a.pack}}</a>
+        </div>
+        <div class="title">{{a.name}}</div>
       </div>
-      <div class="title">{{a.name}}</div>
-    </div>
-    {{#unless (eq a.meta.length 0)}}
-    <div class="meta">
-      {{#each a.meta as |m|}}<span title="{{m.hint}}">{{#if m.icon}}<i class="{{m.icon}}"></i> {{/if}}{{m.text}}</span>{{/each}}
-    </div>
+      {{#unless (eq a.meta.length 0)}}
+      <div class="meta">
+        {{#each a.meta as |m|}}<span title="{{m.hint}}">{{#if m.icon}}<i class="{{m.icon}}"></i> {{/if}}{{m.text}}</span>{{/each}}
+      </div>
+      {{/unless}}
     {{/unless}}
   </div>
 {{/each}}

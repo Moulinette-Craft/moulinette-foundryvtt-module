@@ -47,6 +47,7 @@
   "MOU.advanced_options": "Advanced options",
   "MOU.asset_count": "Assets : {count}/{total}",
   "MOU.asset_count_nototal": "Assets : {count}",
+  "MOU.asset_is_animated": "Animated Asset",
   "MOU.asset_type": "Asset Type",
   "MOU.assets_count": "# Assets",
   "MOU.authenticate_with_discord": "Sign in with Discord",

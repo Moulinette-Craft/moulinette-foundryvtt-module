@@ -16,6 +16,7 @@ export default class MouBrowser extends MouApplication {
   private fastLoad: boolean = true; // the very first load is fast, then we load assets before refreshing the page
   private loadInProgress: NodeJS.Timeout | null = null;
   private loadInProgressState: number = 0;
+  private disableMenu = false;
 
   private html?: JQuery<HTMLElement>;
   private ignoreScroll: boolean = false;
@@ -138,6 +139,7 @@ export default class MouBrowser extends MouApplication {
       this.filters.type = this.collection.getSupportedTypes()[0]
       this.filters.creator = ""
       this.filters.pack = ""
+      this.filters.folder = undefined
     }
 
     let results : MouCollectionSearchResults = { assets: [], types: [], creators: [], packs: [] }
@@ -360,12 +362,21 @@ export default class MouBrowser extends MouApplication {
     this.html?.find(".asset").off()
 
     if(!this.pickerType) {
+      const parent = this
       this.html?.find(".asset").on("mouseenter", this._onShowMenu.bind(this));
-      this.html?.find(".asset").on("mouseleave", this._onHideMenu.bind(this));
+      this.html?.find(".asset").on("mouseleave", function(event: Event) {
+        parent.disableMenu = false;
+        parent._onHideMenu(event)
+      });
     } else {
       this.html?.find(".asset").on("click", this._onSelectAsset.bind(this));
     }
-    this.html?.find(".asset .menu").on("mousedown", (event) => { if (event.button == 2) this._onHideMenu(event as any) });
+    this.html?.find(".asset .menu").on("mousedown", (event) => { 
+      if (event.button == 2) {
+        this.disableMenu = true;
+        this._onHideMenu(event as any);
+      }
+    });
     this.html?.find(".asset a.creator").on("click", this._onClickAssetCreator.bind(this));
     this.html?.find(".asset a.pack").on("click", this._onClickAssetPack.bind(this));
     this.html?.find(".asset.draggable").on("dragstart", this._onDragStart.bind(this));
@@ -428,10 +439,12 @@ export default class MouBrowser extends MouApplication {
       if(combo.attr('id') == "creator-select") {
         this.filters.creator = String(combo.val());
         this.filters.pack = ""
+        this.filters.folder = undefined
         this.filters_prefs!.focus = "creator"
       } else if(combo.attr('id') == "pack-select") {
         this.filters.pack = String(combo.val());
         this.filters_prefs!.focus = "pack"
+        this.filters.folder = undefined
       }
       
       this.render()
@@ -510,14 +523,14 @@ export default class MouBrowser extends MouApplication {
     }
   }
 
-  /** Chnage collection */
+  /** Change collection */
   async _onClickCollection(): Promise<void> {
     const selCollection = this.html?.find('.filters input[name=collection]:checked').attr('id')
     if(selCollection && this.filters_prefs!.collection != selCollection) {
       this.filters_prefs!.collection = selCollection
       this.filters.creator = ""
       this.filters.pack = ""
-      this.filters.folder = ""
+      this.filters.folder = undefined
       this.filters_prefs!.focus = "collection#" + selCollection
       this.render()
     }
@@ -528,6 +541,7 @@ export default class MouBrowser extends MouApplication {
     const selType = Number(this.html?.find('.filters input[name=asset_type]:checked').attr('id'))
     if(selType && this.filters.type != selType) {
       this.filters.type = selType as MouCollectionAssetTypeEnum
+      this.filters.folder = undefined
       this.filters_prefs!.focus = "type#" + selType
       this.render()
     }
@@ -551,7 +565,7 @@ export default class MouBrowser extends MouApplication {
 
   /** Mouse over an item : render menu */
   _onShowMenu(event: Event) {
-    if(event.currentTarget) {
+    if(!this.disableMenu && event.currentTarget) {
       const target = $(event.currentTarget)
       const asset = target.closest(".asset")
       const selAsset = this.currentAssets.find((a) => a.id == asset.data("id"))
@@ -670,6 +684,15 @@ export default class MouBrowser extends MouApplication {
       // Replace hint title & description
       const selAsset = this.currentAssets.find((a) => a.id == asset.data("id"))
       if(!selAsset) return;
+      // Replace asset name & creator
+      actionHint.find(".asset-name").html(selAsset.name)
+      actionHint.find(".asset-creator").html(selAsset.creator!)
+      if(selAsset.format == "tiny") {
+        actionHint.find(".asset-info").show()
+      } else {
+        actionHint.find(".asset-info").hide()
+      }
+
       const hint = this.collection?.getActionHint(selAsset, button.data("id"))
       if(!hint) return;
       actionHint.find("h3").html(hint.name)
@@ -713,7 +736,6 @@ export default class MouBrowser extends MouApplication {
   }
 
   override _onDragStart(event: Event): void {
-    console.log("HERE")
     if(event.currentTarget) {
       const target = $(event.currentTarget) // target can be asset itself or button
       const assetId = target.closest(".asset").data("id")
