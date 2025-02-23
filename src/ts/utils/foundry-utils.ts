@@ -151,6 +151,30 @@ export default class MouFoundryUtils {
   }
 
   /**
+   * Creates a new scene from the given data
+   */
+  static async importSceneFromJSON(sceneData: string, folder:string) {
+    if (!(game as Game).user?.isGM) return;
+    // @ts-ignore
+    const sc = await Scene.create({name: "Imported Scene"})
+    const newScene = await sc?.importFromJSON(sceneData) as any
+    let needsDims = !("width" in newScene)
+    if(newScene) {
+      const folderObj = await MouFoundryUtils.getOrCreateFolder("Scene", folder)
+      let tData = await newScene.createThumbnail({img: newScene["background.src"] ?? newScene.background.src});
+      // reset width/height
+      let tUpdate = { thumb: tData.thumb, folder: folderObj ? folderObj.id : null } as AnyDict
+      if ( needsDims && tData.width && tData.height ) {
+        tUpdate.width = tData.width;
+        tUpdate.height = tData.height;
+      }  
+      await newScene.update(tUpdate); // force generating the thumbnail and width/height (if needsDims)
+      newScene?.view()
+      ui.scenes?.activate()
+    }
+  }
+
+  /**
    * Creates a new item from the given data
    */
   static async importItem(itemData: AnyDict, folder:string) {
