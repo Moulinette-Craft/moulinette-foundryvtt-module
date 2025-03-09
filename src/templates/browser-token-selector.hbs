@@ -1,0 +1,47 @@
+<form autocomplete="off" onsubmit="event.preventDefault();">
+  <p>  
+    <i>{{localize "MOU.drop_as_token_description"}}</i>
+  </p>
+
+  <div class="options">
+    <!-- OPTION #1 (create new actor) -->
+    <div class="option">
+      <h2>{{localize "MOU.drop_as_token_new_actor"}}</h2>
+      <div class="form-group">
+        <label><b>{{localize "MOU.drop_as_token_actor_type"}}</b></label>
+        <select class="actorsTypes">
+          {{#each actorTypes as |a|}}<option value="{{a.id}}" {{#if a.selected}}selected{{/if}}>{{a.name}}</option>{{/each}}
+        </select>
+      </div>
+      <footer>
+        <div class="actions">
+          <button class="dialog-button" data-id="new" ><i class="fa-solid fa-user"></i> {{localize "MOU.drop_as_token_create"}}</button>
+          <button class="dialog-button" data-id="new-linked" ><i class="fa-solid fa-user-lock"></i> {{localize "MOU.drop_as_token_create_linked"}}</button>
+        </div>
+      </footer>
+    </div>
+
+    <!-- SPACER -->
+    <div class="spacer"><i class="fa-solid fa-left-right"></i></div>
+
+    <!-- OPTION #2 (reuse existing) -->
+    <div class="option">
+      <h2>{{localize "MOU.drop_as_token_reuse_actor"}}</h2>
+      <div class="form-group">
+        <label><b>{{localize "MOU.drop_as_token_actor"}}</b></label>
+        <select class="actors">
+          {{#each actors as |a|}}<option value="{{a.id}}" {{#if a.selected}}selected{{/if}}>{{a.name}}</option>{{/each}}
+        </select>
+      </div>
+      <footer>
+        <div class="actions">
+          <button class="dialog-button" data-id="existing" ><i class="fa-regular fa-user"></i> {{localize "MOU.drop_as_token_create"}}</button>
+          <button class="dialog-button" data-id="existing-linked" ><i class="fa-regular fa-user-lock"></i> {{localize "MOU.drop_as_token_create_linked"}}</button>
+        </div>
+      </footer>
+    </div>
+  </div>
+  
+  
+  
+</form>

@@ -1,0 +1,40 @@
+<h3>{{localize "MOU.settings"}}: {{type}}</h3>
+<div class="settings">
+  <div class="setting">
+    <label>{{localize "MOU.drop_as"}}</i> :</label>
+    <div class="options dropas">
+      <div data-id="tile" class="option {{#if (eq settings.image.drop_as "tile")}}active{{/if}}">
+        <i class="fas fa-cubes" title="{{localize "DOCUMENT.Tile"}}"></i>
+        {{localize "DOCUMENT.Tile"}}
+      </div>
+      <div data-id="note" class="option {{#if (eq settings.image.drop_as "note")}}active{{/if}}">
+      <i class="fas fa-book-open" title="{{localize "DOCUMENT.Note"}}"></i>
+        {{localize "DOCUMENT.Note"}}
+      </div>
+      <div data-id="token" class="option {{#if (eq settings.image.drop_as "token")}}active{{/if}}">
+        <i class="fas fa-users" title="{{localize "DOCUMENT.Token"}}"></i>
+        {{localize "DOCUMENT.Token"}}
+      </div>
+    </div>
+  </div>
+
+  <div class="setting">
+    <label>{{localize "FILES.TileSize"}} <i class="fas fa-th"></i> :</label>
+    <div>
+      <input class="tilesize" name="tilesize" type="text" value="{{ settings.image.tilesize }}" maxlength="4">
+      <select name="tilesize_select">
+        <option value="">--</option>
+        <option value="50">50</option>
+        <option value="100">100</option>
+        <option value="150">150</option>
+        <option value="200">200</option>
+        <option value="300">300</option>
+        <option value="400">400</option>
+        <option value="500">500</option>
+        <option value="700">700</option>
+        <option value="1000">1000</option>
+      </select>
+    </div>
+  </div>
+
+</div>

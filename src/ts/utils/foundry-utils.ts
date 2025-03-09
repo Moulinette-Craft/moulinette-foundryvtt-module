@@ -1,5 +1,5 @@
 import MouApplication from "../apps/application";
-import MouConfig, { MODULE_ID, SETTINGS_USE_FOLDERS } from "../constants";
+import MouConfig, { MODULE_ID, SETTINGS_ADVANCED, SETTINGS_USE_FOLDERS } from "../constants";
 import { AnyDict } from "../types";
 import MouMediaUtils from "./media-utils";
 
@@ -274,7 +274,11 @@ export default class MouFoundryUtils {
    */
   static async playStopSound(path: string, playlistName:string, soundName?: string) {
     if (!(game as Game).user?.isGM) return;
-    const volume = 1.0 //audio.volume ? Number(audio.volume) : 1.0
+    const adv_settings = MouApplication.getSettings(SETTINGS_ADVANCED) as AnyDict
+    const channel = adv_settings.audio && "channel" in adv_settings.audio ? adv_settings.audio.channel : "environment"
+    const volumeInput = adv_settings.audio?.volume || 1.0
+    // @ts-ignore
+    const volume = foundry.audio.AudioHelper.inputToVolume(volumeInput)
       
     // get playlist
     let playlist = (game as Game).playlists?.find( pl => pl.name == playlistName)
@@ -287,7 +291,7 @@ export default class MouFoundryUtils {
     let sound = playlist.sounds.find( s => s.path == MouMediaUtils.getCleanURI(path))
     if(!sound) {
       const name = soundName ? soundName : MouMediaUtils.prettyMediaName(path)
-      const soundData = (await playlist.createEmbeddedDocuments("PlaylistSound", [{name: name, path: path, volume: volume}], {}))[0]
+      const soundData = (await playlist.createEmbeddedDocuments("PlaylistSound", [{name: name, path: path, channel: channel, volume: volume}], {}))[0]
       playlist.updateEmbeddedDocuments("PlaylistSound", [{_id: soundData.id, playing: true, volume: volume }]);
     } else {
       playlist.updateEmbeddedDocuments("PlaylistSound", [{_id: sound.id, playing: !sound.playing, volume: volume }]);
@@ -299,6 +303,9 @@ export default class MouFoundryUtils {
    * Creates a tile on the scene based on the provided image (path) and position
    */
   static async createTile(canvas: Canvas, imgPath: string, point: { x: number, y: number }): Promise<boolean> {
+    const adv_settings = MouApplication.getSettings(SETTINGS_ADVANCED) as AnyDict
+    const tileSize = adv_settings.image && "tilesize" in adv_settings.image ? Number(adv_settings.image.tilesize) : 100
+
     const layerTiles = canvas.layers.find(l => l.name == "TilesLayer")
     const layerMou = canvas.layers.find(l => l.name == "MouLayer")
 
@@ -307,7 +314,7 @@ export default class MouFoundryUtils {
     const data = {} as AnyDict
     const tex = await loadTexture(imgPath);
     if(!tex) return false
-    const ratio = canvas.dimensions.size / canvas.dimensions.size;
+    const ratio = canvas.dimensions.size / (tileSize || canvas.dimensions.size);
     data.width = tex.baseTexture.width * ratio;
     data.height = tex.baseTexture.height * ratio;
     data.texture = { src: imgPath }
@@ -419,9 +426,65 @@ export default class MouFoundryUtils {
   }
 
   /**
+   * Create an actor from the provided image (path)
+   */
+  static async createActor(image_path: string, actorType: string, folder: string, renderSheet = false) {
+    if (!(game as Game).user?.isGM) return null;
+    const folderObj = await MouFoundryUtils.getOrCreateFolder("Actor", folder)
+
+    // @ts-ignore
+    const entry = await Actor.implementation.create({
+      name: MouMediaUtils.prettyMediaName(image_path),
+      type: actorType,
+      img: image_path
+    });
+    
+    let tUpdate = { folder: folderObj ? folderObj.id : null } as AnyDict
+    await entry.update(tUpdate);
+    
+    if(renderSheet) {
+      entry?.sheet?.render(true)
+    }
+    ui.actors?.activate()
+    return entry
+  }
+
+  static async createToken(canvas: Canvas, actor : any, img_path: string, linked : boolean, point: { x: number, y: number }, activateLayer = true) {
+    console.log(actor, linked, activateLayer)
+    
+    const td = await actor.getTokenDocument({x: point.x, y: point.y, actorLink: linked, texture: { src: img_path } });
+    
+    // Adjust token position
+    // @ts-ignore
+    const hw = canvas.grid.w/2;
+    // @ts-ignore
+    const hh = canvas.grid.h/2;
+    // @ts-ignore
+    td.updateSource(canvas.grid.getSnappedPosition(td.x - (td.width*hw), td.y - (td.height*hh)));
+
+    // @ts-ignore
+    if ( !canvas.dimensions.rect.contains(td.x, td.y) ) return false;
+
+    // Submit the Token creation request and activate the Tokens layer (if not already active)
+    // @ts-ignore
+    let newToken = (await canvas.scene.createEmbeddedDocuments(Token.embeddedName, [td], { parent: canvas.scene }))[0]
+    // @ts-ignore
+    newToken = newToken._object
+
+    // sometimes throws exceptions
+    try {
+      if(activateLayer) {
+        canvas.tokens?.activate()
+      }
+    } catch(e) {}
+
+    return newToken
+  } 
+
+  /**
    * Extract value from object
    */
-  static getValueFromObject(object: AnyDict, path: string): AnyDict | null {
+  static getValueFromObject(object: AnyDict, path: string): AnyDict | Number | null {
     // remove initial "." if any
     if(path.startsWith(".")) {
       path = path.substring(1)

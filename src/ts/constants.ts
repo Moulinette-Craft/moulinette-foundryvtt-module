@@ -18,7 +18,9 @@ export const SETTINGS_S3_BUCKET = "s3_bucket"
 export const SETTINGS_COLLECTION_CLOUD = "cloud_collection"
 export const SETTINGS_COLLECTION_LOCAL = "local_collection"
 export const SETTINGS_DATA_EXCLUSION = "dataExclusions"
+export const SETTINGS_ADVANCED = "advanced_settings"
 export const SETTINGS_PREVS = "prevs"
+export const SETTINGS_TOKEN_SELECTOR = "token_selector"
 
 /**
  * The constants below can be overridden using the following macro :
@@ -50,4 +52,14 @@ export default class MouConfig {
 
   // after how many entries, the progress bar gets updated
   static FILEMANAGER_LOOP_UPDATE = 100
+
+  // default advanced settings
+  static DEF_SETTINGS_AUDIO = {
+    volume: 1.0,
+    channel: "environment"
+  }
+  static DEF_SETTINGS_IMAGE = {
+    tilesize: 100,
+    drop_as: "tile"
+  }
 }

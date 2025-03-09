@@ -573,4 +573,48 @@
       
     } // END .content
   } // END .container
+
+  .advanced_settings {
+    display: none;
+    position: absolute;
+    bottom: var(--mou-browser-footer-height);
+    width: 100%;
+    background: url(../../ui/parchment.jpg) repeat;
+    z-index: 10;
+    padding: 5px;
+    border-top: 1px solid #000;
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.5);
+
+    .settings {
+      display: flex;
+      flex-wrap: wrap;
+      column-gap: 25px;
+    }
+
+    .setting {
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      column-gap: 5px;
+
+      .tilesize { width: 40px; }
+      .options { 
+        display: flex;
+        column-gap: 8px;
+
+        .option {
+          cursor: pointer;
+
+          &:hover {
+            text-shadow: 0 0 8px var(--color-shadow-primary);
+          }
+
+          &.active {
+            text-shadow: 0 0 10px var(--color-shadow-primary);
+          }
+        }
+      }
+    }
+
+  }
 }

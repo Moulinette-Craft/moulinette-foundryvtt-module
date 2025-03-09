@@ -1,0 +1,22 @@
+<h3>{{localize "MOU.settings"}}: {{type}}</h3>
+<div class="settings">
+  <div class="setting">
+    <label>{{localize "PLAYLIST.Channel"}} :</label>
+    <div>
+      <select name="channel">
+          <option value=""></option>
+          <option value="music" {{#if (eq settings.audio.channel "music") }}selected{{/if}}>{{localize "AUDIO.CHANNELS.MUSIC.label"}}</option>
+          <option value="environment" {{#if (eq settings.audio.channel "environment") }}selected{{/if}}>{{localize "AUDIO.CHANNELS.ENVIRONMENT.label"}}</option>
+          <option value="interface" {{#if (eq settings.audio.channel "interface") }}selected{{/if}}>{{localize "AUDIO.CHANNELS.INTERFACE.label"}}</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="setting">
+    <label>{{localize "PLAYLIST.SoundVolume"}} <i class="volume-icon fas fa-volume-down"></i> :</label>
+    <div>
+      <input class="global-volume-slider" name="mou-audio-volume" type="range" value="{{ settings.audio.volume }}" min="0" max="1" step="0.05">
+    </div>
+  </div>
+
+</div>

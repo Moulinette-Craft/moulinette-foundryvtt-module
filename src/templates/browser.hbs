@@ -11,11 +11,13 @@
       <div class="loader"><i class="fa-regular fa-hourglass-start"></i> {{localize "MOU.loading"}}</div>
     </main>
   </div>
+  <div class="advanced_settings">{{{ settings }}}</div>
   <footer class="status">
     <div class="support">
       {{#if user.patron}}<i class="fa-solid fa-heart"></i> {{localize "MOU.thanks_supporting"}}{{/if}}
       {{#unless user.patron}}<i class="fa-brands fa-patreon"></i> <a href="https://www.patreon.com/moulinette" target="_blank">{{localize "MOU.support_moulinette"}}</a>{{/unless}}
     </div>
+    <div class="settings_toggle"><a href>{{localize "MOU.advanced_settings"}}</a></div>
     <div class="count"></div>
   </footer>
 </div>

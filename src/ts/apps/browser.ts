@@ -1,4 +1,4 @@
-import MouConfig, { MODULE_ID, SETTINGS_PREVS } from "../constants";
+import MouConfig, { MODULE_ID, SETTINGS_ADVANCED, SETTINGS_PREVS } from "../constants";
 import { AnyDict } from "../types";
 import MouFileManager from "../utils/file-manager";
 import MouMediaUtils from "../utils/media-utils";
@@ -102,12 +102,35 @@ export default class MouBrowser extends MouApplication {
       filtersHTML = await this.generateFiltersHTML()
     }
 
+    // load advanced settings
+    const adv_settings = MouApplication.getSettings(SETTINGS_ADVANCED) as AnyDict
+    let settingsHTML = ""
+    switch(this.filters.type) {
+      case MouCollectionAssetTypeEnum.Audio:
+      case MouCollectionAssetTypeEnum.Image:
+        MouBrowser.initializeAdvSettings(adv_settings, "audio", MouConfig.DEF_SETTINGS_AUDIO)
+        MouBrowser.initializeAdvSettings(adv_settings, "image", MouConfig.DEF_SETTINGS_IMAGE)
+      
+        const type = MouCollectionAssetTypeEnum[Number(this.filters.type)].toLowerCase()
+        settingsHTML = await renderTemplate(`modules/${MODULE_ID}/templates/browser-settings-${type}.hbs`, {
+          type: MouCollectionUtils.getTranslatedType(Number(this.filters.type)),
+          settings: adv_settings
+        });
+        break
+      default:
+        settingsHTML = await renderTemplate(`modules/${MODULE_ID}/templates/browser-settings-none.hbs`, { 
+          type: MouCollectionUtils.getTranslatedType(Number(this.filters.type))
+        });
+        break
+    }
+
     return {
       pickerMode: this.pickerType != undefined && this.pickerType != null,
       user: MouApplication.getModule().cache.user,
       searchTerms: this.filters.searchTerms,
       filtersVisible: this.filters_prefs!.visible,
       filters: filtersHTML,
+      settings: settingsHTML
     };
   }
 
@@ -283,6 +306,59 @@ export default class MouBrowser extends MouApplication {
         window.open("https://assets.moulinette.cloud/docs", "_blank")
       })
     }
+
+    // show/hide advanced settings
+    const adv_settings = MouApplication.getSettings(SETTINGS_ADVANCED) as AnyDict
+    if(adv_settings.visible) {
+      html.find(".advanced_settings").show()
+    }
+    html.find("footer .settings_toggle a").on("click", async (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      const div = html.find(".advanced_settings").toggle();
+      
+      adv_settings["visible"] = div.is(":visible")
+      await MouApplication.setSettings(SETTINGS_ADVANCED, adv_settings)
+    });
+
+    // advanced settings listeners
+    html.find(".advanced_settings select[name=channel]").on("change", async (ev) => {
+      const channel = $(ev.currentTarget).val()
+      MouBrowser.initializeAdvSettings(adv_settings, "audio", MouConfig.DEF_SETTINGS_AUDIO)
+      adv_settings.audio.channel = channel
+      await MouApplication.setSettings(SETTINGS_ADVANCED, adv_settings)
+    });
+    html.find(".advanced_settings input[name=mou-audio-volume]").on("change", async (ev) => {
+      const volumeInput = $(ev.currentTarget).val()
+      MouBrowser.initializeAdvSettings(adv_settings, "audio", MouConfig.DEF_SETTINGS_AUDIO)
+      adv_settings.audio.volume = volumeInput
+      await MouApplication.setSettings(SETTINGS_ADVANCED, adv_settings)
+    });
+    html.find(".advanced_settings input[name=tilesize]").on("change", async (ev) => {
+      const tilesize = $(ev.currentTarget).val()
+      MouBrowser.initializeAdvSettings(adv_settings, "image", MouConfig.DEF_SETTINGS_IMAGE)
+      adv_settings.image.tilesize = tilesize
+      await MouApplication.setSettings(SETTINGS_ADVANCED, adv_settings)
+      html.find(".advanced_settings select[name=tilesize_select]").val("")
+    });
+    html.find(".advanced_settings select[name=tilesize_select]").on("change", async (ev) => {
+      const tilesize = $(ev.currentTarget).val()
+      if(tilesize) {
+        html.find(".advanced_settings input[name=tilesize]").val("" + tilesize)
+        adv_settings.image.tilesize = tilesize
+        await MouApplication.setSettings(SETTINGS_ADVANCED, adv_settings)
+        html.find(".advanced_settings select[name=tilesize_select]").val("")
+      }
+    });
+    html.find(".advanced_settings .dropas .option").on("click", async (ev) => {
+      const drop_as = $(ev.currentTarget).data("id")
+      if(drop_as) {
+        adv_settings.image.drop_as = drop_as
+        await MouApplication.setSettings(SETTINGS_ADVANCED, adv_settings)
+        html.find(".advanced_settings .dropas .option").removeClass("active")
+        $(ev.currentTarget).addClass("active")
+      }
+    });
 
     this.loadMoreAssets()
   }
@@ -879,4 +955,23 @@ export default class MouBrowser extends MouApplication {
     return super.render(force, options)
   }
 
+  
+  /**
+   * Initializes advanced settings for a given type with default values.
+   * 
+   * @param settings - The settings object where the advanced settings will be initialized.
+   * @param type - The type of settings to initialize.
+   * @param defaults - The default values for the advanced settings. (See constants.ts for defaults)
+   */
+  static initializeAdvSettings(settings: AnyDict, type: string, defaults: AnyDict) {
+    if(!(type in settings)) {
+      settings[type] = defaults
+      return
+    }
+    for(const key of Object.keys(defaults)) {
+      if(!(key in settings[type])) {
+        settings[type][key] = defaults[key]
+      }
+    }
+  }
 }
