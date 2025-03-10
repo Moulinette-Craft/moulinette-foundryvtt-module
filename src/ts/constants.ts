@@ -60,6 +60,8 @@ export default class MouConfig {
   }
   static DEF_SETTINGS_IMAGE = {
     tilesize: 100,
-    drop_as: "tile"
+    drop_as: "tile",
+    bgcolor: "#000000",
+    fgcolor: "#ffffff"
   }
 }

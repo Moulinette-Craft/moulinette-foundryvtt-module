@@ -114,7 +114,8 @@ export default class MouBrowser extends MouApplication {
         const type = MouCollectionAssetTypeEnum[Number(this.filters.type)].toLowerCase()
         settingsHTML = await renderTemplate(`modules/${MODULE_ID}/templates/browser-settings-${type}.hbs`, {
           type: MouCollectionUtils.getTranslatedType(Number(this.filters.type)),
-          settings: adv_settings
+          settings: adv_settings,
+          collection: this.filters_prefs!.collection
         });
         break
       default:
@@ -359,6 +360,14 @@ export default class MouBrowser extends MouApplication {
         $(ev.currentTarget).addClass("active")
       }
     });
+    html.find(".advanced_settings input[type=color]").on("input", async (ev) => {
+      const fgColor = $(ev.currentTarget).closest(".settings").find("input[name=fgColor]").val()
+      const bgColor = $(ev.currentTarget).closest(".settings").find("input[name=bgColor]").val()
+      adv_settings.image.fgcolor = fgColor
+      adv_settings.image.bgcolor = bgColor
+      await MouApplication.setSettings(SETTINGS_ADVANCED, adv_settings)
+    });
+    
 
     this.loadMoreAssets()
   }

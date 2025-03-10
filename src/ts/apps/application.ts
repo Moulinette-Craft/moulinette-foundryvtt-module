@@ -9,6 +9,8 @@ export default class MouApplication extends Application {
   // static & non-static application name
   static APP_NAME = "MouApplication";
   APP_NAME = MouApplication.APP_NAME
+
+  static _timeout: ReturnType<typeof setTimeout> | null // timeout object to avoid too many settings updates
   
   static logDebug(source: string, message: string, data?: any) {
     const module = MouApplication.getModule()
@@ -57,9 +59,23 @@ export default class MouApplication extends Application {
     return (game as Game).modules.get(MODULE_ID) as MouModule;
   }
 
-  static async setSettings(key: string, value: unknown) : Promise<unknown> {
-    MouApplication.logInfo(MouApplication.APP_NAME, `Storing data for settings ${key}`)
-    return (game as Game).settings.set("moulinette", key, value)  
+  /**
+   * Sets a setting with a specified key and value after a debounce period of 500ms.
+   * If a previous timeout is pending, it will be cleared and reset.
+   * 
+   * @param key - The key for the setting to be stored.
+   * @param value - The value to be stored for the specified key.
+   * @returns A promise that resolves once the setting is stored.
+   */
+  static async setSettings(key: string, value: unknown) {
+    if (MouApplication._timeout) {
+      clearTimeout(MouApplication._timeout);
+    }
+    MouApplication._timeout = setTimeout(() => {
+      MouApplication.logInfo(MouApplication.APP_NAME, `Storing data for settings ${key}`);
+      (game as Game).settings.set("moulinette", key, value);
+      MouApplication._timeout = null;
+    }, 500);
   }
 
   static getSettings(key: string): unknown {

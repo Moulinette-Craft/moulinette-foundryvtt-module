@@ -37,4 +37,19 @@
     </div>
   </div>
 
+  {{#if (eq collection "mou-gameicons")}}
+  <div class="setting">
+    <label>{{localize "MOU.foreground_color"}} <i class="fa-solid fa-font"></i> : </label>
+    <div class="options">
+      <input name="fgColor" type="color" value="{{ settings.image.fgcolor }}">
+    </div>
+  </div>
+  <div class="setting">
+    <label>{{localize "MOU.background_color"}} <i class="fa-solid fa-paint-roller"></i> :</label>
+    <div>
+      <input name="bgColor" type="color" value="{{ settings.image.bgcolor }}">
+    </div>
+  </div>
+  {{/if}}
+
 </div>

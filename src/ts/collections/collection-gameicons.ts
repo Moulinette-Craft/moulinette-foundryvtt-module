@@ -2,6 +2,7 @@ import MouApplication from "../apps/application";
 import MouBrowser from "../apps/browser";
 import { MouCollection, MouCollectionAction, MouCollectionActionHint, MouCollectionAsset, MouCollectionAssetMeta, MouCollectionAssetType, MouCollectionAssetTypeEnum, MouCollectionCreator, MouCollectionDragData, MouCollectionFilters, MouCollectionPack, MouCollectionSearchResults } from "../apps/collection";
 import { MouGameIcon, MouGameIconsClient } from "../clients/gameicons";
+import { SETTINGS_ADVANCED } from "../constants";
 import { AnyDict } from "../types";
 import MouFoundryUtils from "../utils/foundry-utils";
 import MouMediaUtils from "../utils/media-utils";
@@ -163,7 +164,10 @@ export default class MouCollectionGameIcons implements MouCollection {
         break
       
       case GameIconsAssetAction.CLIPBOARD:
-        const imagePath = await MouGameIconsClient.downloadIcon(asset.id, "#ffffff", "#000000")
+        const adv_settings = MouApplication.getSettings(SETTINGS_ADVANCED) as AnyDict
+        const bgColor = adv_settings.image?.bgcolor || "#000000"
+        const fgColor = adv_settings.image?.fgcolor || "#ffffff"
+        const imagePath = await MouGameIconsClient.downloadIcon(asset.id, fgColor, bgColor)
         if(imagePath) {
           MouMediaUtils.copyToClipboard(imagePath)
         }
@@ -178,7 +182,10 @@ export default class MouCollectionGameIcons implements MouCollection {
   async dropDataCanvas(canvas: Canvas, selAsset: MouCollectionAsset, data: AnyDict): Promise<void> {
     selAsset; // unused
     const position = {x: data.x, y: data.y }
-    const imagePath = await MouGameIconsClient.downloadIcon(data.moulinette.asset, "#ffffff", "#000000")
+    const adv_settings = MouApplication.getSettings(SETTINGS_ADVANCED) as AnyDict
+    const bgColor = adv_settings.image?.bgcolor || "#000000"
+    const fgColor = adv_settings.image?.fgcolor || "#ffffff"
+    const imagePath = await MouGameIconsClient.downloadIcon(data.moulinette.asset, fgColor, bgColor)
     if(imagePath) {
       MouFoundryUtils.createCanvasAsset(canvas, imagePath, "Image", `Moulinette/Game Icons`, position)
     }
