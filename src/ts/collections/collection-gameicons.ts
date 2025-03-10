@@ -175,8 +175,13 @@ export default class MouCollectionGameIcons implements MouCollection {
     console.log(assetId, data)
   }
 
-  async dropDataCanvas(canvas: Canvas, data: AnyDict): Promise<void> {
-    console.log(canvas, data)
+  async dropDataCanvas(canvas: Canvas, selAsset: MouCollectionAsset, data: AnyDict): Promise<void> {
+    selAsset; // unused
+    const position = {x: data.x, y: data.y }
+    const imagePath = await MouGameIconsClient.downloadIcon(data.moulinette.asset, "#ffffff", "#000000")
+    if(imagePath) {
+      MouFoundryUtils.createCanvasAsset(canvas, imagePath, "Image", `Moulinette/Game Icons`, position)
+    }
   }
 
   isConfigurable(): boolean {

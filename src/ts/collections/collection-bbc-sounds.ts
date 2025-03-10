@@ -40,6 +40,7 @@ class MouCollectionBBCAsset implements MouCollectionAsset {
     this.format = "large"
     this.creator = `BBC Sound Effects (bbc.co.uk – © copyright ${new Date().getFullYear()} BBC)`
     this.creatorUrl = "https://sound-effects.bbcrewind.co.uk"
+    this.draggable = true
     this.pack = null
     this.pack_id = null
     this.name = asset.description
@@ -127,7 +128,6 @@ export default class MouCollectionBBCSounds implements MouCollection {
 
   async getAssets(filters: MouCollectionFilters, page: number): Promise<MouCollectionAsset[]> {
     const assets = [] as MouCollectionBBCAsset[]
-    console.log(filters, page)
     if(filters.searchTerms && filters.searchTerms.length > 0) {
       // if max page reached, return empty array
       if(page > 0 && page * MouBrowser.PAGE_SIZE > this.currentHits) {
@@ -207,8 +207,9 @@ export default class MouCollectionBBCSounds implements MouCollection {
     console.log(assetId, data)
   }
 
-  async dropDataCanvas(canvas: Canvas, data: AnyDict): Promise<void> {
-    console.log(canvas, data)
+  async dropDataCanvas(canvas: Canvas, selAsset: MouCollectionAsset, data: AnyDict): Promise<void> {
+    const position = {x: data.x, y: data.y }
+    MouFoundryUtils.createCanvasAsset(canvas, selAsset.url, "Audio", `Moulinette/Game Icons`, position)
   }
 
   isConfigurable(): boolean {

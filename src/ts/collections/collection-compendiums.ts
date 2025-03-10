@@ -390,9 +390,8 @@ export default class MouCollectionCompendiums implements MouCollection {
     data.uuid = assetId
   }
 
-  async dropDataCanvas(canvas: Canvas, data: AnyDict): Promise<void> {
-    console.log(canvas, data)
-    throw new Error("Method not implemented.");
+  async dropDataCanvas(): Promise<void> {
+    MouApplication.logInfo(this.APP_NAME, `Using default FVTT drag & drop implementation.`)
   }
 
   isConfigurable(): boolean {

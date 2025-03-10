@@ -447,25 +447,15 @@ export default class MouCollectionCloudPrivate implements MouCollection {
     // do nothing
   }
 
-  async dropDataCanvas(canvas: Canvas, data: AnyDict): Promise<void> {
-    const activeLayer = canvas.layers.find((l : AnyDict) => l.active)?.name
+  async dropDataCanvas(canvas: Canvas, selAsset: MouCollectionAsset, data: AnyDict): Promise<void> {
+    selAsset; // unused
     const position = {x: data.x, y: data.y }
-
     const assets = MouApplication.getModule().cache.privateAssets
-
     if(data.moulinette.asset >= 0 && data.moulinette.asset < assets.length) {
       const asset = assets[data.moulinette.asset] as MouCollectionCloudPrivateAsset
       const result = await MouCollectionCloudPrivate.downloadAsset(asset)  
       if(result) {
-        if(data.type == "Image") {
-          if(activeLayer == "NotesLayer") {
-            MouFoundryUtils.createNoteImage(canvas, `Moulinette/Cloud Private Assets/Dropped`, result.path, position)
-          } else {
-            MouFoundryUtils.createTile(canvas, result.path, position)
-          }
-        } else if(data.type == "Audio") {
-          MouFoundryUtils.createAmbientAudio(canvas, result.path, position)
-        }
+        MouFoundryUtils.createCanvasAsset(canvas, result.path, data.type, `Moulinette/${asset.creator}/${asset.pack}`, position)
       }
     }
   }

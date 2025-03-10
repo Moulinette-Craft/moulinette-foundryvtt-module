@@ -68,7 +68,7 @@ export default class MouBrowserTokenSelector extends MouApplication {
     switch(source) {
       case "new":
       case "new-linked":
-        const folderPath = `Moulinette/${this.data.asset.creator}/${this.data.asset.pack}`  
+        const folderPath = this.data.folder 
         const newActor = await MouFoundryUtils.createActor(this.data.path, actorType, folderPath)
         MouFoundryUtils.createToken(this.data.canvas, newActor, this.data.path, source == "new-linked", this.data.position)
         break

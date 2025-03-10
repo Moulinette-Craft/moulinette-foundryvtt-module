@@ -1,4 +1,5 @@
 import MouApplication from "../apps/application";
+import MouBrowserTokenSelector from "../apps/browser-token-selector";
 import MouConfig, { MODULE_ID, SETTINGS_ADVANCED, SETTINGS_USE_FOLDERS } from "../constants";
 import { AnyDict } from "../types";
 import MouMediaUtils from "./media-utils";
@@ -480,6 +481,25 @@ export default class MouFoundryUtils {
 
     return newToken
   } 
+
+
+  static async createCanvasAsset(canvas: Canvas, assetPath: string, assetType: string, folderPath: string, position: { x: number, y: number }) {
+    const adv_settings = MouApplication.getSettings(SETTINGS_ADVANCED) as AnyDict
+    const drop_as = adv_settings.image?.drop_as || "Tile"
+    
+    if(assetType == "Image") {
+      if(drop_as == "note") {
+        MouFoundryUtils.createNoteImage(canvas, folderPath, assetPath, position)
+      } else if(drop_as == "tile") {
+        MouFoundryUtils.createTile(canvas, assetPath, position)
+      } else if(drop_as == "token") {
+        new MouBrowserTokenSelector({ canvas: canvas, folder: folderPath, path: assetPath, position: position }).render(true)
+        return
+      }
+    } else if(assetType == "Audio") {
+      MouFoundryUtils.createAmbientAudio(canvas, assetPath, position)
+    }
+  }
 
   /**
    * Extract value from object

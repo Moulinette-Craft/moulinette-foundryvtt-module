@@ -274,10 +274,10 @@ export default class MouCollectionLocal implements MouCollection {
     const actions = [] as MouCollectionAction[]
     const cAsset = (asset as MouCollectionLocalAsset)
     const assetType = MouCollectionAssetTypeEnum[asset.type]
-    actions.push({ id: LocalAssetAction.DRAG, drag: true, name: (game as Game).i18n.format("MOU.action_drag", { type: assetType}), icon: "fa-solid fa-hand" })
     switch(cAsset.type) {
       case MouCollectionAssetTypeEnum.Image:
         if(isGM) {
+          actions.push({ id: LocalAssetAction.DRAG, drag: true, name: (game as Game).i18n.format("MOU.action_drag", { type: assetType}), icon: "fa-solid fa-hand" })
           actions.push({ id: LocalAssetAction.CREATE_ARTICLE, name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
         }
         actions.push({ id: LocalAssetAction.PREVIEW, small: true, name: (game as Game).i18n.localize("MOU.action_preview_asset"), icon: "fa-solid fa-eyes" })
@@ -291,6 +291,7 @@ export default class MouCollectionLocal implements MouCollection {
         break;    
       case MouCollectionAssetTypeEnum.Audio:
         if(isGM) {
+          actions.push({ id: LocalAssetAction.DRAG, drag: true, name: (game as Game).i18n.format("MOU.action_drag", { type: assetType}), icon: "fa-solid fa-hand" })
           actions.push({ id: LocalAssetAction.IMPORT, name: (game as Game).i18n.localize("MOU.action_audio_play"), icon: "fa-solid fa-play-pause" })
         }
         actions.push({ id: LocalAssetAction.PREVIEW, name: (game as Game).i18n.localize("MOU.action_preview"), icon: "fa-solid fa-headphones" })
@@ -402,20 +403,12 @@ export default class MouCollectionLocal implements MouCollection {
     console.log(assetId, data)
   }
 
-  async dropDataCanvas(canvas: Canvas, data: AnyDict): Promise<void> {
-    const activeLayer = canvas.layers.find((l : AnyDict) => l.active)?.name
+  async dropDataCanvas(canvas: Canvas, selAsset: MouCollectionAsset, data: AnyDict): Promise<void> {
+    selAsset; // unused
     const position = {x: data.x, y: data.y }
     const asset = this.getAssetById(data.moulinette.asset)
     if(!asset) return
-    if(data.type == "Image") {
-      if(activeLayer == "NotesLayer") {
-        MouFoundryUtils.createNoteImage(canvas, `Moulinette/Local Assets/Dropped`, asset.url, position)
-      } else {
-        MouFoundryUtils.createTile(canvas, asset.url, position)
-      }
-    } else if(data.type == "Audio") {
-      MouFoundryUtils.createAmbientAudio(canvas, asset.url, position)
-    }
+    MouFoundryUtils.createCanvasAsset(canvas, asset.url, data.type, `Moulinette/Local Assets/${asset.pack}`, position)
   }
 
   isConfigurable(): boolean {

@@ -222,8 +222,8 @@ export default class MouCollectionFontAwesome implements MouCollection {
     console.log(assetId, data)
   }
 
-  async dropDataCanvas(canvas: Canvas, data: AnyDict): Promise<void> {
-    console.log(canvas, data)
+  async dropDataCanvas(canvas: Canvas, selAsset: MouCollectionAsset, data: AnyDict): Promise<void> {
+    console.log(canvas, selAsset, data)
   }
 
   isConfigurable(): boolean {

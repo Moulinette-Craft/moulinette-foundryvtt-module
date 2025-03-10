@@ -974,4 +974,11 @@ export default class MouBrowser extends MouApplication {
       }
     }
   }
+
+  async dropDataCanvas(canvas: Canvas, data: AnyDict): Promise<void> {
+    const selAsset = this.currentAssets.find((a) => a.id == data.moulinette.asset)   
+    if(selAsset) {
+      MouApplication.getModule().collections.find(c => c.getId() == data.moulinette.collection)?.dropDataCanvas(canvas, selAsset, data)
+    }
+  }
 }

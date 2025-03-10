@@ -137,7 +137,7 @@ export interface MouCollection {
   fromDropData(assetId: string, data: MouCollectionDragData): Promise<void>
 
   /** Fills the data from desired asset */
-  dropDataCanvas(canvas: Canvas, data: AnyDict): Promise<void>
+  dropDataCanvas(canvas: Canvas, selAsset: MouCollectionAsset, data: AnyDict): Promise<void>
 
   /** Must return true if source has configurations/options */
   isConfigurable(): boolean

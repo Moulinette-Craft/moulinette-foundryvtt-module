@@ -4,12 +4,11 @@ import MouFileManager from "../utils/file-manager";
 import MouMediaUtils from "../utils/media-utils";
 
 import { MouCollection, MouCollectionAction, MouCollectionActionHint, MouCollectionAsset, MouCollectionAssetMeta, MouCollectionAssetType, MouCollectionAssetTypeEnum, MouCollectionCreator, MouCollectionDragData, MouCollectionFilters, MouCollectionPack, MouCollectionSearchResults } from "../apps/collection";
-import { MOU_STORAGE, MOU_STORAGE_PUB, SETTINGS_ADVANCED, SETTINGS_COLLECTION_CLOUD, SETTINGS_SESSION_ID } from "../constants";
+import { MOU_STORAGE, MOU_STORAGE_PUB, SETTINGS_COLLECTION_CLOUD, SETTINGS_SESSION_ID } from "../constants";
 import { AnyDict } from "../types";
 import MouFoundryUtils from "../utils/foundry-utils";
 import CloudCollectionConfig from "./config/collection-cloud-config";
 import MouPreview from "../apps/preview";
-import MouBrowserTokenSelector from "../apps/browser-token-selector";
 
 export enum CloudMode {
   ALL = "cloud-all",                          // all assets including non-accessible
@@ -810,29 +809,14 @@ export default class MouCollectionCloud implements MouCollection {
     }
   }
 
-  async dropDataCanvas(canvas: Canvas, data: AnyDict): Promise<void> {
-    //const activeLayer = canvas.layers.find((l : AnyDict) => l.active)?.name
+  async dropDataCanvas(canvas: Canvas, selAsset: MouCollectionAsset, data: AnyDict): Promise<void> {
+    selAsset; // unused
     const position = {x: data.x, y: data.y }
-    
     const asset = await MouCloudClient.apiGET(`/asset/${data.moulinette.asset}`, { session: MouApplication.getSettings(SETTINGS_SESSION_ID) })    
-    const adv_settings = MouApplication.getSettings(SETTINGS_ADVANCED) as AnyDict
-    const drop_as = adv_settings.image?.drop_as || "Tile"
-  
     if(asset) {
       const result = await this.downloadAsset(asset)  
       if(result) {
-        if(data.type == "Image") {
-          if(drop_as == "note") {
-            MouFoundryUtils.createNoteImage(canvas, `Moulinette/Cloud/Dropped`, result.path, position)
-          } else if(drop_as == "tile") {
-            MouFoundryUtils.createTile(canvas, result.path, position)
-          } else if(drop_as == "token") {
-            new MouBrowserTokenSelector({ canvas: canvas, asset: asset, path: result.path, position: position }).render(true)
-            return
-          }
-        } else if(data.type == "Audio") {
-          MouFoundryUtils.createAmbientAudio(canvas, result.path, position)
-        }
+        MouFoundryUtils.createCanvasAsset(canvas, result.path, data.type, `Moulinette/${asset.creator}/${asset.pack}`, position)
       }
     }
   }

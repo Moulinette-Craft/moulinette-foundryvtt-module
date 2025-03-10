@@ -135,7 +135,7 @@ Hooks.on('dropCanvasData', (canvas, data) => {
   if("moulinette" in data) {
     // Drag & drop from a collection
     if(data.moulinette.collection) {
-      module.collections.find(c => c.getId() == data.moulinette.collection)?.dropDataCanvas(canvas, data)
+      module.browser.dropDataCanvas(canvas, data)
     }
   }
 });
