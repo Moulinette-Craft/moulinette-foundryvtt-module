@@ -198,6 +198,16 @@
         white-space: nowrap;
       }
 
+      .pack-select {
+        display: flex;
+        align-items: center;
+
+        a {
+          font-size: 18px;
+          padding-left: 10px;
+        }
+      }
+
       select {
         width: 100%;
         max-width: 100%;

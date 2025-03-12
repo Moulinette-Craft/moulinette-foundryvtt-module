@@ -213,6 +213,13 @@ export default class MouBrowser extends MouApplication {
     const types1 = typesObj.slice(0, middleIndex);
     const types2 = typesObj.slice(middleIndex);
 
+    // prepare link to website
+    let selectedPacks = null
+    if(this.filters_prefs?.collection == "mou-cloud" && this.filters.type && this.filters.pack && 
+        [MouCollectionAssetTypeEnum.Audio, MouCollectionAssetTypeEnum.Image, MouCollectionAssetTypeEnum.Map].includes(this.filters.type)) {
+      selectedPacks = this.filters.pack
+    }
+    
     const filtersHTML = await renderTemplate(`modules/${MODULE_ID}/templates/browser-filters.hbs`, {
       collections: this.collections.map( col => ( {id: col.getId(), name: col.getName(), configurable: col.isConfigurable() } )),
       prefs: this.filters_prefs,
@@ -222,7 +229,8 @@ export default class MouBrowser extends MouApplication {
       folders : foldersImproved,
       types1,
       types2,
-      showPacksFilter: (creators && creators.length > 0) || (packs && packs.length > 0)
+      showPacksFilter: (creators && creators.length > 0) || (packs && packs.length > 0),
+      websiteLink : selectedPacks
     })
     return filtersHTML;
   }
@@ -262,6 +270,9 @@ export default class MouBrowser extends MouApplication {
     html.find(".filters .folders").scrollTop(this.currentFoldersScroll.top);
     html.find(".filters .folders").scrollLeft(this.currentFoldersScroll.left);
     
+    html.find(".filters .pack-select a")
+      .on("click", this._onOpenPackOnWebsite.bind(this));
+
     // input triggers searches
     const search = html.find(".search-bar input")
   
@@ -988,6 +999,32 @@ export default class MouBrowser extends MouApplication {
     const selAsset = this.currentAssets.find((a) => a.id == data.moulinette.asset)   
     if(selAsset) {
       MouApplication.getModule().collections.find(c => c.getId() == data.moulinette.collection)?.dropDataCanvas(canvas, selAsset, data)
+    }
+  }
+
+  _onOpenPackOnWebsite(event: Event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const target = event.currentTarget as HTMLElement;
+    const packIds = "" + $(target).data("ids");
+    if(packIds.length > 0) {
+      const ids = packIds.split(";")
+      const creator = $(target).data("creator").slugify();
+      const pack = $(target).closest(".pack-select").find("select option:selected").text().slugify();
+      if(ids.length == 1) {
+        window.open(`https://assets.moulinette.cloud/marketplace/product/${packIds}/${creator}/${pack}`, "_blank")
+      } else if(ids.length > 1) {
+        Dialog.confirm({
+          title: (game as Game).i18n.localize("MOU.confirm_open_multiple_website"),
+          content: (game as Game).i18n.format("MOU.confirm_open_multiple_website_note", {count: ids.length}),
+          yes: async function() {
+            for(const id of ids) {
+              window.open(`https://assets.moulinette.cloud/marketplace/product/${id}/${creator}/${pack}`, "_blank")
+            }
+          },
+          no: () => {}
+        });
+      }
     }
   }
 }

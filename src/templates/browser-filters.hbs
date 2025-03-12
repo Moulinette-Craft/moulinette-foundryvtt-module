@@ -47,12 +47,17 @@
     </select>
     {{/if}}
     {{#if packs}}
-    <select name="packs" id="pack-select">
-      <option value="">{{localize "MOU.please_choose"}}</option>
-      {{#each packs as |p|}}
-        <option value="{{p.id}}" {{#if p.selected}}selected{{/if}}>{{p.name}} ({{prettyNumber p.assetsCount true}})</option>
-      {{/each}}
-    </select>
+    <div class="pack-select">
+      <select name="packs" id="pack-select">
+        <option value="">{{localize "MOU.please_choose"}}</option>
+        {{#each packs as |p|}}
+          <option value="{{p.id}}" {{#if p.selected}}selected{{/if}}>{{p.name}} ({{prettyNumber p.assetsCount true}})</option>
+        {{/each}}
+      </select>
+      {{#if websiteLink }}
+      <a href data-creator="{{ values.creator }}" data-ids="{{ websiteLink }}"><i class="fa-solid fa-up-right-from-square"></i></a>
+      {{/if}}
+    </div>
     {{/if}}
   </div>
   {{#if folders}}

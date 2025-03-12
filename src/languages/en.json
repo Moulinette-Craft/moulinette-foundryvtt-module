@@ -77,6 +77,8 @@
   "MOU.confirm_delete_index_note": "Are you sure you want to delete the index? This action is irreversible. Your sources will need to be re-indexed afterward. Please note that the generated thumbnails will be preserved.",
   "MOU.confirm_delete_source": "Confirm folder deletion",
   "MOU.confirm_delete_source_note": "Are you sure you want to delete \"{folder}\"? This action is irreversible. Please note that the index will be preserved (it might be used in other worlds).",
+  "MOU.confirm_open_multiple_website": "Confirm opening multiple web pages",
+  "MOU.confirm_open_multiple_website_note": "This action will open {count} web pages, one for each individual pack. Please confirm that you want to proceed. Your web browser might block this action.",
   "MOU.creator": "Creator",
   "MOU.days": "days",
   "MOU.delete_hint": "Remove folder from index",
