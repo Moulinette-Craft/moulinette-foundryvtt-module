@@ -54,9 +54,12 @@ export default class LocalCollectionConfig extends MouApplication {
     const settings = MouApplication.getSettings(SETTINGS_COLLECTION_LOCAL) as AnyDict
     let folders = null
     if(settings.folders && settings.folders.length > 0) {
-      folders = settings.folders as AnyDict
+      folders = foundry.utils.duplicate(settings.folders) as AnyDict
+      for(const f of folders as AnyDict[]) {
+        f.noAsset = (f.assets < 0)
+      }
     }
-    const indexingRequired = folders?.find((f: LocalCollectionSource) => f.assets == 0) != null
+    const indexingRequired = folders?.find((f: LocalCollectionSource) => f.assets < 0) != null
     return {
       folders,
       indexingRequired,
@@ -134,7 +137,7 @@ export default class LocalCollectionConfig extends MouApplication {
     if(settings.folders) {
       for(const folder of settings.folders) {
         const source = (folder as LocalCollectionSource)
-        if(source.assets == 0 && source.path && source.source) {
+        if(source.assets < 0 && source.path && source.source) {
           MouLocalClient.indexAllLocalAssets(source.path, source.source, this._callbackAfterIndexing.bind(this), source.options)
           return
         }
@@ -164,7 +167,7 @@ export default class LocalCollectionConfig extends MouApplication {
             const settings = MouApplication.getSettings(SETTINGS_COLLECTION_LOCAL) as AnyDict
             if(settings.folders) {
               for(const folder of settings.folders) {
-                (folder as LocalCollectionSource).assets = 0
+                (folder as LocalCollectionSource).assets = -1
               }
               await MouApplication.setSettings(SETTINGS_COLLECTION_LOCAL, settings)
             }

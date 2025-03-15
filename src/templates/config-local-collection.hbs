@@ -28,7 +28,7 @@
           {{#if f.options.thumbs}}<i class="fa-regular fa-image" title="{{localize "MOU.source_generate_thumbnails"}}"></i>{{/if}}
           {{#if f.options.metadata}}<i class="fa-regular fa-file-circle-info" title="{{localize "MOU.source_generate_metadata"}}"></i>{{/if}}
         </div>
-        <div class="cfg-assets">{{prettyNumber f.assets true}}</div>
+        <div class="cfg-assets">{{#unless f.noAsset}}{{prettyNumber f.assets true}}{{/unless}}</div>
         <div class="cfg-actions">
           <a data-id="scan" title="{{localize "MOU.scan_hint"}}"><i class="fa-regular fa-folder-magnifying-glass fa-lg"></i></a>
           <a data-id="reindex" title="{{localize "MOU.reindex_hint"}}"><i class="fa-solid fa-arrow-rotate-right"></i></a>

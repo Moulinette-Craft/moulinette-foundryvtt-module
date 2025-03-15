@@ -27,7 +27,7 @@ export default class LocalCollectionConfigNewSource extends MouApplication {
         name: null,
         path: null,
         source: null,
-        assets: 0,
+        assets: -1,
         options: {
           thumbs: false,
           metadata: false,
