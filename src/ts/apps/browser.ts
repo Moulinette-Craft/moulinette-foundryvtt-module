@@ -330,7 +330,7 @@ export default class MouBrowser extends MouApplication {
       const div = html.find(".advanced_settings").toggle();
       
       adv_settings["visible"] = div.is(":visible")
-      await MouApplication.setSettings(SETTINGS_ADVANCED, adv_settings)
+      await MouApplication.setSettings(SETTINGS_ADVANCED, adv_settings, true)
     });
 
     // advanced settings listeners
@@ -338,19 +338,19 @@ export default class MouBrowser extends MouApplication {
       const channel = $(ev.currentTarget).val()
       MouBrowser.initializeAdvSettings(adv_settings, "audio", MouConfig.DEF_SETTINGS_AUDIO)
       adv_settings.audio.channel = channel
-      await MouApplication.setSettings(SETTINGS_ADVANCED, adv_settings)
+      await MouApplication.setSettings(SETTINGS_ADVANCED, adv_settings, true)
     });
     html.find(".advanced_settings input[name=mou-audio-volume]").on("change", async (ev) => {
       const volumeInput = $(ev.currentTarget).val()
       MouBrowser.initializeAdvSettings(adv_settings, "audio", MouConfig.DEF_SETTINGS_AUDIO)
       adv_settings.audio.volume = volumeInput
-      await MouApplication.setSettings(SETTINGS_ADVANCED, adv_settings)
+      await MouApplication.setSettings(SETTINGS_ADVANCED, adv_settings, true)
     });
     html.find(".advanced_settings input[name=tilesize]").on("change", async (ev) => {
       const tilesize = $(ev.currentTarget).val()
       MouBrowser.initializeAdvSettings(adv_settings, "image", MouConfig.DEF_SETTINGS_IMAGE)
       adv_settings.image.tilesize = tilesize
-      await MouApplication.setSettings(SETTINGS_ADVANCED, adv_settings)
+      await MouApplication.setSettings(SETTINGS_ADVANCED, adv_settings, true)
       html.find(".advanced_settings select[name=tilesize_select]").val("")
     });
     html.find(".advanced_settings select[name=tilesize_select]").on("change", async (ev) => {
@@ -358,7 +358,7 @@ export default class MouBrowser extends MouApplication {
       if(tilesize) {
         html.find(".advanced_settings input[name=tilesize]").val("" + tilesize)
         adv_settings.image.tilesize = tilesize
-        await MouApplication.setSettings(SETTINGS_ADVANCED, adv_settings)
+        await MouApplication.setSettings(SETTINGS_ADVANCED, adv_settings, true)
         html.find(".advanced_settings select[name=tilesize_select]").val("")
       }
     });
@@ -366,7 +366,7 @@ export default class MouBrowser extends MouApplication {
       const drop_as = $(ev.currentTarget).data("id")
       if(drop_as) {
         adv_settings.image.drop_as = drop_as
-        await MouApplication.setSettings(SETTINGS_ADVANCED, adv_settings)
+        await MouApplication.setSettings(SETTINGS_ADVANCED, adv_settings, true)
         html.find(".advanced_settings .dropas .option").removeClass("active")
         $(ev.currentTarget).addClass("active")
       }
@@ -376,7 +376,7 @@ export default class MouBrowser extends MouApplication {
       const bgColor = $(ev.currentTarget).closest(".settings").find("input[name=bgColor]").val()
       adv_settings.image.fgcolor = fgColor
       adv_settings.image.bgcolor = bgColor
-      await MouApplication.setSettings(SETTINGS_ADVANCED, adv_settings)
+      await MouApplication.setSettings(SETTINGS_ADVANCED, adv_settings, true)
     });
     
 

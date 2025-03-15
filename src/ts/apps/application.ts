@@ -67,15 +67,21 @@ export default class MouApplication extends Application {
    * @param value - The value to be stored for the specified key.
    * @returns A promise that resolves once the setting is stored.
    */
-  static async setSettings(key: string, value: unknown) {
+  static async setSettings(key: string, value: unknown, delay: boolean = false) {
     if (MouApplication._timeout) {
       clearTimeout(MouApplication._timeout);
     }
-    MouApplication._timeout = setTimeout(() => {
+    if(delay) {
+      MouApplication._timeout = setTimeout(() => {
+        MouApplication.logInfo(MouApplication.APP_NAME, `Storing data for settings ${key}`);
+        (game as Game).settings.set("moulinette", key, value);
+        MouApplication._timeout = null;
+      }, 500);
+    } else {
       MouApplication.logInfo(MouApplication.APP_NAME, `Storing data for settings ${key}`);
-      (game as Game).settings.set("moulinette", key, value);
+      await (game as Game).settings.set("moulinette", key, value);
       MouApplication._timeout = null;
-    }, 500);
+    }
   }
 
   static getSettings(key: string): unknown {
