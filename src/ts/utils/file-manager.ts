@@ -264,6 +264,14 @@ export default class MouFileManager {
     const options = MouFileManager.getOptions() as AnyDict
     options.recursive = true
     const base = await FilePicker.browse(source, path, options);
+
+    // for S3 source, check that bucket is configured
+    if(source == "s3" && !options.bucket) {
+      const errorMsg = (game as Game).i18n.localize("MOU.error_s3_bucket_not_specified")
+      ui.notifications?.error(errorMsg, { permanent: true })
+      MouApplication.logError(MouFileManager.APP_NAME, errorMsg)
+      return list
+    }
     
     // stop scanning if ignore.info file found
     if(base.files.find(f => f.endsWith("/ignore.info"))) {

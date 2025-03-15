@@ -104,6 +104,7 @@
   "MOU.error_gameicons_connection": "Connection with Game-Icons.net failed. Please try again in 5 minutes or report it on Discord.",
   "MOU.error_invalid_color": "Invalid color format '{format}'. Use #dddddd.",
   "MOU.error_loading_assets": "Error loading assets",
+  "MOU.error_s3_bucket_not_specified": "S3 bucket not configured (in module's settings)",
   "MOU.error_scenepacker": "Unexpected exception while trying to download assets from ScenePacker.",
   "MOU.error_scenepacker_required": "ScenePacker module is required to import this asset.",
   "MOU.error_selecting_asset": "Something went wrong while selecting the asset.",
