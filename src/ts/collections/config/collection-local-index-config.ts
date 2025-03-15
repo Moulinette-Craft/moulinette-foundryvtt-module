@@ -177,6 +177,45 @@ export default class LocalCollectionConfig extends MouApplication {
           no: () => {}
         });
       }
+      else if(button.data("id") == "export-configuration") {
+        const filename = `moulinette-local-assets-configuration.json`
+        const data = MouApplication.getSettings(SETTINGS_COLLECTION_LOCAL) as AnyDict
+        saveDataToFile(JSON.stringify(data, null, 2), "text/json", filename);
+      }
+      else if(button.data("id") == "import-configuration") {
+        new Dialog({
+          title: `Import Data: Moulinette Local Assets Configuration`,
+          content: await renderTemplate("templates/apps/import-data.html", {
+            hint1: (game as Game).i18n.format("DOCUMENT.ImportDataHint1", {document: "configuration"}),
+            hint2: (game as Game).i18n.format("DOCUMENT.ImportDataHint2", {name: "this configuration"})
+          }),
+          buttons: {
+            import: {
+              icon: '<i class="fas fa-file-import"></i>',
+              label: "Import",
+              callback: html => {
+                const form = (html as JQuery<HTMLElement>).find("form")[0];
+                if ( !form.data.files.length ) return ui.notifications?.error("You did not upload a data file!");
+                readTextFromFile(form.data.files[0]).then(json => {
+                  const data = JSON.parse(json)
+                  MouApplication.setSettings(SETTINGS_COLLECTION_LOCAL, data).then(() => {
+                    console.log("Imported data", data)
+                    parent.render();
+                  });
+                });
+              }
+            },
+            no: {
+              icon: '<i class="fa-solid fa-times"></i>',
+              label: (game as Game).i18n.localize("MOU.cancel")
+            }
+          },
+          default: "Import"
+        }, {
+          width: 400
+        }).render(true);
+      }
+
     }
   }
 
