@@ -62,7 +62,7 @@ class MouCollectionLocalAsset implements MouCollectionAsset {
     
     this.id = String(idx)
     this.url = MouMediaUtils.encodeURL(data.path);
-    this.format = assetType == MouCollectionAssetTypeEnum.Map ? "large" : "small"
+    this.format = assetType == MouCollectionAssetTypeEnum.Map ? "large" : (assetType == MouCollectionAssetTypeEnum.Image ? "tiny" : "small")
     this.previewUrl = MouMediaUtils.encodeURL(pack.options && pack.options.thumbs ? thumbPath : data.path),
     this.creator = null
     this.creatorUrl = null
@@ -277,8 +277,8 @@ export default class MouCollectionLocal implements MouCollection {
     switch(cAsset.type) {
       case MouCollectionAssetTypeEnum.Image:
         if(isGM) {
-          actions.push({ id: LocalAssetAction.DRAG, drag: true, name: (game as Game).i18n.format("MOU.action_drag", { type: assetType}), icon: "fa-solid fa-hand" })
-          actions.push({ id: LocalAssetAction.CREATE_ARTICLE, name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
+          actions.push({ id: LocalAssetAction.DRAG, small: true, drag: true, name: (game as Game).i18n.format("MOU.action_drag", { type: assetType}), icon: "fa-solid fa-hand" })
+          actions.push({ id: LocalAssetAction.CREATE_ARTICLE, small: true,name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
         }
         actions.push({ id: LocalAssetAction.PREVIEW, small: true, name: (game as Game).i18n.localize("MOU.action_preview_asset"), icon: "fa-solid fa-eyes" })
         break;    
