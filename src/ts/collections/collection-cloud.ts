@@ -342,7 +342,7 @@ export default class MouCollectionCloud implements MouCollection {
   }
 
   async getFolders(filters: MouCollectionFilters): Promise<string[]> {
-    if(filters.creator && filters.creator.length > 0 && filters.pack && filters.pack.length > 0 && this.cache.curFolders) {
+    if(filters.creator && filters.creator.length > 0 && this.cache.curFolders) {
       return this.cache.curFolders
     }
     return [] as string[]
@@ -391,14 +391,19 @@ export default class MouCollectionCloud implements MouCollection {
     // enable/disable facets based on cache
     if((this.cache.curScope == undefined || this.cache.curScope != this.mode) || (!this.cache.currentSearchTerms == undefined || this.cache.currentSearchTerms != filters.searchTerms)) {
       filtersDuplicate["facets"]["types"] = true
+      filtersDuplicate["facets"]["creators"] = true
       filtersDuplicate["facets"]["packs"] = true
     }
     else if(!this.cache.curType == undefined || this.cache.curType != filters.type) {
       filtersDuplicate["facets"]["types"] = true
+      filtersDuplicate["facets"]["creators"] = true
+      filtersDuplicate["facets"]["packs"] = true
+    }
+    else if(!this.cache.curCreators == undefined || this.cache.curCreators != filters.creator) {
       filtersDuplicate["facets"]["packs"] = true
     }
     // retrieve folders if creator and pack are selected
-    if(filters.creator && filters.creator.length > 0 && filters.pack && filters.pack.length > 0 && page == 0) {
+    if(filters.creator && filters.creator.length > 0 && page == 0) {
       // request folders only if filter not specified or if list not yet known
       if(!this.cache.curFolders || !filters.folder) {
         filtersDuplicate["facets"]["folders"] = true
@@ -426,6 +431,22 @@ export default class MouCollectionCloud implements MouCollection {
       } else {
         results["types"] =  foundry.utils.duplicate(this.cache.curTypes)
       }
+
+      // process creators facets
+      if("creators" in results) {
+        // process creators
+        results["creators"] = results["creators"].map( (entry:AnyDict) => { return {
+            id: entry.name,
+            name: entry.name,
+            assetsCount: entry.total_assets
+          } as MouCollectionCreator
+        })
+        this.cache.curCreators = results["creators"]
+      } 
+      else {
+        results["creators"] = foundry.utils.duplicate(this.cache.curCreators)
+      }
+
       // process packs facets
       if("packs" in results) {
         const packs: { [key: string]: MouCollectionPack } = {};
@@ -446,18 +467,7 @@ export default class MouCollectionCloud implements MouCollection {
         }
         results["packs"] = Object.values(packs)
         this.cache.curPacks = results["packs"]
-
-        // process creators
-        results["creators"] = results["creators"].map( (entry:AnyDict) => { return {
-            id: entry.name,
-            name: entry.name,
-            assetsCount: entry.total_assets
-          } as MouCollectionCreator
-        })
-        this.cache.curCreators = results["creators"]
-
       } else {
-        results["creators"] = foundry.utils.duplicate(this.cache.curCreators)
         results["packs"] = foundry.utils.duplicate(this.cache.curPacks)
       }
 
