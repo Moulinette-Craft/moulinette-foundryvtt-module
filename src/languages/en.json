@@ -221,6 +221,8 @@
   "MOU.source_name_notes": "Name your content source. For example, \"Tokens by [creator's name]\".",
   "MOU.support_moulinette": "Support Moulinette",
   "MOU.thanks_supporting": "Thanks for supporting Moulinette!",
+  "MOU.toggle_hints_disabled": "Hints are disabled. Click to enable.",
+  "MOU.toggle_hints_enabled": "Hints are enabled (displayed when hovering over an action). Click to disable.",
   "MOU.track": "track",
   "MOU.tracks": "tracks",
   "MOU.type_actor": "Actor",

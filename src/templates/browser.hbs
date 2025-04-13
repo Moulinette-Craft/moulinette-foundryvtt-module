@@ -4,7 +4,8 @@
     <input type="text" placeholder="{{localize "MOU.search_placeholder"}}" aria-label="Search" value="{{searchTerms}}">
     <button class="search"><i class="fa-regular fa-magnifying-glass"></i> {{localize "MOU.search"}}</button>
     <div class="options">
-      <i class="fa-solid fa-lightbulb{{#unless toggleHint}}-slash{{/unless}}" data-id="hint"></i>
+      <i class="fa-solid fa-lightbulb{{#unless toggleHint}}-slash{{/unless}}" data-id="hint" 
+        title="{{#if toggleHint}}{{localize "MOU.toggle_hints_enabled"}}{{/if}}{{#unless toggleHint}}{{localize "MOU.toggle_hints_disabled"}}{{/unless}}"></i>
     </div>
   </header>
   <div class="container">
