@@ -109,6 +109,9 @@ export interface MouCollection {
   /** Returns the collection name */
   getName(): string;
 
+  /** Returns the collection description */
+  getDescription(): string;
+
   /** Initializes the collection (retrieving data if required) */
   initialize(): Promise<void>
   

@@ -1,8 +1,9 @@
-import MouConfig, { MODULE_ID, SETTINGS_ADVANCED, SETTINGS_PREVS } from "../constants";
+import MouConfig, { MODULE_ID, SETTINGS_ADVANCED, SETTINGS_HIDDEN, SETTINGS_PREVS } from "../constants";
 import { AnyDict } from "../types";
 import MouFileManager from "../utils/file-manager";
 import MouMediaUtils from "../utils/media-utils";
 import MouApplication from "./application";
+import MouBrowserFiltersSources from "./browser-filters-sources";
 import { MouCollection, MouCollectionAsset, MouCollectionAssetTypeEnum, MouCollectionDragData, MouCollectionFilters, MouCollectionSearchResults, MouCollectionUtils } from "./collection";
 
 
@@ -71,7 +72,14 @@ export default class MouBrowser extends MouApplication {
     if(!module || !module.collections || module.collections.length == 0) 
       throw new Error(`${this.APP_NAME} | Module ${MODULE_ID} not found or no collection loaded`);
 
-    this.collections = module.collections.filter( col => !this.pickerType || col.supportsType(this.pickerType))
+    const disabled = MouApplication.getSettings(SETTINGS_HIDDEN) as AnyDict
+    this.collections = module.collections.filter( col => {
+      if(this.pickerType) {
+        return col.supportsType(this.pickerType)
+      } else {
+        return !disabled[col.getId()]
+      }
+    })
     if(this.collections.length == 0) {
       throw new Error(`${this.APP_NAME} | No collection available!`);
     }
@@ -177,9 +185,17 @@ export default class MouBrowser extends MouApplication {
     this.page = 0
     this.currentAssets = results.assets
 
+    const disabled = MouApplication.getSettings(SETTINGS_HIDDEN) as AnyDict
+
     const types = results.types
     const typesObj = types
-      .filter( type => !this.pickerType ||  this.pickerType == Number(type.id))
+      .filter( type => {
+        if(this.pickerType) {
+          return this.pickerType == Number(type.id)
+        } else {
+          return !disabled["type_" + type.id]
+        }
+      })
       .map( type => ({ id: Number(type.id), name: MouCollectionUtils.getTranslatedType(Number(type.id)), assetsCount: type.assetsCount}))
     typesObj.sort((a, b) => a.name.localeCompare(b.name))
     
@@ -272,6 +288,11 @@ export default class MouBrowser extends MouApplication {
     
     html.find(".filters .pack-select a")
       .on("click", this._onOpenPackOnWebsite.bind(this));
+
+    html.find(".filters .collection-config")
+      .on("click", this._onConfigureCollectionVisibility.bind(this));
+    html.find(".filters .type-config")
+      .on("click", this._onConfigureTypeVisibility.bind(this));
 
     // input triggers searches
     const search = html.find(".search-bar input")
@@ -503,10 +524,10 @@ export default class MouBrowser extends MouApplication {
       const id = section.data("id")
       if(id) {
         const filter = this.html?.find(`div[data-id='${id}']`)
-        const icon = section.find('i')
+        const icon = section.find('i.right')
         if(filter && icon) {
           filter.toggleClass("collapsed")
-          icon.attr('class', icon.hasClass("fa-square-minus") ? "fa-regular fa-square-plus" : "fa-regular fa-square-minus")
+          icon.attr('class', icon.hasClass("fa-square-minus") ? "right fa-regular fa-square-plus" : "right fa-regular fa-square-minus")
           this.filters_prefs!.opensections[id] = icon.hasClass("fa-square-minus")
         }
       }
@@ -867,7 +888,7 @@ export default class MouBrowser extends MouApplication {
       const collectionId = $(event.currentTarget).closest(".action").data("col")
       const collection = module.collections.find(c => c.getId() == collectionId)
       if(collection) {
-        collection.configure(this._callbackAfterConfiguration.bind(this))
+        collection.configure(this._callbackRefresh.bind(this))
       }
     }
   }
@@ -886,7 +907,7 @@ export default class MouBrowser extends MouApplication {
     }
   }
 
-  _callbackAfterConfiguration(): void {
+  _callbackRefresh(): void {
     this.render()
   }
 
@@ -1025,6 +1046,36 @@ export default class MouBrowser extends MouApplication {
           no: () => {}
         });
       }
+    }
+  }
+
+  _onConfigureCollectionVisibility(event: Event): void {
+    event.preventDefault()
+    event.stopPropagation();
+    if(event.currentTarget) {
+      const module = MouApplication.getModule()
+      new MouBrowserFiltersSources(
+        module.collections.map(c => { return { id: c.getId(), name: c.getName(), desc: c.getDescription() }}), 
+        (game as Game).i18n.localize("MOU.filters_sources_description"),
+        this._callbackRefresh.bind(this)
+      ).render(true);
+    }
+  }
+
+  _onConfigureTypeVisibility(event: Event): void {
+    event.preventDefault()
+    event.stopPropagation();
+    if(event.currentTarget) {
+      new MouBrowserFiltersSources(
+        Object.entries(MouCollectionAssetTypeEnum).filter(([key, value]) => (!["Undefined", "Scene", "ScenePacker"].includes(key)) && !isNaN(Number(value)))
+        .map(([key, value]) => ({ 
+          id: "type_" + value, 
+          name: (game as Game).i18n.localize("MOU.type_" + key.toLowerCase()),
+          desc: (game as Game).i18n.localize("MOU.asset_type_desc_" + key.toLowerCase())
+        })).sort((a, b) => a.name.localeCompare(b.name)),
+        (game as Game).i18n.localize("MOU.filters_types_description"),
+        this._callbackRefresh.bind(this)
+      ).render(true);
     }
   }
 }

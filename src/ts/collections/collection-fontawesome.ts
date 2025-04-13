@@ -67,6 +67,10 @@ export default class MouCollectionFontAwesome implements MouCollection {
     return (game as Game).i18n.localize("MOU.collection_type_fontawesome");
   }
 
+  getDescription(): string {
+    return (game as Game).i18n.localize("MOU.collection_type_fontawesome_desc");
+  }
+
   async initialize(): Promise<void> {
     const response = await fetch(`modules/${MODULE_ID}/data/fa-icons.json`);
     this.iconList = await response.json();

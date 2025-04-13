@@ -249,6 +249,10 @@ export default class MouCollectionCloud implements MouCollection {
     }
   }
 
+  getDescription(): string {
+    return (game as Game).i18n.localize("MOU.collection_type_cloud_desc");
+  }
+
   private getScope() {
     return {
       session: MouApplication.getSettings(SETTINGS_SESSION_ID),
@@ -393,6 +397,10 @@ export default class MouCollectionCloud implements MouCollection {
       filtersDuplicate["facets"]["types"] = true
       filtersDuplicate["facets"]["creators"] = true
       filtersDuplicate["facets"]["packs"] = true
+      // reset folders if search terms changed
+      this.cache.curFolders = undefined
+      filters.folder = undefined
+
     }
     else if(!this.cache.curType == undefined || this.cache.curType != filters.type) {
       filtersDuplicate["facets"]["types"] = true

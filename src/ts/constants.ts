@@ -2,8 +2,9 @@ import { id } from "../module.json";
 
 
 export const MODULE_ID = id;
-export const MOU_SERVER_URL = "https://assets.moulinette.cloud"
-//export const MOU_SERVER_URL = "http://127.0.0.1:5000"
+//export const MOU_SERVER_URL = "https://assets.moulinette.cloud"
+//export const MOU_SERVER_URL = "https://assets-dev.moulinette.cloud"
+export const MOU_SERVER_URL = "http://127.0.0.1:5000"
 export const MOU_API = `${MOU_SERVER_URL}/api/v2`
 export const MOU_STORAGE = "https://mttestorage.blob.core.windows.net/"
 export const MOU_STORAGE_PUB = "https://moulinette-previews.nyc3.cdn.digitaloceanspaces.com/"
@@ -21,6 +22,7 @@ export const SETTINGS_DATA_EXCLUSION = "dataExclusions"
 export const SETTINGS_ADVANCED = "advanced_settings"
 export const SETTINGS_PREVS = "prevs"
 export const SETTINGS_TOKEN_SELECTOR = "token_selector"
+export const SETTINGS_HIDDEN = "hidden"
 
 /**
  * The constants below can be overridden using the following macro :

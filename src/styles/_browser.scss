@@ -178,7 +178,9 @@
       h2 {
         display: flex;
         cursor: pointer;
-        i { margin-left: auto; }
+
+        i:not(.right) { margin-left: 5px; }
+        i.right { margin-left: auto; }
 
         &:not(:first-child) {
           margin-top: 15px;
@@ -277,7 +279,7 @@
         display: flex;
         flex-direction: column;
         width: 200px;
-        margin: 8px;
+        margin: 3px;
         max-height: 300px;
         
         &.small {
@@ -640,5 +642,30 @@
       }
     }
 
+  }
+}
+
+#mou-filters-sources {
+
+  h2 {
+    margin: 0px;
+    margin-bottom: 5px;
+  }
+
+  li {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .source {
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+  }
+
+  .desc {
+    font-style: italic;
+    margin: 0px 5px 15px 5px;
+    color: #777;
   }
 }

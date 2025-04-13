@@ -66,6 +66,10 @@ export default class MouCollectionGameIcons implements MouCollection {
     return (game as Game).i18n.localize("MOU.collection_type_gameicons");
   }
 
+  getDescription(): string {
+    return (game as Game).i18n.localize("MOU.collection_type_gameicons_desc");
+  }
+
   async initialize(): Promise<void> {
     // do nothing
     this.error = 0

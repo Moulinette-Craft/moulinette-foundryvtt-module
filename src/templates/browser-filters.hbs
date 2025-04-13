@@ -1,5 +1,5 @@
 <div class="clear"><a href>{{localize "MOU.clear_filters"}}</a></div>
-<h2 data-id="collection">{{localize "MOU.collection"}} <i class="fa-regular fa-square-{{mouIf prefs.opensections.collection "minus" "plus"}}"></i></h2>
+<h2 data-id="collection">{{localize "MOU.collection"}} <a href class="collection-config"><i class="fa-regular fa-folder-gear"></a></i> <i class="right fa-regular fa-square-{{mouIf prefs.opensections.collection "minus" "plus"}}"></i></h2>
 <div id="filterCollections" data-id="collection" class="{{#unless prefs.opensections.collection}}collapsed{{/unless}}">
   <ul>
     {{#each collections as |c|}}
@@ -14,7 +14,7 @@
   </ul>
 </div>
 
-<h2 data-id="asset_type">{{localize "MOU.asset_type"}} <i class="fa-regular fa-square-{{mouIf prefs.opensections.asset_type "minus" "plus"}}"></i></h2>
+<h2 data-id="asset_type">{{localize "MOU.asset_type"}} <a href class="type-config"><i class="fa-regular fa-folder-gear"></a></i> <i class="right fa-regular fa-square-{{mouIf prefs.opensections.asset_type "minus" "plus"}}"></i></h2>
 <div id="filterTypes" class="options {{#unless prefs.opensections.asset_type}}collapsed{{/unless}}" data-id="asset_type">
   <ul>
     {{#each types1 as |t|}}
@@ -35,7 +35,7 @@
 </div>
 
 {{#if showPacksFilter}}
-<h2 data-id="packs">{{localize "MOU.packs"}} <i class="fa-regular fa-square-{{mouIf prefs.opensections.packs "minus" "plus"}}"></i></h2>
+<h2 data-id="packs">{{localize "MOU.packs"}} <i class="right fa-regular fa-square-{{mouIf prefs.opensections.packs "minus" "plus"}}"></i></h2>
 <div data-id="packs" class="packs {{#unless prefs.opensections.packs}}collapsed{{/unless}} form-group">
   <div>
     {{#if creators}}

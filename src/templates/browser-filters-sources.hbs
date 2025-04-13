@@ -1,0 +1,24 @@
+<div class="configurations">
+  <p>{{description}}</p>
+  <h2 data-id="collection">{{localize "MOU.collection"}} </h2>
+  <div>
+    <ul>
+      {{#each sources as |s|}}
+      <li>
+        <div class="source">
+          <input type="checkbox" name="collection" id="enabled-{{s.id}}" {{#unless s.disabled}}checked="checked"{{/unless}}>
+          <label for="enabled-{{s.id}}">{{s.name}}</label>
+        </div>
+        <div class="desc">{{s.desc}}</div>
+      </li>
+      {{/each}}
+    </ul>
+  </div>
+
+  <footer>
+    <div class="actions">
+      <button data-id="save"><i class="fa-solid fa-floppy-disk"></i> {{localize "MOU.save_settings"}}</button>
+      <button data-id="cancel"><i class="fa-solid fa-trash-can-xmark"></i> {{localize "MOU.cancel"}}</button>
+    </div>
+  </footer>
+</div>

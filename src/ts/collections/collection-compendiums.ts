@@ -101,6 +101,10 @@ export default class MouCollectionCompendiums implements MouCollection {
     return (game as Game).i18n.localize("MOU.collection_type_compendiums");
   }
 
+  getDescription(): string {
+    return (game as Game).i18n.localize("MOU.collection_type_compendiums_desc");
+  }
+
   getSupportedTypes(): MouCollectionAssetTypeEnum[] {
     return [
       MouCollectionAssetTypeEnum.Actor, 

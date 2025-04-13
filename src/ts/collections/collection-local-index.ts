@@ -151,6 +151,10 @@ export default class MouCollectionLocal implements MouCollection {
     return (game as Game).i18n.localize("MOU.collection_type_local");
   }
 
+  getDescription(): string {
+    return (game as Game).i18n.localize("MOU.collection_type_local_desc");
+  }
+
   getSupportedTypes(): MouCollectionAssetTypeEnum[] {
     return [
       MouCollectionAssetTypeEnum.Image, 

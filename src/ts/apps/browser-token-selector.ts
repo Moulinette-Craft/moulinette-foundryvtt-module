@@ -17,7 +17,7 @@ export default class MouBrowserTokenSelector extends MouApplication {
   }
   
   static override get defaultOptions() {
-    return mergeObject(super.defaultOptions, {
+    return foundry.utils.mergeObject(super.defaultOptions, {
       id: "mou-browser-token-selector",
       classes: ["mou"],
       title: (game as Game).i18n.localize("MOU.drop_as_token"),

@@ -84,6 +84,10 @@ export default class MouCollectionBBCSounds implements MouCollection {
     return (game as Game).i18n.localize("MOU.collection_type_bbc_sounds");
   }
 
+  getDescription(): string {
+    return (game as Game).i18n.localize("MOU.collection_type_bbc_desc");
+  }
+
   async initialize(): Promise<void> {
     // do nothing
   }

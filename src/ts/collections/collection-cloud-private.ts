@@ -135,6 +135,10 @@ export default class MouCollectionCloudPrivate implements MouCollection {
     return (game as Game).i18n.localize("MOU.collection_type_cloud_private")
   }
 
+  getDescription(): string {
+    return (game as Game).i18n.localize("MOU.collection_type_cloud_private_desc");
+  }
+
   private getScope() {
     return {
       session: MouApplication.getSettings(SETTINGS_SESSION_ID)
