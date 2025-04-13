@@ -43,6 +43,17 @@
 
       i { margin: 0px; }
     }
+
+    .options {
+      display: flex;
+      justify-content: center;
+      width: 30px;
+      margin-left: 15px;
+      i { 
+        font-size: 18px;
+        cursor: pointer; 
+      }
+    }
   }
 
   .status {
@@ -81,9 +92,9 @@
       /*display: none;*/
       visibility: hidden;
       position: absolute;
-      width: 200px;
-      max-width: 200px;
-      min-width: 200px;
+      width: 300px;
+      max-width: 300px;
+      min-width: 300px;
       padding: 10px;
       background: rgba(0, 0, 0, 0.95);
       font-family: var(--font-primary);
@@ -109,8 +120,8 @@
 
       .thumbnail {
         margin: 20px auto;
-        width: 160px;
-        height: 160px;
+        width: 260px;
+        height: 260px;
         background-position: center;
         background-size: contain;
         background-repeat: no-repeat;
@@ -118,7 +129,7 @@
         text-align: center;
         color: black;
         font-size: 96px;
-        line-height: 160px;
+        line-height: 260px;
       }
 
       .asset-name, .asset-creator {

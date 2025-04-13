@@ -1,4 +1,4 @@
-import MouConfig, { MODULE_ID, SETTINGS_ADVANCED, SETTINGS_HIDDEN, SETTINGS_PREVS } from "../constants";
+import MouConfig, { MODULE_ID, SETTINGS_ADVANCED, SETTINGS_HIDDEN, SETTINGS_PREVS, SETTINGS_TOGGLES } from "../constants";
 import { AnyDict } from "../types";
 import MouFileManager from "../utils/file-manager";
 import MouMediaUtils from "../utils/media-utils";
@@ -133,13 +133,16 @@ export default class MouBrowser extends MouApplication {
         break
     }
 
+    const toggles = MouApplication.getSettings(SETTINGS_TOGGLES) as AnyDict
+
     return {
       pickerMode: this.pickerType != undefined && this.pickerType != null,
       user: MouApplication.getModule().cache.user,
       searchTerms: this.filters.searchTerms,
       filtersVisible: this.filters_prefs!.visible,
       filters: filtersHTML,
-      settings: settingsHTML
+      settings: settingsHTML,
+      toggleHint: "hint" in toggles ? toggles.hint : true,
     };
   }
 
@@ -339,6 +342,9 @@ export default class MouBrowser extends MouApplication {
         window.open("https://assets.moulinette.cloud/docs", "_blank")
       })
     }
+
+    // header options
+    html.find("header .options i").on("click", this._onToggleBrowserOptions.bind(this))
 
     // show/hide advanced settings
     const adv_settings = MouApplication.getSettings(SETTINGS_ADVANCED) as AnyDict
@@ -689,16 +695,23 @@ export default class MouBrowser extends MouApplication {
       if(selAsset) {
         const actions = this.collection?.getActions(selAsset)
         if(actions && actions.length > 0) {
-          asset.find(".menu").css("display", "flex"); 
-          asset.find(".overlay").show();
           renderTemplate(`modules/${MODULE_ID}/templates/browser-assets-actions.hbs`, { 
             actions: actions.filter(a => a.small === undefined || !a.small),
             smallActions: actions.filter(a => a.small !== undefined && a.small),
           }).then( (html) => {
-            asset.find(".menu").html(html)
+            asset.find(".menu").css("display", "flex"); 
+            asset.find(".overlay").show();
+            asset.find(".menu").html(html);
             asset.find(".menu button").on("click", this._onAction.bind(this))
-            asset.find(".menu button").on("mouseenter", this._onActionShowHint.bind(this))
-            asset.find(".menu button").on("mouseleave", this._onActionHideHint.bind(this))
+            
+            const toggles = MouApplication.getSettings(SETTINGS_TOGGLES) as AnyDict
+            const toggleHint = "hint" in toggles ? toggles.hint : true
+            if(toggleHint) {
+              asset.find(".menu").on("mouseenter", this._onActionShowHint.bind(this))
+              asset.find(".menu").on("mouseleave", this._onActionHideHint.bind(this))
+              asset.find(".menu button").on("mouseenter", this._onActionShowHint.bind(this))
+              asset.find(".menu button").on("mouseleave", this._onActionHideHint.bind(this))
+            }
           })
         } else {
           this.logWarn(`No action for asset ${selAsset.name} (${selAsset.id})`)
@@ -811,9 +824,15 @@ export default class MouBrowser extends MouApplication {
       }
 
       const hint = this.collection?.getActionHint(selAsset, button.data("id"))
-      if(!hint) return;
-      actionHint.find("h3").html(hint.name)
-      actionHint.find(".description").html(hint.description)
+      if(hint) {
+        actionHint.find("h3").html(hint.name)
+        actionHint.find(".description").html(hint.description)
+        actionHint.find(".aboutAction").css("visibility", "visible")
+      } else if(asset.hasClass("block")) {
+        actionHint.find(".aboutAction").css("visibility", "hidden")
+      } else {
+        return;
+      }
       actionHint.find(".thumbnail").html()
       if(this.filters.type == MouCollectionAssetTypeEnum.Icon) {
         actionHint.find(".thumbnail").html(`<i class="${selAsset.id}"></i>`)
@@ -826,19 +845,23 @@ export default class MouBrowser extends MouApplication {
       const buttonPos = button.position()
       const assetPos = asset.position()  
       const contentScrollY = content.scrollTop()
+      const assetWidth = asset.outerWidth()
+      const assetHeight = asset.outerHeight()
+      const contentWidth = content.outerWidth(true)
       if(asset.hasClass("block")) {
-        const assetWidth = asset.outerWidth()
-        const contentWidth = content.outerWidth(true)
         if(assetPos !== undefined && assetWidth !== undefined && contentWidth !== undefined && buttonPos !== undefined && contentScrollY !== undefined) {
           const remainingSpace = contentWidth - (assetPos.left + assetWidth)
-          posTop = assetPos.top + buttonPos.top + contentScrollY
-          posLeft = remainingSpace > 220 ? assetPos.left + assetWidth : assetPos.left - 200 + 16
+          posTop = assetPos.top + contentScrollY
+          posLeft = remainingSpace > 320 ? assetPos.left + assetWidth + 10 : assetPos.left - 305
         }
       } else {
-        const assetHeight = asset.outerHeight()
         if(assetHeight !== undefined && contentScrollY !== undefined) {
           posTop = assetPos.top + assetHeight + contentScrollY +15
-          posLeft = buttonPos.left + 15
+          if(button.data("small")) {
+            posLeft = buttonPos.left - 250
+          } else {
+            posLeft = buttonPos.left
+          }
         }
       }
       actionHint.css({ top: posTop, left: posLeft, 'visibility': 'visible', 'opacity': 1})
@@ -849,7 +872,16 @@ export default class MouBrowser extends MouApplication {
 
   _onActionHideHint(event: Event) {
     event.preventDefault();
-    this.html?.find(".actionhint").css({'visibility': 'hidden', 'opacity': 0})
+    if(event.currentTarget) {
+      const button = $(event.currentTarget)    // asset's button
+      const buttonId = button.data("id")
+      const asset = button.closest(".asset")   // asset inside the content      
+      if(asset.hasClass("block") && buttonId) {
+        this.html?.find(".aboutAction").css("visibility", "hidden")
+      } else {
+        this.html?.find(".actionhint").css({'visibility': 'hidden', 'opacity': 0})    
+      }
+    }
   }
 
   override _onDragStart(event: Event): void {
@@ -1076,6 +1108,25 @@ export default class MouBrowser extends MouApplication {
         (game as Game).i18n.localize("MOU.filters_types_description"),
         this._callbackRefresh.bind(this)
       ).render(true);
+    }
+  }
+
+  _onToggleBrowserOptions(event: Event): void {
+    event.preventDefault()
+    event.stopPropagation();
+    if(event.currentTarget) {
+      const id = $(event.currentTarget).data("id")
+      if(id && ["hint"].includes(id)) {
+        const toggles = MouApplication.getSettings(SETTINGS_TOGGLES) as AnyDict
+        if(id in toggles) {
+          toggles[id] = !toggles[id]
+        } else {
+          toggles[id] = false
+        }
+        MouApplication.setSettings(SETTINGS_TOGGLES, toggles, false).then(() => {
+          this.render()
+        })
+      }
     }
   }
 }

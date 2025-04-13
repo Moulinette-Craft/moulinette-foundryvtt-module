@@ -23,6 +23,7 @@ export const SETTINGS_ADVANCED = "advanced_settings"
 export const SETTINGS_PREVS = "prevs"
 export const SETTINGS_TOKEN_SELECTOR = "token_selector"
 export const SETTINGS_HIDDEN = "hidden"
+export const SETTINGS_TOGGLES = "toggles"
 
 /**
  * The constants below can be overridden using the following macro :
