@@ -39,26 +39,31 @@ class MouCollectionLocalAsset implements MouCollectionAsset {
   constructor(data: AnyDict, pack: AnyDict, idx: number, baseUrl: string) {
     let assetType : MouCollectionAssetTypeEnum
     this.animated = false
-    if(MouConfig.MEDIA_IMAGES.includes(data.path.split(".").pop()?.toLocaleLowerCase() as string)) {
+    const ext = data.path.split(".").pop()?.toLocaleLowerCase() as string;
+    if(MouConfig.MEDIA_IMAGES.includes(ext)) {
       if(MouMediaUtils.isMap(data.width, data.height)) {
         assetType = MouCollectionAssetTypeEnum.Map
       } else {
         assetType = MouCollectionAssetTypeEnum.Image
       }
-    } else if (MouConfig.MEDIA_VIDEOS.includes(data.path.split(".").pop()?.toLocaleLowerCase() as string)) {
+    } else if (MouConfig.MEDIA_VIDEOS.includes(ext)) {
       this.animated = !(pack.options && pack.options.thumbs)
       if(MouMediaUtils.isMap(data.width, data.height)) {
         assetType = MouCollectionAssetTypeEnum.Map
       } else {
         assetType = MouCollectionAssetTypeEnum.Image
       }
-    } else if (MouConfig.MEDIA_AUDIO.includes(data.path.split(".").pop()?.toLocaleLowerCase() as string)) {
+    } else if (MouConfig.MEDIA_AUDIO.includes(ext)) {
       assetType = MouCollectionAssetTypeEnum.Audio
     } else {
       assetType = MouCollectionAssetTypeEnum.Undefined
     }
     
     let thumbPath = baseUrl + `${MouConfig.MOU_DEF_THUMBS}/` + data.path.substring(baseUrl.length, data.path.lastIndexOf(".")) + ".webp" 
+    // if the file is a SVG, we use the original file as thumbnail
+    if(ext == "svg") {
+      thumbPath = data.path
+    }
     
     this.id = String(idx)
     this.url = MouMediaUtils.encodeURL(data.path);

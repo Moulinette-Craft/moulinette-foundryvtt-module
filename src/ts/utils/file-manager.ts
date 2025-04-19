@@ -405,18 +405,22 @@ export default class MouFileManager {
     if(await MouFileManager.fileExists(folder, filename)) {
       return false;
     }
-    const thumb = await ImageHelper.createThumbnail(url, { width: options ? options.width : 200, height: options ? options.width : 200, center: true, format: "image/webp"})
-    // convert to file
-    const res = await fetch(thumb.thumb);
-    const buf = await res.arrayBuffer();
-    const thumbFile = new File([buf], filename, { type: "image/webp" })
-    await MouFileManager.uploadFile(thumbFile, filename, folder, true)
-    
-    // clear cache to avoid (or mitigate) memory leaks
-    // @ts-ignore
-    for(const key of PIXI.Assets.cache._cacheMap.keys()) {
+    try {
+      const thumb = await ImageHelper.createThumbnail(url, { width: options ? options.width : 200, height: options ? options.width : 200, center: true, format: "image/webp"})
+      // convert to file
+      const res = await fetch(thumb.thumb);
+      const buf = await res.arrayBuffer();
+      const thumbFile = new File([buf], filename, { type: "image/webp" })
+      await MouFileManager.uploadFile(thumbFile, filename, folder, true)
+      
+      // clear cache to avoid (or mitigate) memory leaks
       // @ts-ignore
-      await PIXI.Assets.unload(key)
+      for(const key of PIXI.Assets.cache._cacheMap.keys()) {
+        // @ts-ignore
+        await PIXI.Assets.unload(key)
+      }
+    } catch(e) {
+      MouApplication.logError(MouFileManager.APP_NAME, `Not able to generate thumbnail for ${url}`, e)
     }
 
     return true

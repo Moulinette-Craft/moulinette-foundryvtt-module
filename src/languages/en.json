@@ -133,6 +133,7 @@
   "MOU.error_source_name": "Please enter a name for the source.",
   "MOU.export_configuration": "Export config",
   "MOU.filters_sources_description": "Choose the collections you want to use in this world. Other collections will no longer be displayed and will not clutter the sidebar in your filters.",
+  "MOU.filters_types_description": "Choose the types you want to use in this world. Other types will no longer be displayed and will not clutter the sidebar in your filters.",
   "MOU.folder": "Folder",
   "MOU.foreground_color": "Fg color",
   "MOU.help": "Help",

@@ -217,9 +217,12 @@ export default class MouLocalClient {
               if(options && options.thumbs) {
                 const paths = await MouFileManager.getMediaPaths(fileURL, source)
                 const thumbFilename = paths.filename.substring(0, paths.filename.lastIndexOf(".")) + ".webp"
-                const generated = await MouFileManager.generateThumbnail(srcUrl, thumbFilename, `${MouConfig.MOU_DEF_THUMBS}/${paths.folder}`)
-                if(generated && module.debug) {
-                  MouApplication.logDebug(MouLocalClient.APP_NAME, `Thumbnail generated for ${fileURL}`)
+                // don't generate thumbnail for SVG
+                if(ext != "svg") {
+                  const generated = await MouFileManager.generateThumbnail(srcUrl, thumbFilename, `${MouConfig.MOU_DEF_THUMBS}/${paths.folder}`)
+                  if(generated && module.debug) {
+                    MouApplication.logDebug(MouLocalClient.APP_NAME, `Thumbnail generated for ${fileURL}`)
+                  }
                 }
               }
               // retrieving metadata for images (ie width & height)
