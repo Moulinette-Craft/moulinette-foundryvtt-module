@@ -285,8 +285,8 @@ export default class MouFileManager {
     // check if recursive (only supported on The Forge)
     for(const f of base.files) {
       const basepath = f.substring(0, f.lastIndexOf("/"))
-      if(basepath.length > 0 && !basepath.endsWith(path)) {
-        MouApplication.logWarn(MouFileManager.APP_NAME, `Recursive scan detected`)
+      if(basepath.length > 0 && !decodeURI(basepath).endsWith(path)) {
+        MouApplication.logWarn(MouFileManager.APP_NAME, `Recursive scan detected`, { basepath, path })
         return list
       }
     }
