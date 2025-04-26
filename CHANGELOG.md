@@ -4,9 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.5.1] - 2025-04-19
+## [1.5.2] - 2025-04-19
 ### Fixed
-- False recursive detection for folders with special characters
+- 1.5.0 : missing export/import local asset configuration
+- 1.5.0 : infinite loop if no asset found or using S3 but without "bucket" configuration
+- 1.5.1 : False recursive detection for folders with special characters
+- 1.5.2 : Fix issue with concatenation for large collections.
+
 ### Added
 - Advanced settings for images : tile size, drop as
 - Advanced settings for audio : audio channel, sound volume
@@ -14,9 +18,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Link to pack on Moulinette Marketplace
 - Configure filters visibility (collection & types)
 - Toggle for enabling/disabling hints
-### Fixed
-- 1.5.0 : missing export/import local asset configuration
-- 1.5.0 : infinite loop if no asset found or using S3 but without "bucket" configuration
 
 ## [1.4.0] - 2025-02-22
 ### Fixed
