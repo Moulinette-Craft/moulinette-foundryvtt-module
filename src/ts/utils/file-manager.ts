@@ -280,7 +280,9 @@ export default class MouFileManager {
     }
     
     if(debug) MouApplication.logInfo(MouFileManager.APP_NAME, `Assets: ${base.files.length} assets found`)
-    list.push(...base.files)
+    for (const file of base.files) {
+      list.push(file);
+    }
 
     // check if recursive (only supported on The Forge)
     for(const f of base.files) {
@@ -296,7 +298,9 @@ export default class MouFileManager {
       // workaround for infinite loop : folder must be a subfolder
       if( subpath.startsWith(path) ) {
         const files = await MouFileManager.scanFolder(source, subpath, debug)
-        list.push(...files)
+        for (const file of files) {
+          list.push(file);
+        }
       } else if(debug) MouApplication.logWarn(MouFileManager.APP_NAME, `Assets: ignoring ${subpath} which is NOT a subfolder of ${path} as expected!`)
     }
     return list

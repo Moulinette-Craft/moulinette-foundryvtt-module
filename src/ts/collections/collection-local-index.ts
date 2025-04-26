@@ -232,7 +232,9 @@ export default class MouCollectionLocal implements MouCollection {
           }
           return true
         })
-        results.push(...assets)
+        for (const asset of assets) {
+          results.push(asset)
+        }
       }
     }
     return results
