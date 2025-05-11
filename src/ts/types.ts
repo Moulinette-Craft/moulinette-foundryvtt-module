@@ -18,6 +18,7 @@ export interface MouModule extends Game.ModuleData<ModuleData> {
   cache: MouCache;
   collections: MouCollection[];
   eventHandler: MouEventHandler;
+  buttons: any;
 
   // additional tooles (ie. from modules) to load
   tools: AnyDict[]

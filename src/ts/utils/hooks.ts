@@ -1,5 +1,6 @@
 import MouApplication from "../apps/application";
 import { MODULE_ID, SETTINGS_ENABLE_PLAYERS } from "../constants";
+import { AnyDict } from "../types";
 
 declare var libWrapper: any;
 
@@ -8,6 +9,18 @@ declare var libWrapper: any;
  */
 export default class MouHooks {
   
+  static compatibilityModeAdd(dictOrArray: AnyDict | AnyDict[], key: string, value: any) {
+    // Version 12
+    if(Array.isArray(dictOrArray)) {
+      dictOrArray.push(value)
+    } 
+    // Version 13+
+    else {
+      dictOrArray[key] = value
+    }
+  }
+
+
   /**
    * Adds custom Moulinette controls to the scene controls.
    * 
@@ -18,7 +31,7 @@ export default class MouHooks {
    * an authentication status indicator. The authentication status tool's icon changes based on whether the user is 
    * authenticated.
    */
-  static addMoulinetteControls(buttons: SceneControl[]) {
+  static addMoulinetteControls(buttons: SceneControl[] | AnyDict) {
     const module = MouApplication.getModule()
     if(!module) return
 
@@ -26,40 +39,51 @@ export default class MouHooks {
     const enablePlayers = (game as Game).settings.get(MODULE_ID, SETTINGS_ENABLE_PLAYERS)
 
     if(isGM || enablePlayers) {
+      let order = 0
       const moulinetteTool = {
-        activeTool: "",
         icon: "mou-icon mou-logo",
         layer: "moulayer",
-        name: "moucontrols",
-        title: (game as Game).i18n.localize("MOU.user_authenticated"),
-        tools: [{ 
-          name: "search", 
-          icon: "fa-solid fa-magnifying-glass", 
-          title: (game as Game).i18n.localize("MOU.browser"),
-          button: true, 
-          onClick: () => { module.browser.render(true) } 
-        }] as any,
+        name: (game as Game).version.startsWith("12.") ? "moucontrols" : "moulinette",
+        title: "Moulinette Media Search",
+        onChange: () => {},
+        onToolChange: () => {},
+        tools: (game as Game).version.startsWith("12.") ? [] as AnyDict[] : {} as AnyDict,
         visible: true
+      } as AnyDict
+
+      MouHooks.compatibilityModeAdd(buttons, "moulinette", moulinetteTool)
+
+      const search = { 
+        name: "search", 
+        icon: "fa-solid fa-magnifying-glass", 
+        title: (game as Game).i18n.localize("MOU.browser"),
+        button: true, 
+        onClick: () => { module.browser.render(true) },
+        order: order++,
       }
+
+      MouHooks.compatibilityModeAdd(moulinetteTool.tools, "search", search)
+      
       
       if(isGM) {
         const isValidUser = module.cache?.user && module.cache?.user.fullName
-        moulinetteTool.tools.push({
+        MouHooks.compatibilityModeAdd(moulinetteTool.tools, "authenticated", {
           name: "authenticated",
           icon: isValidUser ? "fa-solid fa-user-check" : "fa-solid fa-user-xmark",
           title: (game as Game).i18n.localize("MOU.user_authenticated"),
           button: true,
-          onClick: () => { module.user.render(true) }
+          onClick: () => { module.user.render(true) },
+          order: order++,
         });
 
         if(module.tools) {
           for(const tool of module.tools) {
-            moulinetteTool.tools.push(tool)
+            MouHooks.compatibilityModeAdd(moulinetteTool.tools, tool.name, tool)
           }
         }
       }
-
-      buttons.push(moulinetteTool)
+      
+      module.buttons = buttons
     }
   }
 

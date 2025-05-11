@@ -19,7 +19,8 @@
   }
 }
 */
-[class^="mou-icon"]:before, [class*=" mou-icon-"]:before {
+//[class^="mou-icon"]:before, [class*=" mou-icon-"]:before {
+.mou-icon:before {
   font-family: "mou-fontello";
   font-style: normal;
   font-weight: normal;

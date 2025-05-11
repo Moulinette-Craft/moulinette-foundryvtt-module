@@ -339,8 +339,14 @@ export default class MouFoundryUtils {
 
     // Create the Tile
     let tile : AnyDict;
-    // @ts-ignore
-    data.overhead = ui.controls.controls.find(c => c.layer === "tiles").foreground ?? false;
+    if((game as Game).version.startsWith("12.")) {
+      // @ts-ignore
+      data.overhead = ui.controls.controls.find(c => c.layer === "tiles").foreground ?? false;
+    }
+    else {
+      // @ts-ignore
+      data.overhead = ui.controls.controls.tiles.tools.foreground?.active ?? false;
+    }
     // @ts-ignore
     tile = (await canvas.scene.createEmbeddedDocuments(Tile.embeddedName, [data], { parent: canvas.scene }))[0]
     tile = tile._object
