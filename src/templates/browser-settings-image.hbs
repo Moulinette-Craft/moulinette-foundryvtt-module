@@ -39,15 +39,21 @@
 
   {{#if (eq collection "mou-gameicons")}}
   <div class="setting">
-    <label>{{localize "MOU.foreground_color"}} <i class="fa-solid fa-font"></i> : </label>
+    <div class="toggle">
+      <label for="fgColorEnabled">{{localize "MOU.foreground_color"}} <i class="fa-solid fa-font"></i> : </label>
+    </div>
     <div class="options">
-      <input name="fgColor" type="color" value="{{ settings.image.fgcolor }}">
+      <input id="fgColor" name="fgColor" type="color" value="{{ settings.image.fgcolor }}">
     </div>
   </div>
   <div class="setting">
-    <label>{{localize "MOU.background_color"}} <i class="fa-solid fa-paint-roller"></i> :</label>
+    <div class="toggle">
+      <input type="checkbox" id="bgColorEnabled" {{#if settings.image.bgcolor }}checked="checked"{{/if}}>
+      <label for="bgColorEnabled">{{localize "MOU.background_color"}} <i class="fa-solid fa-paint-roller"></i> :</label>
+    </div>
     <div>
-      <input name="bgColor" type="color" value="{{ settings.image.bgcolor }}">
+      <input id="bgColor" name="bgColor" type="color" value="{{ settings.image.bgcolor }}" style="{{#unless settings.image.bgcolor }}display: none;{{/unless}}">
+      <i id="bgColorTransp" class="fa-solid fa-empty-set transparent" title="{{localize "MOU.transparent"}}"></i>
     </div>
   </div>
   {{/if}}

@@ -226,6 +226,7 @@
   "MOU.toggle_hints_enabled": "Hints are enabled (displayed when hovering over an action). Click to disable.",
   "MOU.track": "track",
   "MOU.tracks": "tracks",
+  "MOU.transparent": "Transparent",
   "MOU.type_actor": "Actor",
   "MOU.type_adventure": "Adventure",
   "MOU.type_audio": "Audio",

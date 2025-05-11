@@ -169,8 +169,8 @@ export default class MouCollectionGameIcons implements MouCollection {
       
       case GameIconsAssetAction.CLIPBOARD:
         const adv_settings = MouApplication.getSettings(SETTINGS_ADVANCED) as AnyDict
-        const bgColor = adv_settings.image?.bgcolor || "#000000"
-        const fgColor = adv_settings.image?.fgcolor || "#ffffff"
+        const bgColor = adv_settings.image?.bgcolor
+        const fgColor = adv_settings.image?.fgcolor
         const imagePath = await MouGameIconsClient.downloadIcon(asset.id, fgColor, bgColor)
         if(imagePath) {
           MouMediaUtils.copyToClipboard(imagePath)

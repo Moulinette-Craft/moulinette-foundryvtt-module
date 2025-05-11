@@ -398,6 +398,12 @@ export default class MouBrowser extends MouApplication {
         $(ev.currentTarget).addClass("active")
       }
     });
+    // show/hide color pickers
+    if(adv_settings.image.bgcolor) {
+      html.find(".advanced_settings #bgColorTransp").hide()
+    } else {
+      html.find(".advanced_settings #bgColor").hide()
+    }
     html.find(".advanced_settings input[type=color]").on("input", async (ev) => {
       const fgColor = $(ev.currentTarget).closest(".settings").find("input[name=fgColor]").val()
       const bgColor = $(ev.currentTarget).closest(".settings").find("input[name=bgColor]").val()
@@ -405,6 +411,22 @@ export default class MouBrowser extends MouApplication {
       adv_settings.image.bgcolor = bgColor
       await MouApplication.setSettings(SETTINGS_ADVANCED, adv_settings, true)
     });
+    html.find(".advanced_settings #bgColorEnabled").on("change", async (ev) => {
+      const checked = $(ev.currentTarget).is(":checked")
+      const bgColorField = $(ev.currentTarget).closest(".settings").find("input[name=bgColor]")
+      const bgColorTransp = $(ev.currentTarget).closest(".settings").find("#bgColorTransp")
+      if(checked) {
+        adv_settings.image.bgcolor = MouConfig.DEF_SETTINGS_IMAGE.bgcolor
+        bgColorField.val(MouConfig.DEF_SETTINGS_IMAGE.bgcolor)
+        bgColorField.show()
+        bgColorTransp.show()
+      } else {
+        adv_settings.image.bgcolor = ""
+        bgColorField.hide()
+        bgColorTransp.show()
+      }
+      await MouApplication.setSettings(SETTINGS_ADVANCED, adv_settings, true)
+    })
     
 
     this.loadMoreAssets()

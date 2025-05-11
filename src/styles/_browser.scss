@@ -622,6 +622,12 @@
       padding-bottom: 3px;
 
       .tilesize { width: 40px; }
+      .toggle {
+        display: flex;
+        align-items: center;
+        input { height: 14px; margin: 0px; }
+      }
+
       .options { 
         display: flex;
         column-gap: 8px;
