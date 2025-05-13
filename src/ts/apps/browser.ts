@@ -399,7 +399,7 @@ export default class MouBrowser extends MouApplication {
       }
     });
     // show/hide color pickers
-    if(adv_settings.image.bgcolor) {
+    if(adv_settings.image?.bgcolor) {
       html.find(".advanced_settings #bgColorTransp").hide()
     } else {
       html.find(".advanced_settings #bgColor").hide()
