@@ -138,7 +138,7 @@ export default class MouFileManager {
     
     try {
       const isForge = typeof ForgeVTT != "undefined" && ForgeVTT.usingTheForge
-      if (isForge && ForgeVTT_FilePicker) {
+      if (isForge && typeof ForgeVTT_FilePicker != "undefined") {
         MouApplication.logInfo(MouFileManager.APP_NAME, "Uploading with The Forge")
         return await ForgeVTT_FilePicker.upload(source, folderPath, file, MouFileManager.getOptions(), {notify: false});
       } else {
