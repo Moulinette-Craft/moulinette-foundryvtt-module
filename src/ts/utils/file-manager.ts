@@ -137,10 +137,14 @@ export default class MouFileManager {
     }
     
     try {
-      if (typeof ForgeVTT != "undefined" && ForgeVTT.usingTheForge) {
+      const isForge = typeof ForgeVTT != "undefined" && ForgeVTT.usingTheForge
+      if (isForge && ForgeVTT_FilePicker) {
         MouApplication.logInfo(MouFileManager.APP_NAME, "Uploading with The Forge")
         return await ForgeVTT_FilePicker.upload(source, folderPath, file, MouFileManager.getOptions(), {notify: false});
       } else {
+        if (isForge) {
+          MouApplication.logWarn(MouFileManager.APP_NAME, "ForgeVTT_FilePicker not found. Uploading with default FilePicker");
+        }
         // @ts-ignore: ignore notify being a string (error in TLD)
         return await FilePicker.upload(source, folderPath, file, MouFileManager.getOptions(), {notify: false});
       }

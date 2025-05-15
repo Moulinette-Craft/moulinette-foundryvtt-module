@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.6.1] - 2025-05-11
 ### Fixed
 - 1.6.1 : unable to set image background transparency (game icons)
+- 1.6.2 : error with uninitialized advanced settings
+- 1.6.3 : workaround for The Forge (ForgeVTT_FilePicker undefined)
 ### Added
 - Support for FoundryVTT v.13
 
