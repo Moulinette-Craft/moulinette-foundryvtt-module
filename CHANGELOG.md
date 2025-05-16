@@ -4,11 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.6.4] - 2025-05-11
+## [1.6.5] - 2025-05-11
 ### Fixed
 - 1.6.1 : unable to set image background transparency (game icons)
 - 1.6.2 : error with uninitialized advanced settings
 - 1.6.4 : workaround for The Forge (ForgeVTT_FilePicker undefined)
+- 1.6.5 : advanced settings not properly initialized resulting in drag & drop not working
 ### Added
 - Support for FoundryVTT v.13
 
