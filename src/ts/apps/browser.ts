@@ -115,8 +115,8 @@ export default class MouBrowser extends MouApplication {
     let settingsHTML = ""
     switch(this.filters.type) {
       case MouCollectionAssetTypeEnum.Audio:
-      case MouCollectionAssetTypeEnum.Image:
         MouBrowser.initializeAdvSettings(adv_settings, "audio", MouConfig.DEF_SETTINGS_AUDIO)
+      case MouCollectionAssetTypeEnum.Image:
         MouBrowser.initializeAdvSettings(adv_settings, "image", MouConfig.DEF_SETTINGS_IMAGE)
       
         const type = MouCollectionAssetTypeEnum[Number(this.filters.type)].toLowerCase()
@@ -361,21 +361,21 @@ export default class MouBrowser extends MouApplication {
     });
 
     // advanced settings listeners
+    MouBrowser.initializeAdvSettings(adv_settings, "image", MouConfig.DEF_SETTINGS_IMAGE)
+    MouBrowser.initializeAdvSettings(adv_settings, "audio", MouConfig.DEF_SETTINGS_AUDIO)
+
     html.find(".advanced_settings select[name=channel]").on("change", async (ev) => {
       const channel = $(ev.currentTarget).val()
-      MouBrowser.initializeAdvSettings(adv_settings, "audio", MouConfig.DEF_SETTINGS_AUDIO)
       adv_settings.audio.channel = channel
       await MouApplication.setSettings(SETTINGS_ADVANCED, adv_settings, true)
     });
     html.find(".advanced_settings input[name=mou-audio-volume]").on("change", async (ev) => {
       const volumeInput = $(ev.currentTarget).val()
-      MouBrowser.initializeAdvSettings(adv_settings, "audio", MouConfig.DEF_SETTINGS_AUDIO)
       adv_settings.audio.volume = volumeInput
       await MouApplication.setSettings(SETTINGS_ADVANCED, adv_settings, true)
     });
     html.find(".advanced_settings input[name=tilesize]").on("change", async (ev) => {
       const tilesize = $(ev.currentTarget).val()
-      MouBrowser.initializeAdvSettings(adv_settings, "image", MouConfig.DEF_SETTINGS_IMAGE)
       adv_settings.image.tilesize = tilesize
       await MouApplication.setSettings(SETTINGS_ADVANCED, adv_settings, true)
       html.find(".advanced_settings select[name=tilesize_select]").val("")
