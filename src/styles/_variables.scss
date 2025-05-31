@@ -4,6 +4,13 @@
   --mou-browser-smallicon-size: 16px;
   --mou-browser-header-height: 38px;
   --mou-browser-footer-height: 20px;
+  --mou-browser-theme-margin: 0px;
 
   --mou-warning-color: darkred;
+  --mou-app-background: url(../../ui/parchment.jpg);
+}
+
+.system-wfrp4e .mou {
+  --mou-browser-theme-margin: 20px;
+  --mou-app-background: url(/systems/wfrp4e/ui/frames/window-app-background-bookshelf.webp);
 }

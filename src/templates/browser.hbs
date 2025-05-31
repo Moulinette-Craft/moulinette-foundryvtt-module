@@ -10,13 +10,13 @@
   </header>
   <div class="container">
     <div class="filters-toggle {{#unless filtersVisible}}collapsed{{/unless}}"><i class="fa-solid fa-angles-{{mouIf filtersVisible "left" "right"}}"></i></div>
-    <aside class="filters {{#unless filtersVisible}}collapsed{{/unless}}">{{{filters}}}</aside>
+    <aside class="filters {{#unless filtersVisible}}collapsed{{/unless}}">{{{mouFilters}}}</aside>
     <main class="content">
       <div class="loader"><i class="fa-regular fa-hourglass-start"></i> {{localize "MOU.loading"}}</div>
     </main>
   </div>
-  <div class="advanced_settings">{{{ settings }}}</div>
-  <footer class="status">
+  <div class="advanced_settings form-group">{{{ mouSettings }}}</div>
+  <footer class="status form-group">
     <div class="support">
       {{#if user.patron}}<i class="fa-solid fa-heart"></i> {{localize "MOU.thanks_supporting"}}{{/if}}
       {{#unless user.patron}}<i class="fa-brands fa-patreon"></i> <a href="https://www.patreon.com/moulinette" target="_blank">{{localize "MOU.support_moulinette"}}</a>{{/unless}}

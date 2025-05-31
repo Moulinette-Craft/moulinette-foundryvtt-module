@@ -140,8 +140,8 @@ export default class MouBrowser extends MouApplication {
       user: MouApplication.getModule().cache.user,
       searchTerms: this.filters.searchTerms,
       filtersVisible: this.filters_prefs!.visible,
-      filters: filtersHTML,
-      settings: settingsHTML,
+      mouFilters: filtersHTML,
+      mouSettings: settingsHTML,
       toggleHint: "hint" in toggles ? toggles.hint : true,
     };
   }

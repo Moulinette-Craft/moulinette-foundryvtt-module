@@ -84,7 +84,7 @@
     display: flex;
     flex-direction: row;
     width: 100%;
-    height: calc(100% - var(--mou-browser-header-height) - var(--mou-browser-footer-height));
+    height: calc(100% - var(--mou-browser-header-height) - var(--mou-browser-footer-height) - var(--mou-browser-theme-margin));
     align-items: flex-start;
     padding: var(--mou-browser-padding-parts);
     
@@ -513,6 +513,7 @@
           }
 
           .num {
+            color: black;
             z-index: 1;
           }
         }
@@ -600,9 +601,9 @@
   .advanced_settings {
     display: none;
     position: absolute;
-    bottom: var(--mou-browser-footer-height);
-    width: 100%;
-    background: url(../../ui/parchment.jpg) repeat;
+    bottom: calc(var(--mou-browser-footer-height) + var(--mou-browser-theme-margin));
+    width: calc(100% - var(--mou-browser-theme-margin));
+    background: var(--mou-app-background) repeat;
     z-index: 10;
     padding: 5px;
     border-top: 1px solid #000;
