@@ -691,7 +691,7 @@ export default class MouCollectionCloud implements MouCollection {
             case MouCollectionAssetTypeEnum.Actor: MouFoundryUtils.importActor(JSON.parse(resultImport.message), folderPath); break
             case MouCollectionAssetTypeEnum.Audio: MouFoundryUtils.playStopSound(resultImport.path, MouCollectionCloud.PLAYLIST_NAME); break
             case MouCollectionAssetTypeEnum.Playlist: MouFoundryUtils.importPlaylist(JSON.parse(resultImport.message), folderPath); break
-            case MouCollectionAssetTypeEnum.JournalEntry: MouFoundryUtils.importJournalEntry(JSON.parse(resultImport.message), folderPath); break
+            case MouCollectionAssetTypeEnum.JournalEntry: MouFoundryUtils.importJournalEntryFromJSON(resultImport.message, folderPath); break
             case MouCollectionAssetTypeEnum.ScenePacker: MouFoundryUtils.importScenePacker(JSON.parse(resultImport.message), asset.scenepacker_ref); break
           }
         }

@@ -1,5 +1,4 @@
 {
-  "$schema": "https://json.schemastore.org/foundryvtt-module-manifest.json",
   "id": "moulinette",
   "title": "Moulinette Media Search",
   "description": "A powerful and versatile search engine. Easily find the content you own. Browse and search for content on the internet (Moulinette Cloud, Game Icons, etc.)",

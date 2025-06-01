@@ -232,11 +232,24 @@ export default class MouFoundryUtils {
   /**
    * Creates a new journal entry from the given data
    */
-  static async importJournalEntry(journalData: AnyDict, folder:string) {
+  static async importJournalEntryFromJSON(journalData: string, folder:string) {
     if (!(game as Game).user?.isGM) return;
+    
+    // compatibility with older versions (not having pages)
+    const json = JSON.parse(journalData)
+    console.log(json)
+    if (!("pages" in json) && "type" in json) {
+      json.pages = [foundry.utils.duplicate(json)]
+      journalData = JSON.stringify(json)
+    }
+    console.log(journalData)
+
+    const jData = await JournalEntry.create({name: "Imported Journal Entry"})
+    const newJournalEntry = await jData?.importFromJSON(journalData) as any
+    
     // @ts-ignore
-    const doc = await JournalEntry.fromImport(journalData)
-    const newJournalEntry = await JournalEntry.create(doc) as any
+    //const doc = await JournalEntry.fromImport(journalData)
+    //const newJournalEntry = await JournalEntry.create(doc) as any
     if(newJournalEntry) {
       const folderObj = await MouFoundryUtils.getOrCreateFolder("JournalEntry", folder)
       // reset folder
