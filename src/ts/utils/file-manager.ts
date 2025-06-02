@@ -263,6 +263,9 @@ export default class MouFileManager {
    */
   static async scanFolder(source: FilePicker.SourceType, path: string, debug?: boolean): Promise<string[]> {
     
+    // double check that path is decoded
+    path = MouMediaUtils.getCleanURI(path)
+
     let list = [] as string[]
     if(debug) MouApplication.logInfo(MouFileManager.APP_NAME, `Assets: scanning ${path} ...`)
     const options = MouFileManager.getOptions() as AnyDict

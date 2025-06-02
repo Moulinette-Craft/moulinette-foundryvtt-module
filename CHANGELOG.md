@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.6.7] - 2025-05-11
+## [1.6.8] - 2025-05-11
 ### Fixed
 - 1.6.1 : unable to set image background transparency (game icons)
 - 1.6.2 : error with uninitialized advanced settings
@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 1.6.5 : advanced settings not properly initialized resulting in drag & drop not working
 - 1.6.6 : compatibility with WFRP4e
 - 1.6.7 : backwards compatibility for older journal entries (without pages)
+- 1.6.8 : Forgotten Adventure Import Failure #5 (tentative)
 ### Added
 - Support for FoundryVTT v.13
 
