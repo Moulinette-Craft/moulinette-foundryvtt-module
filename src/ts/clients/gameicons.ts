@@ -124,6 +124,9 @@ export class MouGameIconsClient {
     let imageName = iconUri.split('/').pop() + ".svg"
 
     if(fgColor != "#ffffff" || bgColor != "#000000") {
+      if(!fgColor && !bgColor) {
+        fgColor = "#000000"
+      }
       fgColor = fgColor ? fgColor : "transparent"
       bgColor = bgColor ? bgColor : "transparent"
       svg = svg.replace(`fill="#fff"`, `fill="${fgColor}"`).replace(`<path d=`, `<path fill="${bgColor}" d=`)

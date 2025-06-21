@@ -25,6 +25,7 @@ import MouCollectionGameIcons from "./collections/collection-gameicons";
 import MouCollectionBBCSounds from "./collections/collection-bbc-sounds";
 import MouCollectionCloudPrivate from "./collections/collection-cloud-private";
 import MouCollectionFontAwesome from "./collections/collection-fontawesome";
+import { MouAPI } from "./utils/api";
 
 let module: MouModule;
 
@@ -97,6 +98,7 @@ Hooks.once("init", () => {
   module.cache = new MouCache();
   module.collections = [] as MouCollection[]
   module.eventHandler = new MouEventHandler();
+  module.api = MouAPI;
   module.tools = [];
   module.compendiumMappings = { mappings: MouCompendiumsDefaults.metadataMappings, formatters: MouCompendiumsDefaults.metadataMappingsFormatters }
   module.utils = { media: MouMediaUtils, filemanager: MouFileManager, foundry: MouFoundryUtils, browser: MouBrowser }

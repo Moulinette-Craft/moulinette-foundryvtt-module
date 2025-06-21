@@ -185,7 +185,8 @@ export default class LocalCollectionConfig extends MouApplication {
       else if(button.data("id") == "import-configuration") {
         new Dialog({
           title: `Import Data: Moulinette Local Assets Configuration`,
-          content: await renderTemplate("templates/apps/import-data.html", {
+          // @ts-ignore
+          content: await MouCompatUtils.renderTemplate("templates/apps/import-data.html", {
             hint1: (game as Game).i18n.format("DOCUMENT.ImportDataHint1", {document: "configuration"}),
             hint2: (game as Game).i18n.format("DOCUMENT.ImportDataHint2", {name: "this configuration"})
           }),

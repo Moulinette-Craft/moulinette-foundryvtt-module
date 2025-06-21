@@ -9,9 +9,11 @@ import MouConfig from "./constants";
 import MouMediaUtils from "./utils/media-utils";
 import MouFoundryUtils from "./utils/foundry-utils";
 import MouFileManager from "./utils/file-manager";
+import { MouAPI } from "./utils/api";
 
 export interface MouModule extends Game.ModuleData<ModuleData> {
   debug: boolean;
+  api: MouAPI;
   browser: MouBrowser;
   user: MouUser;
   cloudclient: MouCloudClient;

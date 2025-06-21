@@ -75,10 +75,12 @@ export default class MouFoundryUtils {
     // get extension from path 
     const ext = path.split('.').pop() || "unknown"
     if(MouConfig.MEDIA_VIDEOS.includes(ext)) {
-      json_text = await renderTemplate(`modules/${MODULE_ID}/templates/json/note-video.hbs`, { path: path, folder: folderObj ? `"${folderObj.id}"` : "null", name: articleName })
+      // @ts-ignore
+      json_text = await MouCompatUtils.renderTemplate(`modules/${MODULE_ID}/templates/json/note-video.hbs`, { path: path, folder: folderObj ? `"${folderObj.id}"` : "null", name: articleName })
     }
     else if(MouConfig.MEDIA_IMAGES.includes(ext)) {
-      json_text = await renderTemplate(`modules/${MODULE_ID}/templates/json/note-image.hbs`, { path: path, folder: folderObj ? `"${folderObj.id}"` : "null", name: articleName })
+      // @ts-ignore
+      json_text = await MouCompatUtils.renderTemplate(`modules/${MODULE_ID}/templates/json/note-image.hbs`, { path: path, folder: folderObj ? `"${folderObj.id}"` : "null", name: articleName })
     } else {
       return ui.notifications?.error((game as Game).i18n.format("MOU.error_create_journal_format"))
     }
@@ -110,7 +112,8 @@ export default class MouFoundryUtils {
     if (!(game as Game).user?.isGM) return;
     const articleName = MouMediaUtils.prettyMediaName(path)
     const folderObj = await MouFoundryUtils.getOrCreateFolder("JournalEntry", folder)
-    const json_text = await renderTemplate(`modules/${MODULE_ID}/templates/json/note-pdf.hbs`, { path: path, folder: folderObj ? `"${folderObj.id}"` : "null", name: articleName })
+    // @ts-ignore
+    const json_text = await MouCompatUtils.renderTemplate(`modules/${MODULE_ID}/templates/json/note-pdf.hbs`, { path: path, folder: folderObj ? `"${folderObj.id}"` : "null", name: articleName })
     const entry = await JournalEntry.create(JSON.parse(json_text))
     entry?.sheet?.render(true)
     ui.journal?.activate()
@@ -122,7 +125,8 @@ export default class MouFoundryUtils {
   static async importSceneFromMap(path: string, folder: string) {
     if (!(game as Game).user?.isGM) return;
     const sceneName = MouMediaUtils.prettyMediaName(path)
-    const json_text = await renderTemplate(`modules/${MODULE_ID}/templates/json/scene.hbs`, { path: path, name: sceneName })
+    // @ts-ignore
+    const json_text = await MouCompatUtils.renderTemplate(`modules/${MODULE_ID}/templates/json/scene.hbs`, { path: path, name: sceneName })
     await MouFoundryUtils.importScene(JSON.parse(json_text), folder)
   }
 
@@ -318,7 +322,10 @@ export default class MouFoundryUtils {
    */
   static async createTile(canvas: Canvas, imgPath: string, point: { x: number, y: number }): Promise<boolean> {
     const adv_settings = MouApplication.getSettings(SETTINGS_ADVANCED) as AnyDict
-    const tileSize = adv_settings.image && "tilesize" in adv_settings.image ? Number(adv_settings.image.tilesize) : 100
+    let tileSize = adv_settings.image && "tilesize" in adv_settings.image ? Number(adv_settings.image.tilesize) : 100
+    if(isNaN(tileSize) || tileSize <= 0) {
+      tileSize = 100 // default tile size
+    }
 
     const layerTiles = canvas.layers.find(l => l.name == "TilesLayer")
     const layerMou = canvas.layers.find(l => l.name == "MouLayer")

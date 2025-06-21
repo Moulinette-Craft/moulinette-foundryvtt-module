@@ -167,4 +167,8 @@ export class MouCollectionUtils {
     const key : string = MouCollectionAssetTypeEnum[value];    
     return key ? (game as Game).i18n.localize(`MOU.type_${key.toLowerCase()}`) : "Unknown" + value;
   }
+
+  static findType(key: string): MouCollectionAssetTypeEnum | null {
+    return MouCollectionAssetTypeEnum[key as keyof typeof MouCollectionAssetTypeEnum];
+  }
 }

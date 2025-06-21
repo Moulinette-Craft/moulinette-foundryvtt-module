@@ -1,5 +1,6 @@
 import MouConfig, { MODULE_ID, SETTINGS_ADVANCED, SETTINGS_HIDDEN, SETTINGS_PREVS, SETTINGS_TOGGLES } from "../constants";
 import { AnyDict } from "../types";
+import MouCompatUtils from "../utils/compat-utils";
 import MouFileManager from "../utils/file-manager";
 import MouMediaUtils from "../utils/media-utils";
 import MouApplication from "./application";
@@ -120,14 +121,16 @@ export default class MouBrowser extends MouApplication {
         MouBrowser.initializeAdvSettings(adv_settings, "image", MouConfig.DEF_SETTINGS_IMAGE)
       
         const type = MouCollectionAssetTypeEnum[Number(this.filters.type)].toLowerCase()
-        settingsHTML = await renderTemplate(`modules/${MODULE_ID}/templates/browser-settings-${type}.hbs`, {
+        // @ts-ignore
+        settingsHTML = await MouCompatUtils.renderTemplate(`modules/${MODULE_ID}/templates/browser-settings-${type}.hbs`, {
           type: MouCollectionUtils.getTranslatedType(Number(this.filters.type)),
           settings: adv_settings,
           collection: this.filters_prefs!.collection
         });
         break
       default:
-        settingsHTML = await renderTemplate(`modules/${MODULE_ID}/templates/browser-settings-none.hbs`, { 
+        // @ts-ignore
+        settingsHTML = await MouCompatUtils.renderTemplate(`modules/${MODULE_ID}/templates/browser-settings-none.hbs`, { 
           type: MouCollectionUtils.getTranslatedType(Number(this.filters.type))
         });
         break
@@ -218,10 +221,27 @@ export default class MouBrowser extends MouApplication {
       packs = packs.filter(p => p.assetsCount > 0)
       // look for selected pack
       if(this.filters.pack && this.filters.pack.length > 0) {
-        for(const pack of packs) {
-          if(this.filters.pack.indexOf(pack.id) >= 0) {
-            (pack as AnyDict).selected = true
-            break;
+        // filter by packName
+        if (isNaN(Number(this.filters.pack))) {
+          for(const pack of packs) {
+            if(this.filters.pack === pack.name) {
+              (pack as AnyDict).selected = true
+              this.filters.pack = pack.id
+              // ugly fix : search again with right filter for pack
+              await this._storeSettings()
+              results = await this.collection.searchAssets(this.filters, 0)
+              this.currentAssets = results.assets
+              break;
+            }
+          }
+        }
+        // filter by packId
+        else {
+          for(const pack of packs) {
+            if(this.filters.pack.indexOf(pack.id) >= 0) {
+              (pack as AnyDict).selected = true
+              break;
+            }
           }
         }
       }
@@ -239,7 +259,8 @@ export default class MouBrowser extends MouApplication {
       selectedPacks = this.filters.pack
     }
     
-    const filtersHTML = await renderTemplate(`modules/${MODULE_ID}/templates/browser-filters.hbs`, {
+    // @ts-ignore
+    const filtersHTML = await MouCompatUtils.renderTemplate(`modules/${MODULE_ID}/templates/browser-filters.hbs`, {
       collections: this.collections.map( col => ( {id: col.getId(), name: col.getName(), configurable: col.isConfigurable() } )),
       prefs: this.filters_prefs,
       values: this.filters,
@@ -438,7 +459,6 @@ export default class MouBrowser extends MouApplication {
     
     let assets: MouCollectionAsset[] = [];
     try {
-      
       if(this.page == 0) {
         assets = this.currentAssets
         this.currentAssets = []
@@ -458,7 +478,8 @@ export default class MouBrowser extends MouApplication {
     
     // handle collection errors (like server connection errors)
     if(this.collection.getCollectionError()) {
-      this.html?.find(".content").append(await renderTemplate(`modules/${MODULE_ID}/templates/browser-error.hbs`, { error: this.collection.getCollectionError() }))
+      // @ts-ignore
+      this.html?.find(".content").append(await MouCompatUtils.renderTemplate(`modules/${MODULE_ID}/templates/browser-error.hbs`, { error: this.collection.getCollectionError() }))
       this.page = -1
       return
     }
@@ -466,9 +487,11 @@ export default class MouBrowser extends MouApplication {
     if(assets.length == 0) {
       if(this.page == 0) {
         if(!this.collection.isBrowsable() && (!this.filters.searchTerms || this.filters.searchTerms.length < 3)) {
-          this.html?.find(".content").append(await renderTemplate(`modules/${MODULE_ID}/templates/browser-searchrequired.hbs`, {}))
+          // @ts-ignore
+          this.html?.find(".content").append(await MouCompatUtils.renderTemplate(`modules/${MODULE_ID}/templates/browser-searchrequired.hbs`, {}))
         } else {
-          this.html?.find(".content").append(await renderTemplate(`modules/${MODULE_ID}/templates/browser-nomatch.hbs`, {}))
+          // @ts-ignore
+          this.html?.find(".content").append(await MouCompatUtils.renderTemplate(`modules/${MODULE_ID}/templates/browser-nomatch.hbs`, {}))
         }
       }
       this.page = -1
@@ -484,7 +507,8 @@ export default class MouBrowser extends MouApplication {
         case MouCollectionAssetTypeEnum.Macro: 
         case MouCollectionAssetTypeEnum.Playlist: 
         case MouCollectionAssetTypeEnum.Audio: 
-          html = await renderTemplate(`modules/${MODULE_ID}/templates/browser-assets-rows.hbs`, { 
+          // @ts-ignore
+          html = await MouCompatUtils.renderTemplate(`modules/${MODULE_ID}/templates/browser-assets-rows.hbs`, { 
             MOU_DEF_NOTHUMB: MouConfig.MOU_DEF_NOTHUMB, 
             assets, 
             index, 
@@ -492,7 +516,8 @@ export default class MouBrowser extends MouApplication {
           })
           break
         default:
-          html = await renderTemplate(`modules/${MODULE_ID}/templates/browser-assets-blocks.hbs`, { 
+          // @ts-ignore
+          html = await MouCompatUtils.renderTemplate(`modules/${MODULE_ID}/templates/browser-assets-blocks.hbs`, { 
             MOU_DEF_NOTHUMB: MouConfig.MOU_DEF_NOTHUMB, 
             assets, 
             index, 
@@ -717,10 +742,11 @@ export default class MouBrowser extends MouApplication {
       if(selAsset) {
         const actions = this.collection?.getActions(selAsset)
         if(actions && actions.length > 0) {
-          renderTemplate(`modules/${MODULE_ID}/templates/browser-assets-actions.hbs`, { 
+          // @ts-ignore
+          MouCompatUtils.renderTemplate(`modules/${MODULE_ID}/templates/browser-assets-actions.hbs`, { 
             actions: actions.filter(a => a.small === undefined || !a.small),
             smallActions: actions.filter(a => a.small !== undefined && a.small),
-          }).then( (html) => {
+          }).then( (html: any) => {
             asset.find(".menu").css("display", "flex"); 
             asset.find(".overlay").show();
             asset.find(".menu").html(html);
@@ -1150,5 +1176,53 @@ export default class MouBrowser extends MouApplication {
         })
       }
     }
+  }
+
+  async search(collection: string, type: string, search: AnyDict = {}) {
+    search;
+    const module = MouApplication.getModule()
+    const disabled = MouApplication.getSettings(SETTINGS_HIDDEN) as AnyDict
+    const collections = module.collections.filter( col => { return !disabled[col.getId()] })
+    
+    const prevSettings = MouApplication.getSettings(SETTINGS_PREVS) as AnyDict
+    
+    // check that collection exists
+    const collectionObj = collections.find(col => col.getId() === collection);
+    if(!collectionObj) {
+      const availableCollections = collections.map(col => col.getId()).join(", ");
+      throw new Error(`${this.APP_NAME} | Collection ${collection} not found. Available collections: ${availableCollections}`);
+    }
+    prevSettings.filterPrefs!.collection = collection;
+
+    // check that type exists
+    const typeObj = MouCollectionUtils.findType(type);
+    if(!typeObj || !collectionObj.supportsType(typeObj)) {
+      const availableTypes = collectionObj.getSupportedTypes().map(c => MouCollectionAssetTypeEnum[c]).join(", ");
+      throw new Error(`${this.APP_NAME} | Type ${type} not found in collection ${collection}. Available types: ${availableTypes}`);
+    }
+    prevSettings.filters!.type = typeObj
+    
+    // search filters
+    if(search && search.terms && search.terms.length > 0) {
+      prevSettings.filters.searchTerms = search.terms
+    } else {
+      prevSettings.filters.searchTerms = ""
+    }
+    if(search && search.creator && search.creator.length > 0) {
+      prevSettings.filters.creator = search.creator
+    } else {
+      prevSettings.filters.creator = ""
+    }
+    if(search && search.pack && search.pack.length > 0) {
+      prevSettings.filters.pack = search.pack
+    } else {
+      prevSettings.filters.pack = ""
+    }
+
+    await MouApplication.setSettings(SETTINGS_PREVS, prevSettings)
+    this.filters_prefs = prevSettings.filterPrefs
+    this.filters = prevSettings.filters
+    
+    this.render(true)
   }
 }
