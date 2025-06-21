@@ -3,6 +3,7 @@ import MouBrowserTokenSelector from "../apps/browser-token-selector";
 import MouConfig, { MODULE_ID, SETTINGS_ADVANCED, SETTINGS_USE_FOLDERS } from "../constants";
 import { AnyDict } from "../types";
 import MouMediaUtils from "./media-utils";
+import MouCompatUtils from "./compat-utils";
 
 declare var ScenePacker: any;
 
