@@ -151,6 +151,9 @@ export default class LocalCollectionConfig extends MouApplication {
   async _onAction(event: Event): Promise<void> {
     event.preventDefault();
     const parent = this
+
+    const v12 = (game as Game).version.startsWith("12.")
+
     if(event.currentTarget) {
       const button = $(event.currentTarget)
       if(button.data("id") == "add-folder") {
@@ -187,7 +190,7 @@ export default class LocalCollectionConfig extends MouApplication {
         new Dialog({
           title: `Import Data: Moulinette Local Assets Configuration`,
           // @ts-ignore
-          content: await MouCompatUtils.renderTemplate("templates/apps/import-data.html", {
+          content: await MouCompatUtils.renderTemplate(`templates/apps/import-data.${v12 ? "html" : "hbs"}`, {
             hint1: (game as Game).i18n.format("DOCUMENT.ImportDataHint1", {document: "configuration"}),
             hint2: (game as Game).i18n.format("DOCUMENT.ImportDataHint2", {name: "this configuration"})
           }),
