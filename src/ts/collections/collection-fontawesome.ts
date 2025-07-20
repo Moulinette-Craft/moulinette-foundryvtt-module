@@ -253,4 +253,8 @@ export default class MouCollectionFontAwesome implements MouCollection {
   async selectAsset(asset: MouCollectionAsset): Promise<string | null> {
     return asset.id
   }
+
+  setPickerMode(pickerMode: boolean) {
+    pickerMode; // unused
+  }
 }

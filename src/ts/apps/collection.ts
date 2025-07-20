@@ -114,6 +114,9 @@ export interface MouCollection {
 
   /** Initializes the collection (retrieving data if required) */
   initialize(): Promise<void>
+
+  /** Configure source for picker mode (disable non-accessible assets) */
+  setPickerMode(pickerMode: boolean): void
   
   /** Returns the list of supported types */
   getSupportedTypes(): MouCollectionAssetTypeEnum[]

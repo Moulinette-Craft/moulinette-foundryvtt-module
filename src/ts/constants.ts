@@ -24,6 +24,7 @@ export const SETTINGS_PREVS = "prevs"
 export const SETTINGS_TOKEN_SELECTOR = "token_selector"
 export const SETTINGS_HIDDEN = "hidden"
 export const SETTINGS_TOGGLES = "toggles"
+export const SETTINGS_PICKER_ENABLED = "mouPickerEnabled"
 
 /**
  * The constants below can be overridden using the following macro :

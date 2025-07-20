@@ -209,6 +209,8 @@
   "MOU.settings_enable_players": "Enable players to use the browser",
   "MOU.settings_enable_players_hint": "When this option is enabled, players can use the browser to access the content. If disabled, only the GM can use the browser.",
   "MOU.settings_none": "No advanced settings for this type.",
+  "MOU.settings_picker_enabled": "Moulinette FilePicker",
+  "MOU.settings_picker_enabled_hint": "When this option is enabled, Moulinette will replace FoundryVTT's default file picker. You can still use the default picker by holding the SHIFT key while opening the file picker.",
   "MOU.settings_s3bucket": "S3 Bucket",
   "MOU.settings_s3bucket_hint": "If you've set up S3 storage and want Moulinette to download content there, please enter the bucket name (just the name, not the full URL). Otherwise, leave it blank.",
   "MOU.settings_use_folders": "Use Folder Structure",

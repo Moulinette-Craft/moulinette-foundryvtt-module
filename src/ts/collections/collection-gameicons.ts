@@ -221,4 +221,8 @@ export default class MouCollectionGameIcons implements MouCollection {
   async selectAsset(asset: MouCollectionAsset): Promise<string | null> {
     return await MouGameIconsClient.downloadIcon(asset.id, "#ffffff", "#000000")
   }
+
+  setPickerMode(pickerMode: boolean) {
+    pickerMode; // unused
+  }
 }

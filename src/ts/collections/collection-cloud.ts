@@ -218,6 +218,7 @@ export default class MouCollectionCloud implements MouCollection {
 
   private mode: CloudMode
   private error: number
+  private pickerMode: boolean
 
   private cache: MouCollectionCloudCache
 
@@ -226,6 +227,7 @@ export default class MouCollectionCloud implements MouCollection {
     this.refreshSettings();
     this.error = 0
     this.cache = {}
+    this.pickerMode = false
   }
   
   async initialize(): Promise<void> {
@@ -235,6 +237,11 @@ export default class MouCollectionCloud implements MouCollection {
   private refreshSettings() {
     const settings = MouApplication.getSettings(SETTINGS_COLLECTION_CLOUD) as AnyDict
     this.mode = "mode" in settings ? settings.mode : CloudMode.ALL
+    // in picker mode, you don't want to browse assets from creators you don't support
+    if(this.pickerMode && this.mode == CloudMode.ALL) {
+      this.mode = CloudMode.ALL_ACCESSIBLE; 
+    }
+    
   }
   
   getId() : string {
@@ -741,7 +748,6 @@ export default class MouCollectionCloud implements MouCollection {
         switch(asset.type) {
           case MouCollectionAssetTypeEnum.Audio:
             const audio_url = selAsset.previewUrl
-            console.log(selAsset)
             // assuming there is an audio preview and there is a audio#audiopreview element on the page
             const audio = $("#audiopreview")[0] as HTMLAudioElement
             if(MouMediaUtils.getCleanURI(audio.src) != MouMediaUtils.getCleanURI(audio_url)) {
@@ -886,5 +892,10 @@ export default class MouCollectionCloud implements MouCollection {
     const assetData = await MouCloudClient.apiGET(`/asset/${asset.id}`, { session: MouApplication.getSettings(SETTINGS_SESSION_ID) })
     const resultDownload = await this.downloadAsset(assetData)
     return resultDownload ? resultDownload.path : null
+  }
+
+  setPickerMode(pickerMode: boolean) {
+    this.pickerMode = pickerMode;
+    this.refreshSettings();
   }
 }

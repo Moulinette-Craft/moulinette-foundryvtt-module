@@ -6,7 +6,7 @@ import "../styles/main.scss";
 import MouBrowser from "./apps/browser";
 import MouUser from "./apps/user";
 import MouCloudClient from "./clients/moulinette-cloud";
-import MouConfig, { MODULE_ID, SETTINGS_COLLECTION_CLOUD, SETTINGS_COLLECTION_LOCAL, SETTINGS_DATA_EXCLUSION, SETTINGS_ENABLE_PLAYERS, SETTINGS_PREVS, SETTINGS_S3_BUCKET, SETTINGS_SESSION_ID, SETTINGS_USE_FOLDERS, SETTINGS_ADVANCED, SETTINGS_TOKEN_SELECTOR, SETTINGS_HIDDEN, SETTINGS_TOGGLES } from "./constants";
+import MouConfig, { MODULE_ID, SETTINGS_COLLECTION_CLOUD, SETTINGS_COLLECTION_LOCAL, SETTINGS_DATA_EXCLUSION, SETTINGS_ENABLE_PLAYERS, SETTINGS_PREVS, SETTINGS_S3_BUCKET, SETTINGS_SESSION_ID, SETTINGS_USE_FOLDERS, SETTINGS_ADVANCED, SETTINGS_TOKEN_SELECTOR, SETTINGS_HIDDEN, SETTINGS_TOGGLES, SETTINGS_PICKER_ENABLED } from "./constants";
 import MouLayer from "./layers/mou-layer";
 import { AnyDict, MouModule } from "./types";
 import MouCache from "./apps/cache";
@@ -26,6 +26,7 @@ import MouCollectionBBCSounds from "./collections/collection-bbc-sounds";
 import MouCollectionCloudPrivate from "./collections/collection-cloud-private";
 import MouCollectionFontAwesome from "./collections/collection-fontawesome";
 import { MouAPI } from "./utils/api";
+import { MoulinetteFilePicker } from "./apps/file-picker";
 
 let module: MouModule;
 
@@ -60,7 +61,20 @@ Hooks.once("init", () => {
     scope: "world",
     config: true,
     default: "",
-    type: String
+    type: String,
+    // @ts-ignore
+    requiresReload: true
+  });
+
+  (game as Game).settings.register(MODULE_ID, SETTINGS_PICKER_ENABLED, {
+    name: (game as Game).i18n.localize("MOU.settings_picker_enabled"),
+    hint: (game as Game).i18n.localize("MOU.settings_picker_enabled_hint"),
+    scope: "world",
+    config: true,
+    default: false,
+    type: Boolean,
+    // @ts-ignore
+    requiresReload: true
   });
 
   (game as Game).settings.register(MODULE_ID, SETTINGS_COLLECTION_CLOUD, { scope: "world", config: false, type: Object, default: { mode: CloudMode.ALL } as AnyDict });
@@ -124,7 +138,22 @@ Hooks.once("ready", () => {
   // make config available
   module.configs = MouConfig
   // hooks some FVTT functions
-  MouHooks.replaceFromDropData()
+  MouHooks.replaceFromDropData();
+  // replace FilePicker with MoulinetteFilePicker
+  const pickerEnabled = (game as Game).settings.get(MODULE_ID, SETTINGS_PICKER_ENABLED) as boolean
+
+  if(pickerEnabled) {
+    const v12 = (game as Game).version.startsWith("12.")
+    if(v12) {
+      // @ts-ignore
+      FilePicker = MoulinetteFilePicker
+    } else {
+      (CONFIG as any).ux.FilePicker = MoulinetteFilePicker;
+    }
+    console.warn(`Moulinette: FilePicker is enabled and replacing default FoundryVTT one. You can change it in your the module's configuration.`)
+    
+  }
+  
 });
 
 /**

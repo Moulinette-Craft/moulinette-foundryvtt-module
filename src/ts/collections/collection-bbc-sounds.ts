@@ -242,4 +242,8 @@ export default class MouCollectionBBCSounds implements MouCollection {
   async selectAsset(asset: MouCollectionAsset): Promise<string | null> {
     return asset.url
   }
+
+  setPickerMode(pickerMode: boolean) {
+    pickerMode; // unused
+  }
 }

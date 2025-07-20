@@ -75,6 +75,7 @@ export default class MouBrowser extends MouApplication {
 
     const disabled = MouApplication.getSettings(SETTINGS_HIDDEN) as AnyDict
     this.collections = module.collections.filter( col => {
+      col.setPickerMode(!!this.pickerType);
       if(this.pickerType) {
         return col.supportsType(this.pickerType)
       } else {

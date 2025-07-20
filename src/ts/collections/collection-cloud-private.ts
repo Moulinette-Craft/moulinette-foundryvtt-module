@@ -495,4 +495,8 @@ export default class MouCollectionCloudPrivate implements MouCollection {
     const resultDownload = await MouCollectionCloudPrivate.downloadAsset(cAsset)
     return resultDownload ? resultDownload.path : null
   }
+
+  setPickerMode(pickerMode: boolean) {
+    pickerMode; // unused
+  }
 }
