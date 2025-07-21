@@ -48,16 +48,30 @@ export default class MouHooks {
         onChange: () => {},
         onToolChange: () => {},
         tools: (game as Game).version.startsWith("12.") ? [] as AnyDict[] : {} as AnyDict,
+        activeTool: "select",
         visible: true
       } as AnyDict
 
       MouHooks.compatibilityModeAdd(buttons, "moulinette", moulinetteTool)
 
+      const select = { 
+        name: "select", 
+        icon: "fa-solid fa-expand mou-hidden", 
+        title: (game as Game).i18n.localize("MOU.select"),
+        button: false, 
+        onChange: () => {},
+        onClick: () => {},
+        order: order++,
+      }
+
+      MouHooks.compatibilityModeAdd(moulinetteTool.tools, "select", select)
+      
       const search = { 
         name: "search", 
         icon: "fa-solid fa-magnifying-glass", 
         title: (game as Game).i18n.localize("MOU.browser"),
         button: true, 
+        onChange: () => {},
         onClick: () => { module.browser.render(true) },
         order: order++,
       }
@@ -72,6 +86,7 @@ export default class MouHooks {
           icon: isValidUser ? "fa-solid fa-user-check" : "fa-solid fa-user-xmark",
           title: (game as Game).i18n.localize("MOU.user_authenticated"),
           button: true,
+          onChange: () => {},
           onClick: () => { module.user.render(true) },
           order: order++,
         });
