@@ -204,6 +204,7 @@
   "MOU.search_placeholder": "Enter your criteria (e.g., dragon, tavern, or spaceship)",
   "MOU.search_required": "↥↥ Please use the search bar above to find results.",
   "MOU.seconds_left": "seconds left",
+  "MOU.select": "Select (not yet implemented!)",
   "MOU.select_folder": "Select folder",
   "MOU.settings": "Adv. Settings",
   "MOU.settings_enable_players": "Enable players to use the browser",
@@ -253,6 +254,5 @@
   "MOU.your_gifts": "Your gifts",
   "MOU.your_subs_discord": "Your roles (Discord)",
   "MOU.your_subs_patreon": "Your subscriptions (Patreon)",
-  "MOU.select": "Select (not yet implemented!)",
   "ZMOU": ""
 }

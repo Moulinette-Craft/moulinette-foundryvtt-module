@@ -15,7 +15,7 @@ export class MoulinetteFilePicker extends FilePicker {
     const shiftKeyDown = (game as Game).keyboard!.isModifierActive(kbManager.MODIFIER_KEYS.SHIFT)
     const forceDefault = shiftKeyDown
 
-    if (forceDefault) {
+    if(forceDefault || !["image", "imagevideo"].includes(this.type)) {
       return super.browse(target, options);
     }
 
