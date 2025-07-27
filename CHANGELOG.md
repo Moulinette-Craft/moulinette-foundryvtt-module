@@ -4,10 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.8.1] - 2025-07-20
+## [1.8.2] - 2025-07-20
 ### Fixed
 - After opening Media Browser, switching to another layer fails
 - 1.8.1 : fix FilePicker to only open for images and videos
+- 1.8.2 : too many WebMediaPlayers already in existance (animated assets)
 ### Added
 - Moulinette FilePicker
 
