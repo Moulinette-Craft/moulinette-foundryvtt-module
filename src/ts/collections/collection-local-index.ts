@@ -47,7 +47,7 @@ class MouCollectionLocalAsset implements MouCollectionAsset {
         assetType = MouCollectionAssetTypeEnum.Image
       }
     } else if (MouConfig.MEDIA_VIDEOS.includes(ext)) {
-      this.animated = !(pack.options && pack.options.thumbs)
+      this.animated = true //!(pack.options && pack.options.thumbs)
       if(MouMediaUtils.isMap(data.width, data.height)) {
         assetType = MouCollectionAssetTypeEnum.Map
       } else {
@@ -68,7 +68,8 @@ class MouCollectionLocalAsset implements MouCollectionAsset {
     this.id = String(idx)
     this.url = MouMediaUtils.encodeURL(data.path);
     this.format = assetType == MouCollectionAssetTypeEnum.Map ? "large" : (assetType == MouCollectionAssetTypeEnum.Image ? "tiny" : "small")
-    this.previewUrl = MouMediaUtils.encodeURL(pack.options && pack.options.thumbs ? thumbPath : data.path),
+    //this.previewUrl = MouMediaUtils.encodeURL(pack.options && pack.options.thumbs ? thumbPath : data.path),
+    this.previewUrl = thumbPath;
     this.creator = null
     this.creatorUrl = null
     this.pack = pack.name
@@ -93,6 +94,13 @@ class MouCollectionLocalAsset implements MouCollectionAsset {
         icon: "fa-regular fa-stopwatch", 
         text: MouMediaUtils.prettyDuration(data.duration),
         hint: (game as Game).i18n.localize("MOU.meta_audio_duration")
+      })
+    }
+
+    if(this.animated) {
+      this.icons.push({
+        descr: (game as Game).i18n.localize("MOU.meta_animated"),
+        icon: "fa-solid fa-film"
       })
     }
   }
