@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - After opening Media Browser, switching to another layer fails
 - 1.8.1 : fix FilePicker to only open for images and videos
 - 1.8.2 : too many WebMediaPlayers already in existance (animated assets)
+- 1.8.3 : Broken preview in update from v1.8.1 => v1.8.2
 ### Added
 - Moulinette FilePicker
 

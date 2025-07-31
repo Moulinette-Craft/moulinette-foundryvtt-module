@@ -68,8 +68,7 @@ class MouCollectionLocalAsset implements MouCollectionAsset {
     this.id = String(idx)
     this.url = MouMediaUtils.encodeURL(data.path);
     this.format = assetType == MouCollectionAssetTypeEnum.Map ? "large" : (assetType == MouCollectionAssetTypeEnum.Image ? "tiny" : "small")
-    //this.previewUrl = MouMediaUtils.encodeURL(pack.options && pack.options.thumbs ? thumbPath : data.path),
-    this.previewUrl = thumbPath;
+    this.previewUrl = MouMediaUtils.encodeURL(pack.options && pack.options.thumbs ? thumbPath : data.path),
     this.creator = null
     this.creatorUrl = null
     this.pack = pack.name
