@@ -465,7 +465,12 @@ export default class MouCollectionCloud implements MouCollection {
       // process packs facets
       if("packs" in results) {
         const packs: { [key: string]: MouCollectionPack } = {};
-        // merge packs with same name
+        // clean up pack names (removing 4K and HD from name)
+        for(const p of results["packs"]) {
+          if(p.name.toUpperCase().endsWith(" 4K") || p.name.toUpperCase().endsWith(" HD")) {
+            p.name = p.name.substring(0, p.name.length - 3).trim()
+          }
+        }
         for(const p of results["packs"]) {
           if(p.name in packs) {
             const existing = packs[p.name]

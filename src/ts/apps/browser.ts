@@ -117,9 +117,9 @@ export default class MouBrowser extends MouApplication {
     let settingsHTML = ""
     switch(this.filters.type) {
       case MouCollectionAssetTypeEnum.Audio:
-        MouBrowser.initializeAdvSettings(adv_settings, "audio", MouConfig.DEF_SETTINGS_AUDIO)
+        await MouBrowser.initializeAdvSettings(adv_settings, "audio", MouConfig.DEF_SETTINGS_AUDIO)
       case MouCollectionAssetTypeEnum.Image:
-        MouBrowser.initializeAdvSettings(adv_settings, "image", MouConfig.DEF_SETTINGS_IMAGE)
+        await MouBrowser.initializeAdvSettings(adv_settings, "image", MouConfig.DEF_SETTINGS_IMAGE)
       
         const type = MouCollectionAssetTypeEnum[Number(this.filters.type)].toLowerCase()
         // @ts-ignore
@@ -223,7 +223,7 @@ export default class MouBrowser extends MouApplication {
       // look for selected pack
       if(this.filters.pack && this.filters.pack.length > 0) {
         // filter by packName
-        if (isNaN(Number(this.filters.pack))) {
+        if (isNaN(Number(this.filters.pack)) && this.filters.pack.indexOf(";") < 0) {
           for(const pack of packs) {
             if(this.filters.pack === pack.name) {
               (pack as AnyDict).selected = true
@@ -236,7 +236,7 @@ export default class MouBrowser extends MouApplication {
             }
           }
         }
-        // filter by packId
+        // filter by packId (or multiple pack ids)
         else {
           for(const pack of packs) {
             if(this.filters.pack.indexOf(pack.id) >= 0) {
@@ -383,8 +383,8 @@ export default class MouBrowser extends MouApplication {
     });
 
     // advanced settings listeners
-    MouBrowser.initializeAdvSettings(adv_settings, "image", MouConfig.DEF_SETTINGS_IMAGE)
-    MouBrowser.initializeAdvSettings(adv_settings, "audio", MouConfig.DEF_SETTINGS_AUDIO)
+    await MouBrowser.initializeAdvSettings(adv_settings, "image", MouConfig.DEF_SETTINGS_IMAGE)
+    await MouBrowser.initializeAdvSettings(adv_settings, "audio", MouConfig.DEF_SETTINGS_AUDIO)
 
     html.find(".advanced_settings select[name=channel]").on("change", async (ev) => {
       const channel = $(ev.currentTarget).val()
@@ -1085,15 +1085,21 @@ export default class MouBrowser extends MouApplication {
    * @param type - The type of settings to initialize.
    * @param defaults - The default values for the advanced settings. (See constants.ts for defaults)
    */
-  static initializeAdvSettings(settings: AnyDict, type: string, defaults: AnyDict) {
+  static async initializeAdvSettings(settings: AnyDict, type: string, defaults: AnyDict) {
     if(!(type in settings)) {
-      settings[type] = defaults
+      settings[type] = defaults;
+      await (game as Game).settings.set(MODULE_ID, SETTINGS_ADVANCED, settings) // save new settings
       return
     }
+    let changed = false
     for(const key of Object.keys(defaults)) {
       if(!(key in settings[type])) {
         settings[type][key] = defaults[key]
+        changed = true
       }
+    }
+    if(changed) {
+      await (game as Game).settings.set(MODULE_ID, SETTINGS_ADVANCED, settings) // save new settings
     }
   }
 
