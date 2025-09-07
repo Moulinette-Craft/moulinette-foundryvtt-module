@@ -225,7 +225,7 @@ export default class MouBrowser extends MouApplication {
         // filter by packName
         if (isNaN(Number(this.filters.pack)) && this.filters.pack.indexOf(";") < 0) {
           for(const pack of packs) {
-            if(this.filters.pack === pack.name) {
+            if(this.filters.pack.toLowerCase() === pack.name.toLowerCase()) {
               (pack as AnyDict).selected = true
               this.filters.pack = pack.id
               // ugly fix : search again with right filter for pack
