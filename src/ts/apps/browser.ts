@@ -321,19 +321,39 @@ export default class MouBrowser extends MouApplication {
 
     // input triggers searches
     const search = html.find(".search-bar input")
+    const AUTO_SEARCH_DEBOUNCE_MS = 750
+    let autoSearchTimeout = 0 as unknown as ReturnType<typeof setTimeout>
   
-    search.on('keypress', async (event) => {
-      if(event.key === 'Enter') {
-        this.filters.searchTerms = search.val() as string;
-        this.filters_prefs!.focus = "search"
-        await this.render();
-      }
-    });
-    search.on('mousedown', this._onClearSearchTerms.bind(this));
-    html.find(".search-bar button").on('click', async () => {
+    const performSearch = async () => {
       this.filters.searchTerms = search.val() as string;
       this.filters_prefs!.focus = "search"
-      await this.render();
+      return await this.render();
+    }
+
+    const initAutoSearch = () => {
+      const term = search.val() as string
+      if (term.length >= 3 || term.length === 0) {
+        autoSearchTimeout = setTimeout(performSearch, AUTO_SEARCH_DEBOUNCE_MS)
+      }
+    }
+
+    const cancelAutoSearch = () => clearTimeout(autoSearchTimeout)
+
+    search.on('keypress', async (event) => {
+      if(event.key === 'Enter') {
+        await performSearch()
+      }
+    })
+
+    search.on('input', async () => {
+      cancelAutoSearch()
+      initAutoSearch()
+    })
+
+    search.on('mousedown', this._onClearSearchTerms.bind(this));
+    html.find(".search-bar button").on('click', async () => {
+      cancelAutoSearch()
+      performSearch()
     });
 
     const focus = this.filters_prefs?.focus.split("#")
