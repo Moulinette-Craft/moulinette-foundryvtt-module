@@ -279,7 +279,9 @@ export default class MouBrowser extends MouApplication {
   override async activateListeners(html: JQuery<HTMLElement>): Promise<void> {
     super.activateListeners(html);
     this.html = html
-    
+
+    setTimeout(() => this.showContentLoader(false))
+
     /** Very first load must be fast */
     if(this.fastLoad) {
       const filtersHTML = await this.generateFiltersHTML()
@@ -354,6 +356,11 @@ export default class MouBrowser extends MouApplication {
     html.find(".search-bar button").on('click', async () => {
       cancelAutoSearch()
       performSearch()
+    html.find(".search-bar .reset-button").on('click', () => search.val(''));
+    html.find(".search-bar button.search").on('click', async () => {
+      this.filters.searchTerms = search.val() as string;
+      this.filters_prefs!.focus = "search"
+      await this.render();
     });
 
     const focus = this.filters_prefs?.focus.split("#")
@@ -474,6 +481,21 @@ export default class MouBrowser extends MouApplication {
     this.loadMoreAssets()
   }
 
+  showContentLoader (useLoaderBackground: boolean = true) {
+    const loaderElement = this.html?.find(".content .loader")
+    if (useLoaderBackground) {
+      loaderElement?.addClass('use-background')
+    }
+
+    loaderElement?.height(this.html?.find(".content").height() || 0)
+    this.html?.find(".content").addClass('is-loading')
+  }
+
+  hideContentLoader () {
+    this.html?.find(".content").removeClass('is-loading')
+    this.html?.find(".content .loader").removeClass('use-background')
+  }
+
   /** Load more assets and activate events */
   async loadMoreAssets() {
     if(this.page < 0 || !this.collection) return
@@ -483,9 +505,13 @@ export default class MouBrowser extends MouApplication {
       if(this.page == 0) {
         assets = this.currentAssets
         this.currentAssets = []
+        this.showContentLoader()
         this.currentAssetsCount = await this.collection.getAssetsCount(this.filters)
+        this.hideContentLoader()
       } else {
+        this.showContentLoader()
         const results = await this.collection.searchAssets(this.filters, this.page);
+        this.hideContentLoader()
         if(results) {
           assets = results.assets
         }
@@ -494,8 +520,6 @@ export default class MouBrowser extends MouApplication {
       this.logError("Error loading assets:", error)
       ui.notifications?.error((game as Game).i18n.localize("MOU.error_loading_assets"));
     }
-
-    this.html?.find(".content .loader").remove()
     
     // handle collection errors (like server connection errors)
     if(this.collection.getCollectionError()) {

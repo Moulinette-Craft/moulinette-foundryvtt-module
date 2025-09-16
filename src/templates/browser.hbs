@@ -1,7 +1,12 @@
 <div class="browser {{#if pickerMode}}pickermode{{/if}}">
   <header class="search-bar form-group">
     <div class="indicator"><i class="mou-icon mou-logo"></i></div>
-    <input type="text" placeholder="{{localize "MOU.search_placeholder"}}" aria-label="Search" value="{{searchTerms}}">
+    <div class="input-wrapper">
+      <input type="text" placeholder="{{localize "MOU.search_placeholder"}}" aria-label="Search" value="{{searchTerms}}">
+      <button class="reset-button">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
     <button class="search"><i class="fa-regular fa-magnifying-glass"></i> {{localize "MOU.search"}}</button>
     <div class="options">
       <i class="fa-solid fa-lightbulb{{#unless toggleHint}}-slash{{/unless}}" data-id="hint" 
@@ -12,7 +17,14 @@
     <div class="filters-toggle {{#unless filtersVisible}}collapsed{{/unless}}"><i class="fa-solid fa-angles-{{mouIf filtersVisible "left" "right"}}"></i></div>
     <aside class="filters {{#unless filtersVisible}}collapsed{{/unless}}">{{{mouFilters}}}</aside>
     <main class="content">
-      <div class="loader"><i class="fa-regular fa-hourglass-start"></i> {{localize "MOU.loading"}}</div>
+      <div class="loader-wrapper">
+        <div class="loader">
+          <div class="loader-content">
+            <i class="fa-regular fa-hourglass-start"></i>
+            <b>{{localize "MOU.loading"}}</b>
+          </div>
+        </div>
+      </div>
     </main>
   </div>
   <div class="advanced_settings form-group">{{{ mouSettings }}}</div>
