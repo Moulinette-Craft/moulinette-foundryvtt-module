@@ -27,16 +27,50 @@
       justify-content: center;
     }
 
+    .input-wrapper {
+      position: relative;
+    }
+
+    .input-wrapper,
     input {
       width: 100%;
+    }
+
+    input {
       padding: 8px;
       font-size: 16px;
       box-sizing: border-box;
       flex-grow: 1;
       margin-right: 5px;
+
+      &:not(:placeholder-shown) {
+        padding-right: 16px;
+      }
+
+      &:placeholder-shown ~ .reset-button {
+        display: none;
+      }
     }
 
-    button {
+    .reset-button {
+      position: absolute;
+      right: 5px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: auto;
+      height: calc(100% - 8px);
+      padding: 0.25rem;
+      background: transparent;
+      border: none;
+      font-size: 13px;
+      line-height: 1;
+
+      i {
+        margin: 0;
+      }
+    }
+
+    button.search {
       width: revert;
       height: 28px;
       white-space: nowrap;
