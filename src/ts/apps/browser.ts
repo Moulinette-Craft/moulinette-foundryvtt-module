@@ -353,15 +353,10 @@ export default class MouBrowser extends MouApplication {
     })
 
     search.on('mousedown', this._onClearSearchTerms.bind(this));
-    html.find(".search-bar button").on('click', async () => {
-      cancelAutoSearch()
-      performSearch()
-    });
     html.find(".search-bar .reset-button").on('click', () => search.val(''));
     html.find(".search-bar button.search").on('click', async () => {
-      this.filters.searchTerms = search.val() as string;
-      this.filters_prefs!.focus = "search"
-      await this.render();
+      cancelAutoSearch()
+      performSearch()
     });
 
     const focus = this.filters_prefs?.focus.split("#")
