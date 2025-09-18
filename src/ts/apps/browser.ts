@@ -14,7 +14,8 @@ export default class MouBrowser extends MouApplication {
   override APP_NAME = MouBrowser.APP_NAME
 
   static PAGE_SIZE = 100
-  
+
+  private isInitialLoadCompleted: boolean = false; // Defines whether the initial app load has completed
   private fastLoad: boolean = true; // the very first load is fast, then we load assets before refreshing the page
   private loadInProgress: NodeJS.Timeout | null = null;
   private loadInProgressState: number = 0;
@@ -280,7 +281,12 @@ export default class MouBrowser extends MouApplication {
     super.activateListeners(html);
     this.html = html
 
-    setTimeout(() => this.showContentLoader(false))
+    // Display the loader only in case of the initial data loading
+    if (!this.isInitialLoadCompleted) {
+      setTimeout(() => this.showContentLoader(false))
+    }
+
+    this.isInitialLoadCompleted = true
 
     /** Very first load must be fast */
     if(this.fastLoad) {
