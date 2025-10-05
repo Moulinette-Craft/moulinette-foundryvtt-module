@@ -994,7 +994,7 @@ export default class MouBrowser extends MouApplication {
             originalEvent.dataTransfer?.setDragImage(this.html?.find(".actionhint .thumbnail").get(0) as Element, 50, 50);  
           }
           const T = MouCollectionAssetTypeEnum
-          if(this.collection && [T.Actor, T.Audio, T.Image, T.Item, T.Macro].includes(selAsset.type)) {
+          if(this.collection && [T.Actor, T.Audio, T.Image, T.Item, T.Macro, T.Scene, T.Map, T.ScenePacker].includes(selAsset.type)) {
             const data : MouCollectionDragData = {
               moulinette: { asset: assetId, collection: this.collection?.getId() },
               type: MouCollectionAssetTypeEnum[selAsset.type]

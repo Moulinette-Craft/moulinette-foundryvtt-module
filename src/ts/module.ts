@@ -12,7 +12,7 @@ import { AnyDict, MouModule } from "./types";
 import MouCache from "./apps/cache";
 import MouMediaUtils from "./utils/media-utils";
 import { MouCollection } from "./apps/collection";
-import MouCollectionCloud, { CloudMode } from "./collections/collection-cloud";
+import { CloudMode } from "./collections/collection-cloud-base";
 import MouEventHandler from "./apps/event-handler";
 import MouHooks from "./utils/hooks";
 import MouCollectionCompendiums from "./collections/collection-compendiums";
@@ -23,10 +23,12 @@ import MouFileManager from "./utils/file-manager";
 import MouFoundryUtils from "./utils/foundry-utils";
 import MouCollectionGameIcons from "./collections/collection-gameicons";
 import MouCollectionBBCSounds from "./collections/collection-bbc-sounds";
+import MouCollectionCloudCached from "./collections/collection-cloud-cached";
 import MouCollectionCloudPrivate from "./collections/collection-cloud-private";
 import MouCollectionFontAwesome from "./collections/collection-fontawesome";
 import { MouAPI } from "./utils/api";
 import { MoulinetteFilePicker } from "./apps/file-picker";
+import MouCollectionCloudOnline from "./collections/collection-cloud-online";
 
 let module: MouModule;
 
@@ -128,7 +130,8 @@ Hooks.once("ready", () => {
   // force retrieving Moulinette user
   module.cloudclient.getUser()
   // load default collections
-  module.collections.push(new MouCollectionCloud())
+  module.collections.push(new MouCollectionCloudOnline())
+  module.collections.push(new MouCollectionCloudCached())
   module.collections.push(new MouCollectionCloudPrivate())
   module.collections.push(new MouCollectionCompendiums())
   module.collections.push(new MouCollectionLocal())

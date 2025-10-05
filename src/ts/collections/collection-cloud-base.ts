@@ -3,11 +3,10 @@ import MouCloudClient from "../clients/moulinette-cloud";
 import MouFileManager from "../utils/file-manager";
 import MouMediaUtils from "../utils/media-utils";
 
-import { MouCollection, MouCollectionAction, MouCollectionActionHint, MouCollectionAsset, MouCollectionAssetMeta, MouCollectionAssetType, MouCollectionAssetTypeEnum, MouCollectionCreator, MouCollectionDragData, MouCollectionFilters, MouCollectionPack, MouCollectionSearchResults } from "../apps/collection";
-import { MOU_STORAGE, MOU_STORAGE_PUB, SETTINGS_COLLECTION_CLOUD, SETTINGS_SESSION_ID } from "../constants";
+import { MouCollectionAction, MouCollectionActionHint, MouCollectionAsset, MouCollectionAssetMeta, MouCollectionAssetTypeEnum, MouCollectionDragData } from "../apps/collection";
+import { MOU_STORAGE, MOU_STORAGE_PUB, SETTINGS_SESSION_ID } from "../constants";
 import { AnyDict } from "../types";
 import MouFoundryUtils from "../utils/foundry-utils";
-import CloudCollectionConfig from "./config/collection-cloud-config";
 import MouPreview from "../apps/preview";
 
 export enum CloudMode {
@@ -16,13 +15,13 @@ export enum CloudMode {
   ONLY_SUPPORTED_CREATORS = "cloud-supported" // only assets from creators the user actively supports
 }
 
-enum CloudAssetType {
+export enum CloudAssetType {
   PREVIEW,                  // asset is a preview (no access, requires membership)
   FREE,                     // asset is a freebe from creator
   AVAILABLE,                // asset is available (but not free)
 }
 
-enum CloudAssetAction {
+export enum CloudAssetAction {
   DRAG,                     // drag & drop capability for the asset
   DOWNLOAD,                 // download asset and copy path to clipboard
   IMPORT,                   // import asset (scenes/...)
@@ -32,7 +31,7 @@ enum CloudAssetAction {
   SCENEPACKER,              // visit scene packer page
 }
 
-class MouCollectionCloudAsset implements MouCollectionAsset {
+export class MouCollectionCloudAsset implements MouCollectionAsset {
   
   id: string;
   url: string;
@@ -123,6 +122,7 @@ class MouCollectionCloudAsset implements MouCollectionAsset {
       case MouCollectionAssetTypeEnum.ScenePacker:
         this.iconTL = {descr: (game as Game).i18n.localize("MOU.scene_packer"), icon: "mou-icon mou-scenepacker"}
       case MouCollectionAssetTypeEnum.Scene:
+        this.draggable = data.perms >= 0 && data.type != MouCollectionAssetTypeEnum.ScenePacker
         if(data.scene.width) {
           this.meta.push({ 
             icon: "fa-regular fa-border-all", 
@@ -157,8 +157,8 @@ class MouCollectionCloudAsset implements MouCollectionAsset {
         }
         break
       case MouCollectionAssetTypeEnum.Image:
-        this.draggable = true && data.perms >= 0
       case MouCollectionAssetTypeEnum.Map:  
+        this.draggable = true && data.perms >= 0  
         this.meta.push({ 
           icon: "fa-regular fa-expand-wide", 
           text: `${MouMediaUtils.prettyNumber(data.size.width, true)} x ${MouMediaUtils.prettyNumber(data.size.height, true)}`,
@@ -194,77 +194,32 @@ class MouCollectionCloudAsset implements MouCollectionAsset {
     this.meta.push({ 
       icon: "fa-regular fa-weight-hanging",
       text: MouMediaUtils.prettyFilesize(data.filesize, 0),
-      hint: (game as Game).i18n.localize("MOU.meta_filesize")})
+      hint: (game as Game).i18n.localize("MOU.meta_filesize")
+    })
   }
 }
 
-interface MouCollectionCloudCache {
-  currentSearchTerms?: string,
-  curScope?: CloudMode,
-  curType?: number,
-  curTypes?: MouCollectionAssetType[],
-  curCreators?: MouCollectionCreator[],
-  curPacks?: MouCollectionPack[],
-  curFolders?: string[]
-}
+export default class MouCollectionCloudBase {
 
-export default class MouCollectionCloud implements MouCollection {
-
-  APP_NAME = "MouCollectionCloud"
-
+  APP_NAME = "MouCollectionCloudBase"
   static PLAYLIST_NAME = "Moulinette Cloud"
 
-  static ERROR_SERVER_CNX = 1
-
-  private mode: CloudMode
-  private error: number
-  private pickerMode: boolean
-
-  private cache: MouCollectionCloudCache
-
+  protected mode: CloudMode
+    
   constructor() {
     this.mode = CloudMode.ALL
-    this.refreshSettings();
-    this.error = 0
-    this.cache = {}
-    this.pickerMode = false
   }
-  
-  async initialize(): Promise<void> {
-    // nothing to do
-  }
-
-  private refreshSettings() {
-    const settings = MouApplication.getSettings(SETTINGS_COLLECTION_CLOUD) as AnyDict
-    this.mode = "mode" in settings ? settings.mode : CloudMode.ALL
-    // in picker mode, you don't want to browse assets from creators you don't support
-    if(this.pickerMode && this.mode == CloudMode.ALL) {
-      this.mode = CloudMode.ALL_ACCESSIBLE; 
-    }
     
-  }
-  
-  getId() : string {
-    return "mou-cloud"
-  }
-  
-  getName(): string {
-    switch(this.mode) {
-      case CloudMode.ALL : return (game as Game).i18n.localize("MOU.collection_type_cloud_all");
-      case CloudMode.ALL_ACCESSIBLE : return (game as Game).i18n.localize("MOU.collection_type_cloud_owned");
-      case CloudMode.ONLY_SUPPORTED_CREATORS: return (game as Game).i18n.localize("MOU.collection_type_cloud_supported");
-    }
-  }
 
-  getDescription(): string {
-    return (game as Game).i18n.localize("MOU.collection_type_cloud_desc");
-  }
-
-  private getScope() {
+  protected getScope() {
     return {
       session: MouApplication.getSettings(SETTINGS_SESSION_ID),
       mode: this.mode
     }
+  }
+
+  supportsType(type: MouCollectionAssetTypeEnum): boolean {
+    return this.getSupportedTypes().includes(type)
   }
 
   getSupportedTypes(): MouCollectionAssetTypeEnum[] {
@@ -282,252 +237,7 @@ export default class MouCollectionCloud implements MouCollection {
       MouCollectionAssetTypeEnum.RollTable
     ];
   }
-
-  async getTypes(filters: MouCollectionFilters): Promise<MouCollectionAssetType[]> {
-    const filtersDuplicate = JSON.parse(JSON.stringify(filters));
-    filtersDuplicate["scope"] = this.getScope()
-    // returns a dict with key = asset type and value = count
-    try {
-      const results = await MouCloudClient.apiPOST("/assets/types", filtersDuplicate)
-      return Object.entries(results).map( entry => { return {
-            id: Number(entry[0]),
-            assetsCount: entry[1]
-          } as MouCollectionAssetType
-        })
-    } catch(error: any) {
-      this.error = MouCollectionCloud.ERROR_SERVER_CNX
-      MouApplication.logError(this.APP_NAME, `Not able to retrieve asset types`, error)
-      return []
-    }
-  }
-
-  async getCreators(filters: MouCollectionFilters): Promise<MouCollectionCreator[]> {
-    const filtersDuplicate = JSON.parse(JSON.stringify(filters));
-    filtersDuplicate["scope"] = this.getScope()
-    try {
-      const creators = await MouCloudClient.apiPOST("/creators", filtersDuplicate)
-      const results = []
-      for(const c of creators) {
-        const creator : MouCollectionCreator = {
-          id: c.name,
-          name: c.name,
-          assetsCount: c.assets
-        }  
-        results.push(creator)
-      }
-      return results
-    } catch(error: any) {
-      this.error = MouCollectionCloud.ERROR_SERVER_CNX
-      MouApplication.logError(this.APP_NAME, `Not able to retrieve creators`, error)
-      return []
-    }
-  }
-  
-  async getPacks(filters: MouCollectionFilters): Promise<MouCollectionPack[]> {
-    const filtersDuplicate = JSON.parse(JSON.stringify(filters));
-    filtersDuplicate["scope"] = this.getScope()
-    if(!filters.creator || filters.creator.length == 0) return [];
-    try {
-      const packs = await MouCloudClient.apiPOST("/packs", filtersDuplicate)
-      
-      const results: { [key: string]: MouCollectionPack } = {};
-      for(const p of packs) {
-        if(p.name in results) {
-          const existing = results[p.name]
-          existing.assetsCount += p.assets
-          existing.id += `;${p.pack_ref}`
-        } else {
-          results[p.name] = {
-            id: `${p.pack_ref}`,
-            name: p.name,
-            assetsCount: p.assets
-          }
-        }
-      }
-      return Object.values(results)
-    } catch(error: any) {
-      this.error = MouCollectionCloud.ERROR_SERVER_CNX
-      MouApplication.logError(this.APP_NAME, `Not able to retrieve packs`, error)
-      return []
-    }
-  }
-
-  async getFolders(filters: MouCollectionFilters): Promise<string[]> {
-    if(filters.creator && filters.creator.length > 0 && this.cache.curFolders) {
-      return this.cache.curFolders
-    }
-    return [] as string[]
-  }
-
-  async getAssetsCount(): Promise<number> {
-    return 0
-  }
-
-  async getAssets(filters: MouCollectionFilters, page: number): Promise<MouCollectionAsset[]> {
-    const filtersDuplicate = foundry.utils.duplicate(filters) as AnyDict;
-    filtersDuplicate["page"] = page
-    filtersDuplicate["scope"] = this.getScope()
-    filtersDuplicate["pack"] = filtersDuplicate["pack"].length == 0 ? null : filtersDuplicate["pack"]
-    
-    try {
-      this.error = 0;
-      const assets = await MouCloudClient.apiPOST(`/assets`, filtersDuplicate)
-      const results = []
-      for(const data of assets) {
-        results.push(new MouCollectionCloudAsset(data))
-      }
-      return results
-    } catch(error: any) {
-      this.error = MouCollectionCloud.ERROR_SERVER_CNX
-      MouApplication.logError(this.APP_NAME, `Not able to retrieve assets`, error)
-      return []
-    }
-  }
-
-  /**
-   * Search assets based on filters
-   * 
-   * Caching optimizing the results
-   * * If the search terms or the scope changed   => type + packs facets (ie full search)
-   * * If the type changed                        => pack facet only
-   * * If only the page changed                   => no facet at all (ie only results)
-   */
-  async searchAssets(filters: MouCollectionFilters, page: number): Promise<MouCollectionSearchResults> {
-    const filtersDuplicate = foundry.utils.duplicate(filters) as AnyDict;
-    filtersDuplicate["page"] = page
-    filtersDuplicate["scope"] = this.getScope()
-    filtersDuplicate["pack"] = filtersDuplicate["pack"].length == 0 ? null : filtersDuplicate["pack"]
-    filtersDuplicate["facets"] = { types: false, packs: false, folders: false }
-
-    // enable/disable facets based on cache
-    if((this.cache.curScope == undefined || this.cache.curScope != this.mode) || (!this.cache.currentSearchTerms == undefined || this.cache.currentSearchTerms != filters.searchTerms)) {
-      filtersDuplicate["facets"]["types"] = true
-      filtersDuplicate["facets"]["creators"] = true
-      filtersDuplicate["facets"]["packs"] = true
-      // reset folders if search terms changed
-      this.cache.curFolders = undefined
-      filters.folder = undefined
-
-    }
-    else if(!this.cache.curType == undefined || this.cache.curType != filters.type) {
-      filtersDuplicate["facets"]["types"] = true
-      filtersDuplicate["facets"]["creators"] = true
-      filtersDuplicate["facets"]["packs"] = true
-    }
-    else if(!this.cache.curCreators == undefined || this.cache.curCreators != filters.creator) {
-      filtersDuplicate["facets"]["packs"] = true
-    }
-    // retrieve folders if creator and pack are selected
-    if(filters.creator && filters.creator.length > 0 && page == 0) {
-      // request folders only if filter not specified or if list not yet known
-      if(!this.cache.curFolders || !filters.folder) {
-        filtersDuplicate["facets"]["folders"] = true
-      }
-    }
-
-    this.cache.currentSearchTerms = filters.searchTerms
-    this.cache.curScope = this.mode
-    this.cache.curType = filters.type
-
-    try {
-      this.error = 0;
-      //console.log(filtersDuplicate)
-      const results = await MouCloudClient.apiPOST(`/search`, filtersDuplicate)
-      //console.log(results)
-      
-      // process types facets
-      if("types" in results) {
-        results["types"] = results["types"].map( (entry:AnyDict) => { return {
-            id: Number(entry._id),
-            assetsCount: entry.total_assets
-          } as MouCollectionAssetType
-        })
-        this.cache.curTypes = results["types"]
-      } else {
-        results["types"] =  foundry.utils.duplicate(this.cache.curTypes)
-      }
-
-      // process creators facets
-      if("creators" in results) {
-        // process creators
-        results["creators"] = results["creators"].map( (entry:AnyDict) => { return {
-            id: entry.name,
-            name: entry.name,
-            assetsCount: entry.total_assets
-          } as MouCollectionCreator
-        })
-        this.cache.curCreators = results["creators"]
-      } 
-      else {
-        results["creators"] = foundry.utils.duplicate(this.cache.curCreators)
-      }
-
-      // process packs facets
-      if("packs" in results) {
-        const packs: { [key: string]: MouCollectionPack } = {};
-        // clean up pack names (removing 4K and HD from name)
-        for(const p of results["packs"]) {
-          if(p.name.toUpperCase().endsWith(" 4K") || p.name.toUpperCase().endsWith(" HD")) {
-            p.name = p.name.substring(0, p.name.length - 3).trim()
-          }
-        }
-        for(const p of results["packs"]) {
-          if(p.name in packs) {
-            const existing = packs[p.name]
-            existing.assetsCount += p.total_assets
-            existing.id += `;${p.pack_ref}`
-          } else {
-            packs[p.name] = {
-              id: `${p.pack_ref}`,
-              name: p.name,
-              creator: p.creator,
-              assetsCount: p.total_assets
-            }
-          }
-        }
-        results["packs"] = Object.values(packs)
-        this.cache.curPacks = results["packs"]
-      } else {
-        results["packs"] = foundry.utils.duplicate(this.cache.curPacks)
-      }
-
-      // process folders facets
-      if("folders" in results) {
-        results["folders"] = results["folders"].sort()
-        this.cache.curFolders = results["folders"]
-      } else {
-        results["folders"] = foundry.utils.duplicate(this.cache.curFolders ? this.cache.curFolders : [])
-      }
-
-      // prepare filter packs for selected creator
-      if(filters.creator && filters.creator.length > 0) {
-        results["packs"] = results["packs"].filter((p : MouCollectionPack) => p.creator == filters.creator)
-      } else {
-        results["packs"] = []
-      }
-
-      // list of available packs
-      //const visiblePacks = results["packs"].map((p: AnyDict) => Number(p.id))
-      
-      // prepare results
-      const assets : MouCollectionCloudAsset[] = []
-      for(const asset of results["assets"]) {
-        // ignore assets that don't have a matching pack (ie. not visible)
-        //if (!visiblePacks.includes(asset.pack_ref)) continue
-        assets.push(new MouCollectionCloudAsset(asset))
-      }
-      results["assets"] = assets
-
-      return results
-
-    } catch(error: any) {
-      this.error = MouCollectionCloud.ERROR_SERVER_CNX
-      this.cache = {}
-      MouApplication.logError(this.APP_NAME, `Failed to search on Moulinette Cloud`, error)
-      return { types: [], creators: [], packs: [], assets: [] }
-    }
-  }
-
+ 
   getActions(asset: MouCollectionAsset): MouCollectionAction[] {
     const actions = [] as MouCollectionAction[]
     const cAsset = (asset as MouCollectionCloudAsset)
@@ -649,7 +359,7 @@ export default class MouCollectionCloud implements MouCollection {
    *  * UploadResult (with path) for a single file
    *  * AnyDict (JSON) for entities
    */
-  private async downloadAsset(asset: any): Promise<FilePicker.UploadResult | false> {
+  protected async downloadAsset(asset: any): Promise<FilePicker.UploadResult | false> {
     if(asset.type == MouCollectionAssetTypeEnum.ScenePacker) {
       const assets = await MouApplication.getModule().cloudclient.apiPOST(`/scenepacker-assets/${asset.pack_ref}`, { scope: this.getScope() })
       return {
@@ -685,7 +395,6 @@ export default class MouCollectionCloud implements MouCollection {
     }
   }
 
-
   async executeAction(actionId: number, selAsset: MouCollectionAsset): Promise<void> {
     const asset = await MouCloudClient.apiGET(`/asset/${selAsset.id}`, { session: MouApplication.getSettings(SETTINGS_SESSION_ID) })
     const folderPath = `Moulinette/${asset.creator}/${asset.pack}`
@@ -701,7 +410,7 @@ export default class MouCollectionCloud implements MouCollection {
             case MouCollectionAssetTypeEnum.Scene: MouFoundryUtils.importSceneFromJSON(resultImport.message, folderPath); break
             case MouCollectionAssetTypeEnum.Item: MouFoundryUtils.importItem(JSON.parse(resultImport.message), folderPath); break
             case MouCollectionAssetTypeEnum.Actor: MouFoundryUtils.importActor(JSON.parse(resultImport.message), folderPath); break
-            case MouCollectionAssetTypeEnum.Audio: MouFoundryUtils.playStopSound(resultImport.path, MouCollectionCloud.PLAYLIST_NAME); break
+            case MouCollectionAssetTypeEnum.Audio: MouFoundryUtils.playStopSound(resultImport.path, MouCollectionCloudBase.PLAYLIST_NAME); break
             case MouCollectionAssetTypeEnum.Playlist: MouFoundryUtils.importPlaylist(JSON.parse(resultImport.message), folderPath); break
             case MouCollectionAssetTypeEnum.JournalEntry: MouFoundryUtils.importJournalEntryFromJSON(resultImport.message, folderPath); break
             case MouCollectionAssetTypeEnum.ScenePacker: MouFoundryUtils.importScenePacker(JSON.parse(resultImport.message), asset.scenepacker_ref); break
@@ -809,16 +518,18 @@ export default class MouCollectionCloud implements MouCollection {
     }
   }
 
+
   /**
    * Fills data (from DropData) with JSON data from asset
    */
   async fromDropData(assetId: string, data: MouCollectionDragData): Promise<void> {
+    console.log("fromDropData", assetId, data)
     const asset = await MouCloudClient.apiGET(`/asset/${assetId}`, { session: MouApplication.getSettings(SETTINGS_SESSION_ID) })    
+    const folderPath = `Moulinette/${asset.creator}/${asset.pack}`
     if(asset) {
       MouApplication.logDebug(this.APP_NAME, `fromDropData for asset ${assetId}`, data)
       switch(asset.type) {
         case MouCollectionAssetTypeEnum.Actor: 
-          const folderPath = `Moulinette/${asset.creator}/${asset.pack}`
           const resultActor = await this.downloadAsset(asset)
           if(resultActor) {
             const actor = await MouFoundryUtils.importActor(JSON.parse(resultActor.message), folderPath, false) as AnyDict;
@@ -845,62 +556,12 @@ export default class MouCollectionCloud implements MouCollection {
     if(asset) {
       const result = await this.downloadAsset(asset)  
       if(result) {
-        MouFoundryUtils.createCanvasAsset(canvas, result.path, data.type, `Moulinette/${asset.creator}/${asset.pack}`, position)
+        let moreData = null
+        if(selAsset.type == MouCollectionAssetTypeEnum.Scene) {
+          moreData = MouFoundryUtils.getImagePathFromEntity(JSON.parse(result.message))
+        }
+        MouFoundryUtils.createCanvasAsset(canvas, result.path, data.type, `Moulinette/${asset.creator}/${asset.pack}`, position, moreData)
       }
     }
-  }
-
-  /** Collection Cloud has specific configurations */
-  isConfigurable(): boolean {
-    return true
-  }
-
-  isBrowsable(): boolean {
-    return true;
-  }
-
-  /** Opens Configuration UI */
-  configure(callback: Function): void {
-    const parent = this
-    new CloudCollectionConfig(function() {
-      parent.refreshSettings()
-      callback()
-    }).render(true)
-  }  
-
-  getCollectionError(): string | null {
-    if(this.error == MouCollectionCloud.ERROR_SERVER_CNX) {
-      return (game as Game).i18n.localize("MOU.error_server_connection")
-    }
-    return null;
-  }
-
-  supportsType(type: MouCollectionAssetTypeEnum): boolean {
-    return [
-      MouCollectionAssetTypeEnum.Actor, 
-      MouCollectionAssetTypeEnum.Adventure, 
-      MouCollectionAssetTypeEnum.Audio, 
-      //MouCollectionAssetTypeEnum.Icon, 
-      MouCollectionAssetTypeEnum.Image, 
-      MouCollectionAssetTypeEnum.Item, 
-      MouCollectionAssetTypeEnum.JournalEntry, 
-      MouCollectionAssetTypeEnum.Macro, 
-      MouCollectionAssetTypeEnum.Map, 
-      MouCollectionAssetTypeEnum.PDF, 
-      MouCollectionAssetTypeEnum.Playlist, 
-      MouCollectionAssetTypeEnum.RollTable,
-      MouCollectionAssetTypeEnum.Scene,
-      MouCollectionAssetTypeEnum.ScenePacker].includes(type)
-  }
-  
-  async selectAsset(asset: MouCollectionAsset): Promise<string | null> {
-    const assetData = await MouCloudClient.apiGET(`/asset/${asset.id}`, { session: MouApplication.getSettings(SETTINGS_SESSION_ID) })
-    const resultDownload = await this.downloadAsset(assetData)
-    return resultDownload ? resultDownload.path : null
-  }
-
-  setPickerMode(pickerMode: boolean) {
-    this.pickerMode = pickerMode;
-    this.refreshSettings();
   }
 }

@@ -510,7 +510,7 @@ export default class MouFoundryUtils {
   } 
 
 
-  static async createCanvasAsset(canvas: Canvas, assetPath: string, assetType: string, folderPath: string, position: { x: number, y: number }) {
+  static async createCanvasAsset(canvas: Canvas, assetPath: string, assetType: string, folderPath: string, position: { x: number, y: number }, moreData: string | null = null) {
     const adv_settings = MouApplication.getSettings(SETTINGS_ADVANCED) as AnyDict
     const drop_as = adv_settings.image?.drop_as || "Tile"
     
@@ -525,6 +525,10 @@ export default class MouFoundryUtils {
       }
     } else if(assetType == "Audio") {
       MouFoundryUtils.createAmbientAudio(canvas, assetPath, position)
+    } else if(assetType == "Map") {
+      MouFoundryUtils.createTile(canvas, assetPath, position)
+    } else if(assetType == "Scene" && moreData) {
+      MouFoundryUtils.createTile(canvas, moreData, position)
     }
   }
 
