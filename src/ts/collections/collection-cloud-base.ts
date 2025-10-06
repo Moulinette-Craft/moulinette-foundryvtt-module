@@ -207,7 +207,7 @@ export default class MouCollectionCloudBase {
   protected mode: CloudMode
     
   constructor() {
-    this.mode = CloudMode.ALL
+    this.mode = CloudMode.ALL_ACCESSIBLE
   }
     
 

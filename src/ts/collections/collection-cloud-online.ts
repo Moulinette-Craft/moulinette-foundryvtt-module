@@ -2,9 +2,8 @@ import MouApplication from "../apps/application";
 import MouCloudClient from "../clients/moulinette-cloud";
 
 import { MouCollection, MouCollectionAsset, MouCollectionAssetType, MouCollectionCreator, MouCollectionFilters, MouCollectionPack, MouCollectionSearchResults } from "../apps/collection";
-import { SETTINGS_COLLECTION_CLOUD, SETTINGS_SESSION_ID } from "../constants";
+import { SETTINGS_SESSION_ID } from "../constants";
 import { AnyDict } from "../types";
-import CloudCollectionConfig from "./config/collection-cloud-config";
 import MouCollectionCloudBase, { CloudMode, MouCollectionCloudAsset } from "./collection-cloud-base";
 
 
@@ -25,43 +24,25 @@ export default class MouCollectionCloudOnline extends MouCollectionCloudBase imp
   static ERROR_SERVER_CNX = 1
 
   private error: number
-  private pickerMode: boolean
 
   private cache: MouCollectionCloudCache
 
   constructor() {
     super()
     this.mode = CloudMode.ALL
-    this.refreshSettings();
     this.error = 0
     this.cache = {}
-    this.pickerMode = false
   }
   
   async initialize(): Promise<void> {
     // nothing to do
   }
 
-  private refreshSettings() {
-    const settings = MouApplication.getSettings(SETTINGS_COLLECTION_CLOUD) as AnyDict
-    this.mode = "mode" in settings ? settings.mode : CloudMode.ALL
-    // in picker mode, you don't want to browse assets from creators you don't support
-    if(this.pickerMode && this.mode == CloudMode.ALL) {
-      this.mode = CloudMode.ALL_ACCESSIBLE; 
-    }
-    
-  }
-  
   getId() : string {
     return "mou-cloud"
   }
   
   getName(): string {
-    switch(this.mode) {
-      case CloudMode.ALL : return (game as Game).i18n.localize("MOU.collection_type_cloud_all");
-      case CloudMode.ALL_ACCESSIBLE : return (game as Game).i18n.localize("MOU.collection_type_cloud_owned");
-      case CloudMode.ONLY_SUPPORTED_CREATORS: return (game as Game).i18n.localize("MOU.collection_type_cloud_supported");
-    }
     return (game as Game).i18n.localize("MOU.collection_type_cloud_all");
   }
 
@@ -316,7 +297,7 @@ export default class MouCollectionCloudOnline extends MouCollectionCloudBase imp
 
   /** Collection Cloud has specific configurations */
   isConfigurable(): boolean {
-    return true
+    return false
   }
 
   isBrowsable(): boolean {
@@ -324,12 +305,8 @@ export default class MouCollectionCloudOnline extends MouCollectionCloudBase imp
   }
 
   /** Opens Configuration UI */
-  configure(callback: Function): void {
-    const parent = this
-    new CloudCollectionConfig(function() {
-      parent.refreshSettings()
-      callback()
-    }).render(true)
+  configure(): void {
+    return;
   }  
 
   getCollectionError(): string | null {
@@ -346,7 +323,6 @@ export default class MouCollectionCloudOnline extends MouCollectionCloudBase imp
   }
 
   setPickerMode(pickerMode: boolean) {
-    this.pickerMode = pickerMode;
-    this.refreshSettings();
+    pickerMode;
   }
 }

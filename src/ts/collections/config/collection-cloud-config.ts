@@ -34,14 +34,14 @@ export default class CloudCollectionConfig extends MouApplication {
 
   override async getData() {
     const settings = MouApplication.getSettings(SETTINGS_COLLECTION_CLOUD) as AnyDict
-    const mode = "mode" in settings ? settings.mode : CloudMode.ALL
+    const mode = "mode" in settings ? settings.mode : CloudMode.ALL_ACCESSIBLE
 
     return {
       mode: mode,
       modes: [
         { id: CloudMode.ONLY_SUPPORTED_CREATORS, name: (game as Game).i18n.localize("MOU.mode_supported"), desc: (game as Game).i18n.localize("MOU.mode_supported_desc")},
         { id: CloudMode.ALL_ACCESSIBLE, name: (game as Game).i18n.localize("MOU.mode_accessible"), desc: (game as Game).i18n.localize("MOU.mode_accessible_desc")},
-        { id: CloudMode.ALL, name: (game as Game).i18n.localize("MOU.mode_all"), desc: (game as Game).i18n.localize("MOU.mode_all_desc")},
+        //{ id: CloudMode.ALL, name: (game as Game).i18n.localize("MOU.mode_all"), desc: (game as Game).i18n.localize("MOU.mode_all_desc")},
       ]
     };
   }

@@ -3,16 +3,18 @@ import MouCloudClient from "../clients/moulinette-cloud";
 
 import { MouCollection, MouCollectionAsset, MouCollectionAssetType, MouCollectionAssetTypeEnum, MouCollectionCreator, MouCollectionFilters, MouCollectionPack, MouCollectionSearchResults } from "../apps/collection";
 import MouBrowser from "../apps/browser";
-import MouCollectionCloudBase, { MouCollectionCloudAsset } from "./collection-cloud-base";
+import MouCollectionCloudBase, { CloudMode, MouCollectionCloudAsset } from "./collection-cloud-base";
 import MouMediaUtils from "../utils/media-utils";
-import { SETTINGS_SESSION_ID } from "../constants";
+import { SETTINGS_COLLECTION_CLOUD, SETTINGS_SESSION_ID } from "../constants";
+import { AnyDict } from "../types";
+import CloudCollectionConfig from "./config/collection-cloud-config";
 
 export default class MouCollectionCloudCached extends MouCollectionCloudBase implements MouCollection {
 
   override APP_NAME = "MouCollectionCloudCached"
 
   private error: number;
-
+  
   static ERROR_SERVER_CNX = 1
 
   constructor() {
@@ -22,6 +24,7 @@ export default class MouCollectionCloudCached extends MouCollectionCloudBase imp
   
   async initialize(): Promise<void> {
     const module = MouApplication.getModule()
+    this.refreshSettings()
     if(!module.cache.allAssets) {
       // retrieve private assets from Moulinette Cloud
       const params = { scope: this.getScope() }
@@ -55,7 +58,11 @@ export default class MouCollectionCloudCached extends MouCollectionCloudBase imp
   }
   
   getName(): string {
-    return (game as Game).i18n.localize("MOU.collection_type_cloud_cached")
+    if(this.mode == CloudMode.ONLY_SUPPORTED_CREATORS) {
+      return (game as Game).i18n.localize("MOU.collection_type_cloud_supported");
+    } else {
+      return (game as Game).i18n.localize("MOU.collection_type_cloud_owned");
+    }
   }
 
   getDescription(): string {
@@ -74,6 +81,7 @@ export default class MouCollectionCloudCached extends MouCollectionCloudBase imp
       }
       if(filters.creator && filters.creator != "" && asset.creator != filters.creator) return false
       if(filters.pack && filters.pack != "" && asset.pack_id != filters.pack) return false
+      if(filters.folder && !asset.url.startsWith(filters.folder)) return false
       if(filters.searchTerms && filters.searchTerms.length > 0) {
         for(const term of filters.searchTerms.split(" ")) {
           if(!asset.name.toLowerCase().includes(term.toLowerCase())) return false
@@ -164,8 +172,24 @@ export default class MouCollectionCloudCached extends MouCollectionCloudBase imp
     return packs
   }
 
-  async getFolders(): Promise<string[]> {
-    return []
+  /**
+   * Retrieves a list of unique folder paths based on the provided filters.
+   *
+   * @param {MouCollectionFilters} filters - The filters to apply when retrieving folders.
+   * @returns {Promise<string[]>} A promise that resolves to an array of unique folder paths, sorted alphabetically.
+   */
+  async getFolders(filters: MouCollectionFilters): Promise<string[]> {
+    if(!filters.pack) return []
+    const folders = new Set<string>()
+    // generate list of folders
+    const results = this.getFilterAssets({ type: filters.type, pack: filters.pack })
+    for(const r of results) {
+      const f = r.url.substring(0, r.url.lastIndexOf('/'));
+      if(f.length > 0) {
+        folders.add(MouMediaUtils.getCleanURI(f))
+      }
+    }
+    return Array.from(folders.values()).sort((a, b) => a.localeCompare(b))
   }
 
   async getAssetsCount(filters: MouCollectionFilters): Promise<number> {
@@ -182,14 +206,20 @@ export default class MouCollectionCloudCached extends MouCollectionCloudBase imp
   }
 
   isConfigurable(): boolean {
-    return false
+    return true;
   }
 
   isBrowsable(): boolean {
     return true;
   }
 
-  configure(): void {
+  configure(callback: Function): void {
+    const parent = this
+    new CloudCollectionConfig(function() {
+      MouApplication.getModule().cache.allAssets = null
+      parent.refreshSettings()
+      callback()
+    }).render(true)
   }  
 
   getCollectionError(): string | null {
@@ -200,12 +230,20 @@ export default class MouCollectionCloudCached extends MouCollectionCloudBase imp
   }
 
   setPickerMode(pickerMode: boolean) {
-    pickerMode; // unused
+    pickerMode;
   }
 
   async selectAsset(asset: MouCollectionAsset): Promise<string | null> {
     const assetData = await MouCloudClient.apiGET(`/asset/${asset.id}`, { session: MouApplication.getSettings(SETTINGS_SESSION_ID) })
     const resultDownload = await this.downloadAsset(assetData)
     return resultDownload ? resultDownload.path : null
+  }
+
+  private refreshSettings() {
+    const settings = MouApplication.getSettings(SETTINGS_COLLECTION_CLOUD) as AnyDict
+    this.mode = "mode" in settings ? settings.mode : CloudMode.ALL_ACCESSIBLE
+    if(this.mode == CloudMode.ALL) {
+      this.mode = CloudMode.ALL_ACCESSIBLE
+    }
   }
 }
