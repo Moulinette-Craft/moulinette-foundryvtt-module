@@ -9,7 +9,7 @@ export default class MouUser extends MouApplication {
 
   private html?: JQuery<HTMLElement>;
   private timerSecondsLeft = 0;
-  private timer?: NodeJS.Timer;
+  private timer? = 0 as unknown as ReturnType<typeof setInterval>;
 
   private forceRefresh = false
 

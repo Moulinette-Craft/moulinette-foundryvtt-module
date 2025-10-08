@@ -6,9 +6,9 @@ import "../styles/main.scss";
 import MouBrowser from "./apps/browser";
 import MouUser from "./apps/user";
 import MouCloudClient from "./clients/moulinette-cloud";
-import MouConfig, { MODULE_ID, SETTINGS_COLLECTION_CLOUD, SETTINGS_COLLECTION_LOCAL, SETTINGS_DATA_EXCLUSION, SETTINGS_ENABLE_PLAYERS, SETTINGS_PREVS, SETTINGS_S3_BUCKET, SETTINGS_SESSION_ID, SETTINGS_USE_FOLDERS, SETTINGS_ADVANCED, SETTINGS_TOKEN_SELECTOR, SETTINGS_HIDDEN, SETTINGS_TOGGLES, SETTINGS_PICKER_ENABLED } from "./constants";
+import MouConfig, { MODULE_ID, SETTINGS_COLLECTION_CLOUD, SETTINGS_COLLECTION_LOCAL, SETTINGS_DATA_EXCLUSION, SETTINGS_ENABLE_PLAYERS, SETTINGS_PREVS, SETTINGS_S3_BUCKET, SETTINGS_SESSION_ID, SETTINGS_USE_FOLDERS, SETTINGS_ADVANCED, SETTINGS_TOKEN_SELECTOR, SETTINGS_HIDDEN, SETTINGS_TOGGLES, SETTINGS_PICKER_ENABLED, ADD_ASSET_TO_CANVAS, ADDED_ASSET_TO_CANVAS } from "./constants";
 import MouLayer from "./layers/mou-layer";
-import { AnyDict, MouModule } from "./types";
+import { AddAssetToCanvasPayloadType, AnyDict, MouModule } from "./types";
 import MouCache from "./apps/cache";
 import MouMediaUtils from "./utils/media-utils";
 import { MouCollection } from "./apps/collection";
@@ -31,6 +31,7 @@ import { MoulinetteFilePicker } from "./apps/file-picker";
 import MouCollectionCloudOnline from "./collections/collection-cloud-online";
 
 let module: MouModule;
+let canvasInstance: Canvas;
 
 Hooks.once("init", () => {
   console.log(`Initializing ${MODULE_ID}`);
@@ -107,6 +108,8 @@ Hooks.once("init", () => {
     return value + valueAdd;
   });
 
+  MouHooks.registerKeybindings();
+
   module = MouApplication.getModule();
   module.browser = new MouBrowser();
   module.user = new MouUser();
@@ -124,7 +127,23 @@ Hooks.once("init", () => {
     return (game as Game).settings.get(MODULE_ID, SETTINGS_SESSION_ID) as string
   }
 
+  window.addEventListener(ADD_ASSET_TO_CANVAS, onAddAssetToCanvas)
 });
+
+const onAddAssetToCanvas = async (payload: CustomEventInit<AddAssetToCanvasPayloadType>) => {
+  const { position, asset, collection = 'mou-gameicons' } = payload.detail || {}
+  if (asset) {
+    await MouApplication.getModule()
+      .collections.find((c) => c.getId() == collection)
+      ?.dropDataCanvas(canvasInstance, asset, {
+        moulinette: { asset: asset.id },
+        // TODO: the default position defining functionality to be reconsidered
+        x: position?.x || canvasInstance.app?.view.width || 0 / 2,
+        y: position?.y || canvasInstance.app?.view.height || 0 / 2,
+      })
+    window.dispatchEvent(new CustomEvent(ADDED_ASSET_TO_CANVAS))
+  }
+}
 
 Hooks.once("ready", () => {
   // force retrieving Moulinette user
@@ -169,10 +188,16 @@ Hooks.on('getSceneControlButtons', (buttons) => MouHooks.addMoulinetteControls(b
  */
 Hooks.on('dropCanvasData', (canvas, data) => {
   if("moulinette" in data) {
-    // Drag & drop from a collection
-    if(data.moulinette.collection) {
+    // Handle the drop from the "Quick Search"-panel
+    if (data.data?.isQuickSearch) {
+      window.dispatchEvent(new CustomEvent<AddAssetToCanvasPayloadType>(ADD_ASSET_TO_CANVAS, { detail: { asset: data.data!.fullAssetData, position: { x: Number(data.x), y: Number(data.y) } } }))
+    } else if(data.moulinette.collection) {
+      // Drag & drop from a collection
       module.browser.dropDataCanvas(canvas, data)
     }
   }
 });
 
+Hooks.on('canvasReady', (canvas) => {
+  canvasInstance = canvas
+})

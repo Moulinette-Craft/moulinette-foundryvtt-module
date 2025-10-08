@@ -1,44 +1,55 @@
 import * as fsPromises from "fs/promises";
 import copy from "rollup-plugin-copy";
 import scss from "rollup-plugin-scss";
-import { defineConfig, Plugin } from "vite";
+import { defineConfig, mergeConfig, Plugin } from "vite";
+import { fileURLToPath, URL } from 'node:url'
+import vueAppConfig from './src/vue/vite.config.ts'
 
 const moduleVersion = process.env.MODULE_VERSION;
 const githubProject = process.env.GH_PROJECT;
 const githubTag = process.env.GITHUB_REF_NAME;
 
-export default defineConfig({
-  build: {
-    sourcemap: true,
-    rollupOptions: {
-      input: "src/ts/module.ts",
-      // we build a single file with vite
-      output: {
-        dir: "dist/scripts",
-        format: "es",
-        entryFileNames: "module.js",
+export default mergeConfig(
+
+  defineConfig({
+    build: {
+      sourcemap: true,
+      rollupOptions: {
+        input: "src/ts/module.ts",
+        // we build a single file with vite
+        output: {
+          dir: "dist/scripts",
+          format: "es",
+          entryFileNames: "module.js",
+        },
       },
     },
-  },
-  plugins: [
-    updateModuleManifestPlugin(),
-    scss({
-      output: "dist/style.css",
-      sourceMap: true,
-      watch: ["src/styles/*.scss"],
-    }),
-    copy({
-      targets: [
-        { src: "src/languages", dest: "dist" },
-        { src: "src/templates", dest: "dist" },
-        { src: "src/img", dest: "dist" },
-        { src: "src/font", dest: "dist" },
-        { src: "src/data", dest: "dist" }
-      ],
-      hook: "writeBundle",
-    }),
-  ],
-});
+    plugins: [
+      updateModuleManifestPlugin(),
+      scss({
+        output: "dist/style.css",
+        sourceMap: true,
+        watch: ["src/styles/*.scss"],
+      }),
+      copy({
+        targets: [
+          { src: "src/languages", dest: "dist" },
+          { src: "src/templates", dest: "dist" },
+          { src: "src/img", dest: "dist" },
+          { src: "src/font", dest: "dist" },
+          { src: "src/data", dest: "dist" }
+        ],
+        hook: "writeBundle",
+      })
+    ],
+    resolve: {
+      alias: {
+        '~': fileURLToPath(new URL('./src', import.meta.url))
+      },
+    },
+  }),
+  vueAppConfig
+)
 
 function updateModuleManifestPlugin(): Plugin {
   return {

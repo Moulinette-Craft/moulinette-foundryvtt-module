@@ -77,8 +77,9 @@ export class MouGameIconsClient {
   /**
    * Search for icons on Game-Icons.net
    */
-  static async searchIcons(terms: string, page: number): Promise<{ icons: MouGameIcon[], count: number }> {
-    if(terms && terms.length > 2) {
+  static async searchIcons(terms: string, page: number, options?: { applySearchTermSizeRestriction: boolean }): Promise<{ icons: MouGameIcon[], count: number }> {
+    const applySearchTermSizeRestriction = 'applySearchTermSizeRestriction' in (options || {}) ? options?.applySearchTermSizeRestriction : true
+    if(terms && (applySearchTermSizeRestriction ? terms.length > 2 : true)) {
       MouApplication.logInfo(MouGameIconsClient.APP_NAME, "Searching ... " + terms)
       const response = await MouGameIconsClient.queryServer(encodeURI(terms), MouBrowser.PAGE_SIZE, page)
       if(!response) return { icons: [], count: 0 }
