@@ -3,7 +3,7 @@ import { useEventListener } from '@vueuse/core'
 import { ref } from 'vue'
 
 export function useDisplay() {
-  const isModalVisible = ref(true)
+  const isModalVisible = ref(false)
 
   const openModal = () => {
     isModalVisible.value = true
