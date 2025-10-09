@@ -201,3 +201,6 @@ Hooks.on('dropCanvasData', (canvas, data) => {
 Hooks.on('canvasReady', (canvas) => {
   canvasInstance = canvas
 })
+
+Hooks.on('closeApplicationV2', () => window.removeEventListener(ADD_ASSET_TO_CANVAS, onAddAssetToCanvas))
+Hooks.on('closeApplicationV1', () => window.removeEventListener(ADD_ASSET_TO_CANVAS, onAddAssetToCanvas))
