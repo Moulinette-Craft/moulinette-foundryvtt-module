@@ -4,7 +4,6 @@ import { AnyDict, MouModule } from "../types";
 /**
  * This class server allow Moulinette Application to be independant from FVTT
  */
-// export default class MouApplication extends class Test {} {
 export default class MouApplication extends Application {
  
   // static & non-static application name

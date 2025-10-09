@@ -28,30 +28,31 @@ dist-ssr
 *.sw?
 
 # Quick Search Modules
-src/quick-search/logs
+src/vue/logs
 *.log
-src/quick-search/npm-debug.log*
-src/quick-search/yarn-debug.log*
-src/quick-search/yarn-error.log*
-src/quick-search/pnpm-debug.log*
-src/quick-search/lerna-debug.log*
+src/vue/npm-debug.log*
+src/vue/yarn-debug.log*
+src/vue/yarn-error.log*
+src/vue/pnpm-debug.log*
+src/vue/lerna-debug.log*
 
-src/quick-search/node_modules
-src/quick-search/.DS_Store
-src/quick-search/dist
-src/quick-search/dist-ssr
-src/quick-search/coverage
-src/quick-search/*.local
+src/vue/node_modules
+src/vue/.DS_Store
+src/vue/dist
+src/vue/dist-ssr
+src/vue/coverage
+src/vue/*.local
 
-src/quick-search/cypress/videos/
-src/quick-search/cypress/screenshots/
+src/vue/cypress/videos/
+src/vue/cypress/screenshots/
 
-src/quick-search/.vscode/*
-src/quick-search/.idea
-src/quick-search/*.suo
-src/quick-search/*.ntvs*
-src/quick-search/*.njsproj
-src/quick-search/*.sln
-src/quick-search/*.sw?
+src/vue/.vscode/*
+src/vue/.idea
+src/vue/*.suo
+src/vue/*.ntvs*
+src/vue/*.njsproj
+src/vue/*.sln
+src/vue/*.sw?
 
-src/quick-search/*.tsbuildinfo
+src/vue/*.tsbuildinfo
+src/vue/env.*
