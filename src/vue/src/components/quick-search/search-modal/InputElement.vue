@@ -12,7 +12,7 @@ onStartTyping(() => {
 </script>
 
 <template>
-  <input v-model="model" ref="inputRef" type="text" />
+  <input v-model="model" ref="inputRef" type="text" autofocus />
 </template>
 
 <style lang="scss" scoped>

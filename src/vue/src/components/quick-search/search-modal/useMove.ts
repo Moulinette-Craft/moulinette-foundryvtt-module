@@ -1,4 +1,4 @@
-import { useDraggable, useElementBounding } from '@vueuse/core'
+import { useDraggable, useElementBounding, watchOnce } from '@vueuse/core'
 import { computed, ref, type Ref, type TemplateRef } from 'vue'
 
 export function useMove(
@@ -7,6 +7,7 @@ export function useMove(
   hasSearchedOnce: Ref<boolean>,
 ) {
   const hasMoved = ref(false)
+  const initialCenterPosition = ref({ left: 0, top: 0 })
 
   const { x, y } = useDraggable(searchTermWrapperRef, {
     onStart: (_, event) => {
@@ -22,6 +23,16 @@ export function useMove(
   })
   const { width, height, left, top } = useElementBounding(modalRef)
 
+  watchOnce(
+    () => hasSearchedOnce.value,
+    (newValue) => {
+      if (newValue) {
+        initialCenterPosition.value.left = left.value
+        initialCenterPosition.value.top = top.value
+      }
+    },
+  )
+
   const position = computed(() =>
     hasMoved.value
       ? {
@@ -30,8 +41,8 @@ export function useMove(
         }
       : hasSearchedOnce.value
         ? {
-            left: `${left.value}px`,
-            top: `${top.value}px`,
+            left: `${initialCenterPosition.value.left}px`,
+            top: `${initialCenterPosition.value.top}px`,
           }
         : {},
   )
