@@ -3,29 +3,28 @@ import ItemElement from '@quick-search-components/results/ItemElement.vue'
 import { useSearchStore } from '@vue-src/stores/quick-search/search'
 import type { SearchResultItem } from '@vue-src/types/quick-search'
 import { storeToRefs } from 'pinia'
-import RegularFadeTransition from '@vue-src/components/RegularFadeTransition.vue'
+import { computed } from 'vue'
 
 const { searchTerm, isSearching } = storeToRefs(useSearchStore())
 
-defineProps<{
+const props = defineProps<{
   items: Array<SearchResultItem>
 }>()
+
+const isNothingFoundState = computed(
+  () => props.items.length === 0 && searchTerm.value.length > 0 && !isSearching.value,
+)
 </script>
 
 <template>
   <ul
-    :class="[
-      'quick-search-results-list',
-      { padded: items.length > 0 || (searchTerm.length > 0 && items.length === 0) },
-    ]"
+    :class="['quick-search-results-list', { padded: items.length > 0 || isNothingFoundState }]"
     v-auto-animate
   >
     <ItemElement v-for="item in items" :key="`result-item-${item.id}`" :item="item" />
-    <RegularFadeTransition>
-      <li v-if="items.length === 0 && searchTerm.length > 0 && !isSearching" class="nothing-found">
-        <span>Nothing found</span>
-      </li>
-    </RegularFadeTransition>
+    <li v-if="isNothingFoundState" class="nothing-found">
+      <span>Nothing found</span>
+    </li>
   </ul>
 </template>
 
@@ -41,6 +40,7 @@ defineProps<{
   overflow-x: hidden;
   margin: 0;
   border-radius: 0 6px 6px 0;
+  transition: all 0.2s;
 
   &.padded {
     padding: var(--gap) 0.1rem var(--gap);
@@ -50,5 +50,6 @@ defineProps<{
 .nothing-found {
   display: flex;
   justify-content: center;
+  color: rgba(239, 230, 216, 0.5);
 }
 </style>

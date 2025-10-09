@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import InputElement from '@quick-search-components/search-modal/InputElement.vue'
 import ResultsList from '@quick-search-components/results/IndexComponent.vue'
-import MagnifyingGlass from '@vue-components/icons/MagnifyingGlass.vue'
 import { useSearchStore } from '@vue-src/stores/quick-search/search'
 import { storeToRefs } from 'pinia'
 import { onClickOutside } from '@vueuse/core'
@@ -13,14 +11,15 @@ import { KEYBOARD_SELECTED_ITEM_SYMBOL } from './constants'
 import LoadingSpinner from '../LoadingSpinner.vue'
 import { useAddAssetToCanvasHandling } from './useAddAssetToCanvasHandling'
 import RegularFadeTransition from '@vue-src/components/RegularFadeTransition.vue'
+import SearchTermInputRow from './SearchTermInputRow.vue'
 
-const { searchTerm, foundItems, isSearching, hasSearchedOnce } = storeToRefs(useSearchStore())
+const { searchTerm, foundItems, hasSearchedOnce } = storeToRefs(useSearchStore())
 
 const modalRef = useTemplateRef<HTMLElement>('modalRef')
-const searchTermWrapperRef = useTemplateRef<HTMLElement>('searchTermWrapperRef')
+const searchTermWrapperComponentRef = useTemplateRef<HTMLElement>('searchTermWrapperComponentRef')
 
 const { closeModal, isModalVisible } = useDisplay()
-const { position, hasMoved } = useMove(modalRef, searchTermWrapperRef, hasSearchedOnce)
+const { position, hasMoved } = useMove(modalRef, searchTermWrapperComponentRef, hasSearchedOnce)
 const { selectedItem } = useKeyboardSelection(isModalVisible, foundItems, searchTerm)
 const { entireModalLoadingState } = useAddAssetToCanvasHandling({ addedAssetToCanvas: closeModal })
 
@@ -39,15 +38,8 @@ onClickOutside(modalRef, closeModal)
       v-show="isModalVisible"
       open
     >
-      <div ref="searchTermWrapperRef" class="search-term-wrapper" v-auto-animate>
-        <LoadingSpinner :class="['inline-loading-indicator', { 'non-visible': !isSearching }]" />
-        <MagnifyingGlass :class="['magnifying-glass-icon', { 'non-visible': isSearching }]" />
-        <InputElement
-          v-model="searchTerm"
-          placeholder="Quick Search"
-          class="search-term-input"
-          data-exclude-from-drag-triggers
-        />
+      <div ref="searchTermWrapperComponentRef">
+        <SearchTermInputRow />
       </div>
       <ResultsList :items="foundItems" class="results-list" />
       <RegularFadeTransition>
@@ -83,46 +75,6 @@ onClickOutside(modalRef, closeModal)
 .quick-search-modal,
 .results-list {
   background: rgba(48, 40, 49, 0.65);
-}
-
-.search-term-wrapper {
-  cursor: move;
-  padding: 0.4rem 0.9rem;
-  font-size: 1rem;
-}
-
-.search-term-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 7px;
-}
-
-.magnifying-glass-icon,
-.inline-loading-indicator {
-  transition: all 0.2s;
-  min-width: 18px;
-  max-width: 18px;
-  min-height: 18px;
-  max-height: 18px;
-}
-
-.magnifying-glass-icon {
-  color: rgba(239, 230, 216, 0.5);
-}
-
-.inline-loading-indicator {
-  position: absolute;
-  top: 12px;
-  left: 13px;
-}
-
-.non-visible {
-  opacity: 0;
-}
-
-.search-term-input {
-  width: 100%;
 }
 
 .results-list {
