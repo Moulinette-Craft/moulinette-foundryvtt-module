@@ -34,7 +34,7 @@ export const useSearchStore = defineStore('search', () => {
           )
           foundItems.value = assets
         } catch {
-          return (foundItems.value = [])
+          foundItems.value = []
         } finally {
           isSearchFetching.value = false
         }

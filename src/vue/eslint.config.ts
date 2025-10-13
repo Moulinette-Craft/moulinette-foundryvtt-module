@@ -11,7 +11,6 @@ import skipFormatting from '@vue/eslint-config-prettier/skip-formatting'
 export default defineConfigWithVueTs(
   {
     name: 'app/files-to-lint',
-    // @ts-expect-error: "files"-property is surely present in the configuration setup; some TS-issue here
     files: ['**/*.{ts,mts,tsx,vue}'],
   },
 
