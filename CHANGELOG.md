@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.0] - 2025-10-13
+### Added / Changed
+- New cloud mode : all assets downloaded and cached. Separated from the discover mode.
+- Drag & drop maps/scenes onto the canvas to add background images as tile
+- You can now click and drag a map directly onto the created canvas, which automatically sets the map’s background image on the scene.
+- Search is executed as you type
+- Search button (in addition to pressing ENTER)
+- Enhanced visual indicator for content loading
+
 ## [1.8.8] - 2025-07-20
 ### Fixed
 - After opening Media Browser, switching to another layer fails
