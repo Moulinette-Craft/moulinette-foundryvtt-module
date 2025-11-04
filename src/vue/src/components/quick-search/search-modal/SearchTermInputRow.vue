@@ -14,7 +14,7 @@ const { searchTerm, isSearching } = storeToRefs(useSearchStore())
     <MagnifyingGlass :class="['magnifying-glass-icon', { 'non-visible': isSearching }]" />
     <InputElement
       v-model="searchTerm"
-      placeholder="Quick Search"
+      placeholder="Moulinette Quick Search"
       class="search-term-input"
       data-exclude-from-drag-triggers
     />

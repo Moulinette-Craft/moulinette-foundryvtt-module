@@ -71,9 +71,9 @@ export default class MouConfig {
 }
 
 // Global events
-// Allows to open the "Quick Search"-modal
+// Allows to open the "Moulinette Quick Search"-modal
 export const OPEN_QUICK_SEARCH_MODAL = 'MOULINETTE_EVENT:OPEN_QUICK_SEARCH_MODAL'
-// Allows to close the "Quick Search"-modal
+// Allows to close the "Moulinette Quick Search"-modal
 export const CLOSE_QUICK_SEARCH_MODAL = 'MOULINETTE_EVENT:CLOSE_QUICK_SEARCH_MODAL'
 // Initiates a process of adding an item to the canvas (i.e. via drag-and-drop-ing an item to the canvas)
 // Expects a payload of type AddAssetToCanvasPayloadType

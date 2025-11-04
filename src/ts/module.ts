@@ -188,7 +188,7 @@ Hooks.on('getSceneControlButtons', (buttons) => MouHooks.addMoulinetteControls(b
  */
 Hooks.on('dropCanvasData', (canvas, data) => {
   if("moulinette" in data) {
-    // Handle the drop from the "Quick Search"-panel
+    // Handle the drop from the "Moulinette Quick Search"-panel
     if (data.data?.isQuickSearch) {
       window.dispatchEvent(new CustomEvent<AddAssetToCanvasPayloadType>(ADD_ASSET_TO_CANVAS, { detail: { asset: data.data!.fullAssetData, position: { x: Number(data.x), y: Number(data.y) } } }))
     } else if(data.moulinette.collection) {
