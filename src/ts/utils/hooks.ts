@@ -198,8 +198,9 @@ export default class MouHooks {
   static registerKeybindings () {
     (game as Game).keybindings.register("quick-search", 'TOGGLE_OPEN', {
       name: "MOULINETTE.QUICK_SEARCH",
+      textInput: true,
       editable: [
-        { key: "Space", modifiers: [KeyboardManager.MODIFIER_KEYS.SHIFT] },
+        { key: "KeyM", modifiers: [KeyboardManager.MODIFIER_KEYS.CONTROL] },
       ],
       onDown: () => {
         window.dispatchEvent(new CustomEvent(OPEN_QUICK_SEARCH_MODAL))
