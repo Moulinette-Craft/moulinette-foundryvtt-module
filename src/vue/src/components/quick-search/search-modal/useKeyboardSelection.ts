@@ -2,7 +2,8 @@ import type { AddAssetToCanvasPayloadType } from '../../../../../ts/types'
 import type { SearchResultItem } from '../../../types/quick-search'
 import { onKeyStroke } from '@vueuse/core'
 import { ref, watch, type Ref } from 'vue'
-import { ADD_ASSET_TO_CANVAS } from '../../../../../ts/constants'
+import { ADD_ASSET_TO_CANVAS, QUICK_SEARCH_MODAL_ITEM_SELECTED } from '../../../../../ts/constants'
+import { shouldDefaultActionBePrevented } from '../../../utils/quick-search/outer-subscriptions'
 
 export function useKeyboardSelection(
   isModalVisible: Ref<boolean>,
@@ -59,10 +60,20 @@ export function useKeyboardSelection(
     commonKeyStrokeFunctions(event).then((index) => {
       if (index !== -1) {
         window.dispatchEvent(
-          new CustomEvent<AddAssetToCanvasPayloadType>(ADD_ASSET_TO_CANVAS, {
-            detail: { asset: selectedItem.value! },
+          new CustomEvent<{ item: SearchResultItem }>(QUICK_SEARCH_MODAL_ITEM_SELECTED, {
+            detail: {
+              item: selectedItem.value!,
+            },
           }),
         )
+
+        if (!shouldDefaultActionBePrevented(QUICK_SEARCH_MODAL_ITEM_SELECTED)) {
+          window.dispatchEvent(
+            new CustomEvent<AddAssetToCanvasPayloadType>(ADD_ASSET_TO_CANVAS, {
+              detail: { asset: selectedItem.value! },
+            }),
+          )
+        }
       }
     }),
   )

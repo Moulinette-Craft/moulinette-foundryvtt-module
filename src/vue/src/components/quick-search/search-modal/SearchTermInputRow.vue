@@ -4,8 +4,21 @@ import { useSearchStore } from '@vue-src/stores/quick-search/search'
 import LoadingSpinner from '../LoadingSpinner.vue'
 import MagnifyingGlass from '@vue-src/components/icons/MagnifyingGlass.vue'
 import InputElement from './InputElement.vue'
+import { inject, nextTick, useTemplateRef, watchEffect } from 'vue'
+import { IS_MODAL_VISIBLE } from './constants'
 
 const { searchTerm, isSearching } = storeToRefs(useSearchStore())
+
+const inputRef = useTemplateRef<HTMLInputElement>('inputRef')
+const keyboardSelectedItem = inject(IS_MODAL_VISIBLE)
+
+watchEffect(() => {
+  if (keyboardSelectedItem?.value) {
+    nextTick(() => {
+      inputRef.value?.focus()
+    })
+  }
+})
 </script>
 
 <template>
@@ -14,6 +27,7 @@ const { searchTerm, isSearching } = storeToRefs(useSearchStore())
     <MagnifyingGlass :class="['magnifying-glass-icon', { 'non-visible': isSearching }]" />
     <InputElement
       v-model="searchTerm"
+      ref="inputRef"
       placeholder="Moulinette Quick Search"
       class="search-term-input"
       data-exclude-from-drag-triggers

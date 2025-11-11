@@ -198,6 +198,7 @@ export default class MouHooks {
   static registerKeybindings () {
     (game as Game).keybindings.register("quick-search", 'TOGGLE_OPEN', {
       name: "MOULINETTE.QUICK_SEARCH",
+      // @ts-expect-error: "textInput"-property is surely present on the ClientKeybindings
       textInput: true,
       editable: [
         { key: "KeyM", modifiers: [KeyboardManager.MODIFIER_KEYS.CONTROL] },

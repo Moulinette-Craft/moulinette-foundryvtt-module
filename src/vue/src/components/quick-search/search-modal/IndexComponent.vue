@@ -7,7 +7,7 @@ import { provide, useTemplateRef } from 'vue'
 import { useMove } from './useMove'
 import { useDisplay } from './useDisplay'
 import { useKeyboardSelection } from './useKeyboardSelection'
-import { KEYBOARD_SELECTED_ITEM_SYMBOL } from './constants'
+import { IS_MODAL_VISIBLE, KEYBOARD_SELECTED_ITEM_SYMBOL } from './constants'
 import LoadingSpinner from '../LoadingSpinner.vue'
 import { useAddAssetToCanvasHandling } from './useAddAssetToCanvasHandling'
 import RegularFadeTransition from '@vue-src/components/RegularFadeTransition.vue'
@@ -17,6 +17,7 @@ const { searchTerm, foundItems, hasSearchedOnce } = storeToRefs(useSearchStore()
 
 const modalRef = useTemplateRef<HTMLElement>('modalRef')
 const searchTermWrapperComponentRef = useTemplateRef<HTMLElement>('searchTermWrapperComponentRef')
+const inputRowRef = useTemplateRef<HTMLElement>('inputRowRef')
 
 const { closeModal, isModalVisible } = useDisplay()
 const { position, hasMoved } = useMove(modalRef, searchTermWrapperComponentRef, hasSearchedOnce)
@@ -24,6 +25,7 @@ const { selectedItem } = useKeyboardSelection(isModalVisible, foundItems, search
 const { entireModalLoadingState } = useAddAssetToCanvasHandling({ addedAssetToCanvas: closeModal })
 
 provide(KEYBOARD_SELECTED_ITEM_SYMBOL, selectedItem)
+provide(IS_MODAL_VISIBLE, isModalVisible)
 
 onClickOutside(modalRef, closeModal)
 </script>
@@ -39,7 +41,7 @@ onClickOutside(modalRef, closeModal)
       open
     >
       <div ref="searchTermWrapperComponentRef">
-        <SearchTermInputRow />
+        <SearchTermInputRow ref="inputRowRef" />
       </div>
       <ResultsList :items="foundItems" class="results-list" />
       <RegularFadeTransition>

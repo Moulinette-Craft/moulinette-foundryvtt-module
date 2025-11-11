@@ -5,7 +5,8 @@ import { KEYBOARD_SELECTED_ITEM_SYMBOL } from '../search-modal/constants'
 import { inject, nextTick, useTemplateRef, watch } from 'vue'
 import { MouCollectionAssetTypeEnum } from '@root/ts/apps/collection'
 import type { AddAssetToCanvasPayloadType } from '@root/ts/types'
-import { ADD_ASSET_TO_CANVAS } from '@root/ts/constants'
+import { ADD_ASSET_TO_CANVAS, QUICK_SEARCH_MODAL_ITEM_SELECTED } from '@root/ts/constants'
+import { shouldDefaultActionBePrevented } from '@vue-src/utils/quick-search/outer-subscriptions'
 
 const props = defineProps<{
   item: SearchResultItem
@@ -48,10 +49,20 @@ const onDragStart = (event: DragEvent) => {
 
 const onItemClick = () => {
   window.dispatchEvent(
-    new CustomEvent<AddAssetToCanvasPayloadType>(ADD_ASSET_TO_CANVAS, {
-      detail: { asset: props.item },
+    new CustomEvent<{ item: SearchResultItem }>(QUICK_SEARCH_MODAL_ITEM_SELECTED, {
+      detail: {
+        item: props.item,
+      },
     }),
   )
+
+  if (!shouldDefaultActionBePrevented(QUICK_SEARCH_MODAL_ITEM_SELECTED)) {
+    window.dispatchEvent(
+      new CustomEvent<AddAssetToCanvasPayloadType>(ADD_ASSET_TO_CANVAS, {
+        detail: { asset: props.item },
+      }),
+    )
+  }
 }
 </script>
 
