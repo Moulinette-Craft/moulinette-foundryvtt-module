@@ -182,6 +182,7 @@
   "MOU.path": "Path",
   "MOU.please_choose": "Please choose",
   "MOU.progressbar": "Progressbar",
+  "MOU.quick_search": "Open Moulinette Quick Search",
   "MOU.refresh_links": "Refresh Patreon/Discord",
   "MOU.reindex_hint": "Re-index all content in this folder. Regenerates metadata but not thumbnails",
   "MOU.result": "result",
