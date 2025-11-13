@@ -69,3 +69,20 @@ export default class MouConfig {
     fgcolor: "#ffffff"
   }
 }
+
+// Global events
+// Allows to open the "Moulinette Quick Search"-modal
+export const OPEN_QUICK_SEARCH_MODAL = 'MOULINETTE_EVENT:OPEN_QUICK_SEARCH_MODAL'
+// Allows to close the "Moulinette Quick Search"-modal
+export const CLOSE_QUICK_SEARCH_MODAL = 'MOULINETTE_EVENT:CLOSE_QUICK_SEARCH_MODAL'
+// Initiates a process of adding an item to the canvas (i.e. via drag-and-drop-ing an item to the canvas)
+// Expects a payload of type AddAssetToCanvasPayloadType
+export const ADD_ASSET_TO_CANVAS = 'MOULINETTE_EVENT:ADD_ASSET_TO_CANVAS'
+// Intended to inform the app that the adding process has completed
+export const ADDED_ASSET_TO_CANVAS = 'MOULINETTE_EVENT:ADDED_ASSET_TO_CANVAS'
+// Indicates that some element has been selected either via "Enter"-press or via mouse click on the element
+export const QUICK_SEARCH_MODAL_ITEM_SELECTED = 'MOULINETTE_EVENT:QUICK_SEARCH_MODAL_ITEM_SELECTED'
+
+// Global variables
+// Refers to a global window-property that contains a list of "outer" subscribers that rely on specific events of the "Moulinette Quick Search"-modal
+export const QUICK_SEARCH_MODAL_OUTER_SUBSCRIBERS = 'MOULINETTE_GLOBAL_VARIABLE:QUICK_SEARCH_MODAL_OUTER_SUBSCRIBERS'

@@ -3,7 +3,7 @@ import MouBrowser from "./apps/browser";
 import MouUser from "./apps/user";
 import MouCloudClient from "./clients/moulinette-cloud";
 import MouCache from "./apps/cache";
-import { MouCollection } from "./apps/collection";
+import { MouCollection, MouCollectionAsset } from "./apps/collection";
 import MouEventHandler from "./apps/event-handler";
 import MouConfig from "./constants";
 import MouMediaUtils from "./utils/media-utils";
@@ -48,3 +48,5 @@ export interface MouModule extends Game.ModuleData<ModuleData> {
 export interface AnyDict {
   [key: string]: any;
 }
+
+export type AddAssetToCanvasPayloadType = { collection?: string, asset: MouCollectionAsset, position?: { x: number, y: number } }

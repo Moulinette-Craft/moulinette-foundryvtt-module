@@ -1,5 +1,6 @@
 import MouApplication from "../apps/application";
-import { MODULE_ID, SETTINGS_ENABLE_PLAYERS } from "../constants";
+import "~/vue/src/main"
+import { MODULE_ID, OPEN_QUICK_SEARCH_MODAL, SETTINGS_ENABLE_PLAYERS } from "../constants";
 import { AnyDict } from "../types";
 
 declare var libWrapper: any;
@@ -192,6 +193,21 @@ export default class MouHooks {
         return await JournalEntry.implementation.fromDropDataOrig(data, options)
       }
     }
+  }
+
+  static registerKeybindings () {
+    (game as Game).keybindings.register("quick-search", 'TOGGLE_OPEN', {
+      name: "MOULINETTE.QUICK_SEARCH",
+      // @ts-expect-error: "textInput"-property is surely present on the ClientKeybindings
+      textInput: true,
+      editable: [
+        { key: "KeyM", modifiers: [KeyboardManager.MODIFIER_KEYS.CONTROL] },
+      ],
+      onDown: () => {
+        window.dispatchEvent(new CustomEvent(OPEN_QUICK_SEARCH_MODAL))
+      },
+      precedence: CONST.KEYBINDING_PRECEDENCE.NORMAL,
+    });
   }
   
 }
