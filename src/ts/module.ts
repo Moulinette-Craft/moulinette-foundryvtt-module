@@ -6,7 +6,7 @@ import "../styles/main.scss";
 import MouBrowser from "./apps/browser";
 import MouUser from "./apps/user";
 import MouCloudClient from "./clients/moulinette-cloud";
-import MouConfig, { MODULE_ID, SETTINGS_COLLECTION_CLOUD, SETTINGS_COLLECTION_LOCAL, SETTINGS_DATA_EXCLUSION, SETTINGS_ENABLE_PLAYERS, SETTINGS_PREVS, SETTINGS_S3_BUCKET, SETTINGS_SESSION_ID, SETTINGS_USE_FOLDERS, SETTINGS_ADVANCED, SETTINGS_TOKEN_SELECTOR, SETTINGS_HIDDEN, SETTINGS_TOGGLES, SETTINGS_PICKER_ENABLED, ADD_ASSET_TO_CANVAS, ADDED_ASSET_TO_CANVAS } from "./constants";
+import MouConfig, { MODULE_ID, SETTINGS_COLLECTION_CLOUD, SETTINGS_COLLECTION_LOCAL, SETTINGS_DATA_EXCLUSION, SETTINGS_ENABLE_PLAYERS, SETTINGS_PREVS, SETTINGS_S3_BUCKET, SETTINGS_SESSION_ID, SETTINGS_USE_FOLDERS, SETTINGS_ADVANCED, SETTINGS_TOKEN_SELECTOR, SETTINGS_HIDDEN, SETTINGS_TOGGLES, SETTINGS_PICKER_ENABLED, ADD_ASSET_TO_CANVAS, ADDED_ASSET_TO_CANVAS, QUICK_SEARCH_MODAL_ITEM_SELECTED, CLOSE_QUICK_SEARCH_MODAL } from "./constants";
 import MouLayer from "./layers/mou-layer";
 import { AddAssetToCanvasPayloadType, AnyDict, MouModule } from "./types";
 import MouCache from "./apps/cache";
@@ -29,6 +29,8 @@ import MouCollectionFontAwesome from "./collections/collection-fontawesome";
 import { MouAPI } from "./utils/api";
 import { MoulinetteFilePicker } from "./apps/file-picker";
 import MouCollectionCloudOnline from "./collections/collection-cloud-online";
+import { addOuterSubscriber as addQuickSearchModalOuterSubscriber, removeOuterSubscriber as removeQuickSearchModalOuterSubscriber } from "../vue/src/utils/quick-search/outer-subscriptions";
+import { SearchResultItem } from "../vue/src/types/quick-search";
 
 let module: MouModule;
 let canvasInstance: Canvas;
@@ -188,7 +190,7 @@ Hooks.on('getSceneControlButtons', (buttons) => MouHooks.addMoulinetteControls(b
  */
 Hooks.on('dropCanvasData', (canvas, data) => {
   if("moulinette" in data) {
-    // Handle the drop from the "Quick Search"-panel
+    // Handle the drop from the "Moulinette Quick Search"-panel
     if (data.data?.isQuickSearch) {
       window.dispatchEvent(new CustomEvent<AddAssetToCanvasPayloadType>(ADD_ASSET_TO_CANVAS, { detail: { asset: data.data!.fullAssetData, position: { x: Number(data.x), y: Number(data.y) } } }))
     } else if(data.moulinette.collection) {
@@ -202,5 +204,46 @@ Hooks.on('canvasReady', (canvas) => {
   canvasInstance = canvas
 })
 
-Hooks.on('closeApplicationV2', () => window.removeEventListener(ADD_ASSET_TO_CANVAS, onAddAssetToCanvas))
-Hooks.on('closeApplicationV1', () => window.removeEventListener(ADD_ASSET_TO_CANVAS, onAddAssetToCanvas))
+Hooks.on("renderFilePicker", (app: FilePicker) => {
+  if (app.type === "image") {
+    addQuickSearchModalOuterSubscriber<{ item: SearchResultItem }>(
+      {
+        id: 'SELECT_INTO_IMAGE_PICKER',
+        targetEvent: QUICK_SEARCH_MODAL_ITEM_SELECTED,
+        preventDefaultAction: true
+      },
+      {
+        callback(eventPayload) {
+          const pickerElement = app.element as unknown as HTMLElement
+            (pickerElement.querySelector('#file-picker-file') as HTMLInputElement).value = eventPayload.item.url
+            pickerElement.querySelector('.files-list > .picked')?.classList?.remove('picked')
+            window.dispatchEvent(new CustomEvent(CLOSE_QUICK_SEARCH_MODAL))
+
+            // Highlight the selected field via animation
+            let currentFrame = 0, totalFrames = 10;
+            const selectedElement = pickerElement.querySelector('.selected-file') as HTMLElement
+            selectedElement.style.borderRadius = '6px';
+            const animate = () => {
+              if (currentFrame > totalFrames) {
+                selectedElement.style.borderRadius = '0px'
+
+                return
+              }
+
+              selectedElement.style.boxShadow = `0 0 ${50 * (1 - currentFrame / totalFrames)}px var(--color-light-1)`;
+              currentFrame++;
+              requestAnimationFrame(animate);
+            }
+            animate()
+        },
+      }
+    )
+  }
+})
+
+Hooks.on("closeFilePicker", () => removeQuickSearchModalOuterSubscriber('SELECT_INTO_IMAGE_PICKER'))
+
+Hooks.on('closeApplicationV1', () => {
+  removeQuickSearchModalOuterSubscriber('SELECT_INTO_IMAGE_PICKER')
+  window.removeEventListener(ADD_ASSET_TO_CANVAS, onAddAssetToCanvas)
+})

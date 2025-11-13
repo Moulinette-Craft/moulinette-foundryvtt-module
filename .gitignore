@@ -27,7 +27,7 @@ dist-ssr
 *.sln
 *.sw?
 
-# Quick Search Modules
+# Moulinette Quick Search Modules
 src/vue/logs
 *.log
 src/vue/npm-debug.log*

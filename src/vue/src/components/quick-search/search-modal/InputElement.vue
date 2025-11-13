@@ -6,13 +6,15 @@ const model = defineModel<string>({ required: true })
 
 const inputRef = useTemplateRef<HTMLInputElement>('inputRef')
 
-onStartTyping(() => {
-  inputRef.value!.focus()
-})
+const focus = () => inputRef.value!.focus()
+
+onStartTyping(focus)
+
+defineExpose({ focus })
 </script>
 
 <template>
-  <input v-model="model" ref="inputRef" type="text" autofocus />
+  <input v-model="model" ref="inputRef" type="text" />
 </template>
 
 <style lang="scss" scoped>
