@@ -42,6 +42,7 @@
       box-sizing: border-box;
       flex-grow: 1;
       margin-right: 5px;
+      color: black;
 
       &:not(:placeholder-shown) {
         padding-right: 16px;
