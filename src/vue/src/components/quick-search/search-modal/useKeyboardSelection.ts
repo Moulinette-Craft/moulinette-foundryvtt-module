@@ -1,5 +1,5 @@
 import type { AddAssetToCanvasPayloadType } from '../../../../../ts/types'
-import type { SearchResultItem } from '../../../types/quick-search'
+import type { ItemInTheFocusType, SearchResultItem } from '../../../types/quick-search'
 import { onKeyStroke } from '@vueuse/core'
 import { ref, watch, type Ref } from 'vue'
 import { ADD_ASSET_TO_CANVAS, QUICK_SEARCH_MODAL_ITEM_SELECTED } from '../../../../../ts/constants'
@@ -9,6 +9,7 @@ export function useKeyboardSelection(
   isModalVisible: Ref<boolean>,
   foundItems: Ref<Array<SearchResultItem>>,
   searchTerm: Ref<string>,
+  itemInTheFocus: Ref<ItemInTheFocusType>,
 ) {
   const selectedItem = ref<SearchResultItem | null>()
 
@@ -44,6 +45,7 @@ export function useKeyboardSelection(
         !selectedItem.value || index === foundItems.value.length - 1
           ? foundItems.value[0]
           : foundItems.value[index + 1]
+      itemInTheFocus.value = selectedItem.value
     }),
   )
 
@@ -53,6 +55,7 @@ export function useKeyboardSelection(
         !selectedItem.value || index === 0
           ? foundItems.value[foundItems.value.length - 1]
           : foundItems.value[index - 1]
+      itemInTheFocus.value = selectedItem.value
     }),
   )
 

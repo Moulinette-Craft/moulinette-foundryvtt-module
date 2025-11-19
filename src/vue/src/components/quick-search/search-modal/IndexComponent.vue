@@ -3,26 +3,38 @@ import ResultsList from '@quick-search-components/results/IndexComponent.vue'
 import { useSearchStore } from '@vue-src/stores/quick-search/search'
 import { storeToRefs } from 'pinia'
 import { onClickOutside } from '@vueuse/core'
-import { provide, useTemplateRef } from 'vue'
+import { provide, ref, shallowRef, useTemplateRef } from 'vue'
 import { useMove } from './useMove'
 import { useDisplay } from './useDisplay'
 import { useKeyboardSelection } from './useKeyboardSelection'
+import { useDisplay as useSelectionPreviewDisplay } from '../results/selection-preview/useDisplay'
 import { IS_MODAL_VISIBLE, KEYBOARD_SELECTED_ITEM_SYMBOL } from './constants'
 import LoadingSpinner from '../LoadingSpinner.vue'
 import { useAddAssetToCanvasHandling } from './useAddAssetToCanvasHandling'
 import RegularFadeTransition from '@vue-src/components/RegularFadeTransition.vue'
 import SearchTermInputRow from './SearchTermInputRow.vue'
+import SelectionPreview from '../results/selection-preview/IndexComponent.vue'
+import type { ItemInTheFocusType } from '@vue-src/types/quick-search'
 
 const { searchTerm, foundItems, hasSearchedOnce } = storeToRefs(useSearchStore())
 
+const itemInTheFocus = ref<ItemInTheFocusType>()
+const selectionPreviewElementBounding = shallowRef()
+
 const modalRef = useTemplateRef<HTMLElement>('modalRef')
 const searchTermWrapperComponentRef = useTemplateRef<HTMLElement>('searchTermWrapperComponentRef')
-const inputRowRef = useTemplateRef<HTMLElement>('inputRowRef')
 
 const { closeModal, isModalVisible } = useDisplay()
 const { position, hasMoved } = useMove(modalRef, searchTermWrapperComponentRef, hasSearchedOnce)
-const { selectedItem } = useKeyboardSelection(isModalVisible, foundItems, searchTerm)
+const { selectedItem } = useKeyboardSelection(
+  isModalVisible,
+  foundItems,
+  searchTerm,
+  itemInTheFocus,
+)
 const { entireModalLoadingState } = useAddAssetToCanvasHandling({ addedAssetToCanvas: closeModal })
+const { state: selectionPreviewState, position: selectionPreviewPosition } =
+  useSelectionPreviewDisplay(modalRef, itemInTheFocus, selectionPreviewElementBounding)
 
 provide(KEYBOARD_SELECTED_ITEM_SYMBOL, selectedItem)
 provide(IS_MODAL_VISIBLE, isModalVisible)
@@ -41,13 +53,26 @@ onClickOutside(modalRef, closeModal)
       open
     >
       <div ref="searchTermWrapperComponentRef">
-        <SearchTermInputRow ref="inputRowRef" />
+        <SearchTermInputRow />
       </div>
-      <ResultsList :items="foundItems" class="results-list" />
+      <ResultsList
+        v-model:item-in-the-focus="itemInTheFocus"
+        :items="foundItems"
+        class="results-list"
+      />
       <RegularFadeTransition>
         <div v-show="entireModalLoadingState" class="loading-state">
           <LoadingSpinner />
         </div>
+      </RegularFadeTransition>
+      <RegularFadeTransition>
+        <SelectionPreview
+          v-show="selectionPreviewState"
+          v-model:element-bounding="selectionPreviewElementBounding"
+          :item-in-the-focus="itemInTheFocus"
+          :style="selectionPreviewPosition"
+          class="selection-preview"
+        />
       </RegularFadeTransition>
     </dialog>
   </RegularFadeTransition>
@@ -96,5 +121,11 @@ onClickOutside(modalRef, closeModal)
   justify-content: center;
   background: rgba(0, 0, 0, 0.6);
   border-radius: 6px;
+}
+
+.selection-preview {
+  position: absolute;
+  left: 0;
+  top: 0;
 }
 </style>

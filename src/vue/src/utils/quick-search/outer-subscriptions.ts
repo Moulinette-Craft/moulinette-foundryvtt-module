@@ -9,8 +9,8 @@ export type OuterSubscriberDataType = {
 
 // @ts-expect-error: Symbol-based global window property
 window[Symbol.for(QUICK_SEARCH_MODAL_OUTER_SUBSCRIBERS)] = new Map()
-  export const outerSubscribers: Map<string, OuterSubscriberDataType> =
-// @ts-expect-error: Symbol-based global window property
+export const outerSubscribers: Map<string, OuterSubscriberDataType> =
+  // @ts-expect-error: Symbol-based global window property
   window[Symbol.for(QUICK_SEARCH_MODAL_OUTER_SUBSCRIBERS)]
 
 export const shouldDefaultActionBePrevented = (eventName: OuterSubscriberDataType['targetEvent']) =>
