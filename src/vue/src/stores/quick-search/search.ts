@@ -1,7 +1,6 @@
 import { computed, ref, watch } from 'vue'
 import { defineStore } from 'pinia'
-import MouCollectionGameIcons from '../../../../ts/collections/collection-gameicons'
-import type { SearchResultsType } from '@vue-src/types/quick-search'
+import type { SearchResultsType } from '../../types/quick-search'
 import { SearchCategoryData, type SearchCategoryNameType } from './search-categories'
 
 export const useSearchStore = defineStore('search', () => {
@@ -10,12 +9,15 @@ export const useSearchStore = defineStore('search', () => {
   const isTyping = ref<boolean>(false)
   const hasSearchedOnce = ref<boolean>(false)
   const activeSearchCategory = ref<SearchCategoryNameType>('IMAGES')
-  const foundItems = ref<SearchResultsType>({
+
+  const getFoundItemsDefaultData = () => ({
     IMAGES: new SearchCategoryData('IMAGES'),
     MAPS: new SearchCategoryData('MAPS'),
     SOUNDS: new SearchCategoryData('SOUNDS'),
     ALL: new SearchCategoryData('ALL'),
   })
+
+  const foundItems = ref<SearchResultsType>(getFoundItemsDefaultData())
 
   const isSearching = computed(() => isSearchFetching.value || isTyping.value)
 
@@ -23,30 +25,26 @@ export const useSearchStore = defineStore('search', () => {
     () => foundItems.value[activeSearchCategory.value].items,
   )
 
-  const SEARCH_DEBOUNCE_TIMEOUT_MS = 500
+  const DEFAULT_SEARCH_DEBOUNCE_TIMEOUT_MS = 500
   let searchDebounceTimeout = 0 as unknown as ReturnType<typeof setTimeout>
 
-  const search = async (term: string, ignoreDebounce?: boolean) => {
+  const search = async (term: string, debounceMs?: number) => {
     const category = activeSearchCategory.value
     isTyping.value = true
-    if (term.length > 0) {
+    if (term.trim().length > 0) {
       hasSearchedOnce.value = true
     }
 
     clearTimeout(searchDebounceTimeout)
     if (term) {
-      const performFetch = async () => {
+      searchDebounceTimeout = setTimeout(async () => {
         try {
           foundItems.value[category].isLoading = true
           isTyping.value = false
           isSearchFetching.value = true
           foundItems.value[category].lastFetchedTerm = term
           foundItems.value[category].lastFetchedAt = new Date()
-          const { assets } = await new MouCollectionGameIcons().searchAssets(
-            { searchTerms: term },
-            0,
-            { applySearchTermSizeRestriction: false },
-          )
+          const { assets } = await SearchCategoryData.getItems(category, term)
           foundItems.value[category].items = assets
         } catch {
           foundItems.value[category].items = []
@@ -54,12 +52,7 @@ export const useSearchStore = defineStore('search', () => {
           foundItems.value[category].isLoading = false
           isSearchFetching.value = false
         }
-      }
-      if (ignoreDebounce) {
-        performFetch()
-      } else {
-        searchDebounceTimeout = setTimeout(performFetch, SEARCH_DEBOUNCE_TIMEOUT_MS)
-      }
+      }, debounceMs || DEFAULT_SEARCH_DEBOUNCE_TIMEOUT_MS)
     } else {
       isTyping.value = false
       foundItems.value[category].isLoading = false
@@ -68,15 +61,26 @@ export const useSearchStore = defineStore('search', () => {
     }
   }
 
-  watch(() => searchTerm.value, value => search(value))
+  watch(
+    () => searchTerm.value,
+    (newValue, prevValue) => {
+      if (prevValue.trim().length > 0 && newValue.trim().length === 0) {
+        foundItems.value = getFoundItemsDefaultData()
+      }
+
+      search(newValue)
+    },
+  )
   watch(
     () => activeSearchCategory.value,
     (newValue, prevValue) => {
-      if (foundItems.value[newValue].lastFetchedTerm !== foundItems.value[prevValue].lastFetchedTerm) {
+      if (
+        foundItems.value[newValue].lastFetchedTerm !== foundItems.value[prevValue].lastFetchedTerm
+      ) {
         foundItems.value[newValue] = new SearchCategoryData(newValue)
-        search(searchTerm.value, true)
+        search(searchTerm.value, 200)
       }
-    }
+    },
   )
 
   return {

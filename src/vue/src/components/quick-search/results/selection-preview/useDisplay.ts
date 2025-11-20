@@ -1,4 +1,4 @@
-import type { ElementBoundingType, ItemInTheFocusType } from '@vue-src/types/quick-search'
+import type { ElementBoundingType, ItemInTheFocusType } from '../../../../types/quick-search'
 import { useElementBounding } from '@vueuse/core'
 import { computed, ref, watch, watchEffect, type Ref, type TemplateRef } from 'vue'
 
@@ -17,7 +17,7 @@ export function useDisplay(
   const state = ref(false)
   const modalBounding = useElementBounding(modalRef)
   const itemInTheFocusElement = ref<HTMLElement | null | undefined>(null)
-  let changeStateTimeout = 0
+  let changeStateTimeout = 0 as unknown as ReturnType<typeof setTimeout>
 
   const position = computed((previousValue) => {
     if (!state.value || !itemInTheFocus.value) {

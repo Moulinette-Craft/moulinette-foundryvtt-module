@@ -103,13 +103,13 @@ onClickOutside(modalRef, closeModal)
   }
 }
 
-.search-term-wrapper,
-.search-categories {
+.search-term-wrapper {
   padding: 0.4rem 0.9rem;
 }
 
 .search-categories {
-  padding-left: 0;
+  padding: 0 0.4rem;
+  margin: 0.4rem 0;
 }
 
 .quick-search-modal,

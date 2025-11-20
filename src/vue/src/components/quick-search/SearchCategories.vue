@@ -23,12 +23,14 @@ const activeCategoryIndex = computed(() =>
   categories.value.findIndex((category) => category.id === activeCategory.value),
 )
 const activeCategoryBackgroundStyles = computed(() => {
-  const { left, width } = categoryRefs.value?.[activeCategoryIndex.value]?.getBoundingClientRect() || {}
+  const { left, width, height } =
+    categoryRefs.value?.[activeCategoryIndex.value]?.getBoundingClientRect() || {}
   const wrapperBoundingLeft = searchCategoriesRef.value?.getBoundingClientRect()?.left || 0
 
   return {
     transform: `translateX(${(left || 0) - wrapperBoundingLeft}px)`,
-    width: `${width || 0}px`
+    width: `${width || 0}px`,
+    height: `${height || 0}px`,
   }
 })
 
@@ -39,7 +41,10 @@ const onCategoryClick = (category: (typeof categories.value)[number]) => {
 onKeyStroke('Tab', (event) => {
   event.preventDefault()
   event.stopPropagation()
-  activeCategory.value = categories.value[activeCategoryIndex.value === categories.value.length - 1 ? 0 : activeCategoryIndex.value + 1].id
+  activeCategory.value =
+    categories.value[
+      activeCategoryIndex.value === categories.value.length - 1 ? 0 : activeCategoryIndex.value + 1
+    ].id
 })
 </script>
 
@@ -72,16 +77,16 @@ onKeyStroke('Tab', (event) => {
   position: absolute;
   left: 0;
   top: 0;
-  height: 100%;
-  width: 10px;
-  // background: rgba(153, 121, 185, 0.14);
-  background: red;
+  background: rgba(231, 209, 177, 0.12);
+  // background: red;
   transition: all 0.3s;
   border-radius: 6px;
 }
 
 .category {
-  padding-inline: 0.9rem;
+  padding: 0.5rem 0.9rem;
   cursor: pointer;
+  color: #e7d1b1;
+  transition: all 0.3s;
 }
 </style>
