@@ -1,16 +1,27 @@
 import { computed, ref, watch } from 'vue'
 import { defineStore } from 'pinia'
 import MouCollectionGameIcons from '../../../../ts/collections/collection-gameicons'
-import type { MouCollectionSearchResults } from '../../../../ts/apps/collection'
+import type { SearchResultsType } from '@vue-src/types/quick-search'
+import type { SearchCategoryNameType } from './search-categories'
 
 export const useSearchStore = defineStore('search', () => {
   const searchTerm = ref<string>('')
   const isSearchFetching = ref<boolean>(false)
   const isTyping = ref<boolean>(false)
   const hasSearchedOnce = ref<boolean>(false)
-  const foundItems = ref<MouCollectionSearchResults['assets']>([])
+  const activeSearchCategory = ref<SearchCategoryNameType>('IMAGES')
+  const foundItems = ref<SearchResultsType>({
+    IMAGES: { items: [] },
+    MAPS: { items: [] },
+    SOUNDS: { items: [] },
+    ALL: { items: [] },
+  })
 
   const isSearching = computed(() => isSearchFetching.value || isTyping.value)
+
+  const activeSearchCategoryFoundItems = computed(
+    () => foundItems.value[activeSearchCategory.value].items,
+  )
 
   const SEARCH_DEBOUNCE_TIMEOUT_MS = 500
   let searchDebounceTimeout = 0 as unknown as ReturnType<typeof setTimeout>
@@ -32,9 +43,9 @@ export const useSearchStore = defineStore('search', () => {
             0,
             { applySearchTermSizeRestriction: false },
           )
-          foundItems.value = assets
+          foundItems.value[activeSearchCategory.value].items = assets
         } catch {
-          foundItems.value = []
+          foundItems.value[activeSearchCategory.value].items = []
         } finally {
           isSearchFetching.value = false
         }
@@ -42,7 +53,7 @@ export const useSearchStore = defineStore('search', () => {
     } else {
       isTyping.value = false
       isSearchFetching.value = false
-      foundItems.value = []
+      foundItems.value[activeSearchCategory.value].items = []
     }
   }
 
@@ -55,6 +66,8 @@ export const useSearchStore = defineStore('search', () => {
     isSearching,
     hasSearchedOnce,
     search,
+    activeSearchCategory,
     foundItems,
+    activeSearchCategoryFoundItems,
   }
 })

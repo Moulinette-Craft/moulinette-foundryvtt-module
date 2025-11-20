@@ -41,7 +41,6 @@ watchEffect(() => {
   display: flex;
   align-items: center;
   gap: 7px;
-  padding: 0.4rem 0.9rem;
   font-size: 1rem;
   cursor: move;
 }

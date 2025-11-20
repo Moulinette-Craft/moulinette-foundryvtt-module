@@ -15,20 +15,22 @@ import RegularFadeTransition from '@vue-src/components/RegularFadeTransition.vue
 import SearchTermInputRow from './SearchTermInputRow.vue'
 import SelectionPreview from '../results/selection-preview/IndexComponent.vue'
 import type { ItemInTheFocusType } from '@vue-src/types/quick-search'
+import SearchCategories from '../SearchCategories.vue'
 
-const { searchTerm, foundItems, hasSearchedOnce } = storeToRefs(useSearchStore())
+const { searchTerm, activeSearchCategory, activeSearchCategoryFoundItems, hasSearchedOnce } =
+  storeToRefs(useSearchStore())
 
 const itemInTheFocus = ref<ItemInTheFocusType>()
 const selectionPreviewElementBounding = shallowRef()
 
 const modalRef = useTemplateRef<HTMLElement>('modalRef')
-const searchTermWrapperComponentRef = useTemplateRef<HTMLElement>('searchTermWrapperComponentRef')
+const draggableAreaWrapperRef = useTemplateRef<HTMLElement>('draggableAreaWrapperRef')
 
 const { closeModal, isModalVisible } = useDisplay()
-const { position, hasMoved } = useMove(modalRef, searchTermWrapperComponentRef, hasSearchedOnce)
+const { position, hasMoved } = useMove(modalRef, draggableAreaWrapperRef, hasSearchedOnce)
 const { selectedItem } = useKeyboardSelection(
   isModalVisible,
-  foundItems,
+  activeSearchCategoryFoundItems,
   searchTerm,
   itemInTheFocus,
 )
@@ -52,12 +54,14 @@ onClickOutside(modalRef, closeModal)
       v-show="isModalVisible"
       open
     >
-      <div ref="searchTermWrapperComponentRef">
-        <SearchTermInputRow />
+      <div ref="draggableAreaWrapperRef">
+        <SearchTermInputRow class="search-term-wrapper" />
+        <hr style="margin: 0" />
+        <SearchCategories v-model="activeSearchCategory" class="search-categories" />
       </div>
       <ResultsList
         v-model:item-in-the-focus="itemInTheFocus"
-        :items="foundItems"
+        :items="activeSearchCategoryFoundItems"
         class="results-list"
       />
       <RegularFadeTransition>
@@ -97,6 +101,15 @@ onClickOutside(modalRef, closeModal)
     top: 50%;
     left: 50%;
   }
+}
+
+.search-term-wrapper,
+.search-categories {
+  padding: 0.4rem 0.9rem;
+}
+
+.search-categories {
+  padding-left: 0;
 }
 
 .quick-search-modal,
