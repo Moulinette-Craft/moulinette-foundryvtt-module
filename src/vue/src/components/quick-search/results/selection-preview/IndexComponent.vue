@@ -42,5 +42,6 @@ const onBounding = (data: ElementBoundingType) => {
 .preview-title {
   margin: 0.75rem 0 0;
   text-align: center;
+  color: rgba(239, 230, 216, 1);
 }
 </style>

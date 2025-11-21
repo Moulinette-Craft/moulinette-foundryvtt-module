@@ -4,12 +4,14 @@ import { onKeyStroke } from '@vueuse/core'
 import { ref, watch, type Ref } from 'vue'
 import { ADD_ASSET_TO_CANVAS, QUICK_SEARCH_MODAL_ITEM_SELECTED } from '../../../../../ts/constants'
 import { shouldDefaultActionBePrevented } from '../../../utils/quick-search/outer-subscriptions'
+import type { SearchCategoryNameType } from '../../../stores/quick-search/search-categories'
 
 export function useKeyboardSelection(
   isModalVisible: Ref<boolean>,
   foundItems: Ref<Array<SearchResultItem>>,
   searchTerm: Ref<string>,
   itemInTheFocus: Ref<ItemInTheFocusType>,
+  activeSearchCategory: Ref<SearchCategoryNameType>,
 ) {
   const selectedItem = ref<SearchResultItem | null>()
 
@@ -23,7 +25,7 @@ export function useKeyboardSelection(
   )
 
   watch(
-    () => searchTerm.value,
+    () => [searchTerm.value, activeSearchCategory.value],
     () => (selectedItem.value = null),
   )
 

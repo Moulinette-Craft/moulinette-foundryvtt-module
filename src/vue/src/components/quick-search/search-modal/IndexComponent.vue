@@ -33,6 +33,7 @@ const { selectedItem } = useKeyboardSelection(
   activeSearchCategoryFoundItems,
   searchTerm,
   itemInTheFocus,
+  activeSearchCategory,
 )
 const { entireModalLoadingState } = useAddAssetToCanvasHandling({ addedAssetToCanvas: closeModal })
 const { state: selectionPreviewState, position: selectionPreviewPosition } =

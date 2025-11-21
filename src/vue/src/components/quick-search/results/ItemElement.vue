@@ -2,11 +2,13 @@
 import ImageIcon from '@vue-src/components/icons/ImageIcon.vue'
 import type { SearchResultItem } from '@vue-src/types/quick-search'
 import { KEYBOARD_SELECTED_ITEM_SYMBOL } from '../search-modal/constants'
-import { inject, nextTick, useTemplateRef, watch } from 'vue'
+import { computed, inject, nextTick, useTemplateRef, watch } from 'vue'
 import { MouCollectionAssetTypeEnum } from '@root/ts/apps/collection'
 import type { AddAssetToCanvasPayloadType } from '@root/ts/types'
 import { ADD_ASSET_TO_CANVAS, QUICK_SEARCH_MODAL_ITEM_SELECTED } from '@root/ts/constants'
 import { shouldDefaultActionBePrevented } from '@vue-src/utils/quick-search/outer-subscriptions'
+import MusicNote from '@vue-src/components/icons/MusicNote.vue'
+import MusicNoteWithBackground from '@vue-src/components/icons/MusicNoteWithBackground.vue'
 
 const props = defineProps<{
   item: SearchResultItem
@@ -15,6 +17,15 @@ const props = defineProps<{
 const keyboardSelectedItem = inject(KEYBOARD_SELECTED_ITEM_SYMBOL)
 
 const itemRef = useTemplateRef('itemRef')
+
+const itemCategoryName = computed(
+  () =>
+    ({
+      IMAGES: 'Icons',
+      MAPS: 'Icons',
+      SOUNDS: 'Sounds',
+    })[props.item.itemCategory || 'IMAGES'],
+)
 
 watch(
   () => keyboardSelectedItem?.value,
@@ -78,16 +89,30 @@ const onItemClick = () => {
     @click="onItemClick"
   >
     <img
+      v-if="item.itemCategory === 'IMAGES'"
       :src="item.previewUrl"
       width="25"
       height="25"
       :alt="`Icon ${item.name}`"
       class="item-icon"
     />
+    <MusicNote
+      v-else-if="item.itemCategory === 'SOUNDS'"
+      width="25"
+      height="25"
+      class="item-icon"
+      style="color: rgba(239, 230, 216, 1)"
+    />
     <span class="item-name">{{ item.name }}</span>
     <div class="item-actions-panel">
-      <span class="item-category-name">Icons</span>
-      <ImageIcon width="1rem" class="item-category-icon" />
+      <span class="item-category-name">{{ itemCategoryName }}</span>
+      <ImageIcon v-if="item.itemCategory === 'IMAGES'" width="1rem" class="item-category-icon" />
+      <MusicNoteWithBackground
+        v-else-if="item.itemCategory === 'SOUNDS'"
+        width="1rem"
+        height="1rem"
+        class="item-category-icon"
+      />
     </div>
   </li>
 </template>
@@ -118,6 +143,7 @@ const onItemClick = () => {
 
 .item-icon {
   border-radius: 0.3rem;
+  flex-shrink: 0;
 }
 
 .item-actions-panel {
@@ -128,5 +154,9 @@ const onItemClick = () => {
 .item-category-name,
 .item-category-icon {
   color: #666;
+}
+
+.item-name {
+  color: rgba(239, 230, 216, 1);
 }
 </style>

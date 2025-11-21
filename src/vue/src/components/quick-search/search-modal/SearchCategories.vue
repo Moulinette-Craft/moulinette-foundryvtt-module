@@ -1,18 +1,22 @@
 <script setup lang="ts">
+import ImageIcon from '@vue-src/components/icons/ImageIcon.vue'
+import ListWithBackground from '@vue-src/components/icons/ListWithBackground.vue'
+import MapWithBackground from '@vue-src/components/icons/MapWithBackground.vue'
+import MusicNoteWithBackground from '@vue-src/components/icons/MusicNoteWithBackground.vue'
 import type { SearchCategoryNameType } from '@vue-src/stores/quick-search/search-categories'
 import { onKeyStroke } from '@vueuse/core'
-import { computed, ref, useTemplateRef } from 'vue'
+import { computed, ref, useTemplateRef, type Component } from 'vue'
 
 const activeCategory = defineModel<SearchCategoryNameType>({ default: 'IMAGES' })
 
 const categories = ref(
   (
     [
-      ['IMAGES', 'Images', 'test'],
-      ['MAPS', 'Maps', 'test'],
-      ['SOUNDS', 'Sounds', 'test'],
-      ['ALL', 'All', 'test'],
-    ] as Array<[SearchCategoryNameType, string, string]>
+      ['IMAGES', 'Images', ImageIcon],
+      ['MAPS', 'Maps', MapWithBackground],
+      ['SOUNDS', 'Sounds', MusicNoteWithBackground],
+      ['ALL', 'All', ListWithBackground],
+    ] as Array<[SearchCategoryNameType, string, Component]>
   ).map(([id, title, icon]) => ({ id, title, icon })),
 )
 
@@ -59,6 +63,7 @@ onKeyStroke('Tab', (event) => {
       data-exclude-from-drag-triggers
       @click="() => onCategoryClick(category)"
     >
+      <component :is="category.icon" :key="`category-${category.id}-icon`" width="17" height="17" />
       <span>{{ category.title }}</span>
     </div>
   </div>
@@ -69,7 +74,7 @@ onKeyStroke('Tab', (event) => {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 0.4rem;
   cursor: move;
 }
 
@@ -77,6 +82,7 @@ onKeyStroke('Tab', (event) => {
 .category {
   transition: all 0.3s;
   border-radius: 6px;
+  cursor: pointer;
 }
 
 .active-category-background {
@@ -87,8 +93,10 @@ onKeyStroke('Tab', (event) => {
 }
 
 .category {
-  padding: 0.5rem 0.9rem;
-  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.6rem;
   color: #e7d1b1;
 
   &:hover {

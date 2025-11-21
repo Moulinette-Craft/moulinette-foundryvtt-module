@@ -60,10 +60,9 @@ export function useDisplay(
   watch(
     () => itemInTheFocus.value,
     (newValue) => {
-      console.log('🚀 → useDisplay → newValue:', newValue)
       clearTimeout(changeStateTimeout)
       state.value = false
-      if (newValue) {
+      if (newValue && ['IMAGES', 'MAPS'].includes(newValue?.itemCategory || '')) {
         changeStateTimeout = setTimeout(() => {
           state.value = true
         }, 500)
