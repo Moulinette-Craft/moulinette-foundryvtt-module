@@ -27,7 +27,9 @@ export function useKeyboardSelection(
   )
 
   const commonKeyStrokeFunctions = (event: KeyboardEvent) => {
-    event.preventDefault()
+    if (isModalVisible.value) {
+      event.preventDefault()
+    }
 
     return new Promise<number>((resolve, reject) => {
       if (!isModalVisible.value) {
@@ -39,43 +41,49 @@ export function useKeyboardSelection(
   }
 
   onKeyStroke('ArrowDown', (event) =>
-    commonKeyStrokeFunctions(event).then((index) => {
-      selectedItem.value =
-        !selectedItem.value || index === foundItems.value.length - 1
-          ? foundItems.value[0]
-          : foundItems.value[index + 1]
-    }),
+    commonKeyStrokeFunctions(event)
+      .then((index) => {
+        selectedItem.value =
+          !selectedItem.value || index === foundItems.value.length - 1
+            ? foundItems.value[0]
+            : foundItems.value[index + 1]
+      })
+      .catch(() => {}),
   )
 
   onKeyStroke('ArrowUp', (event) =>
-    commonKeyStrokeFunctions(event).then((index) => {
-      selectedItem.value =
-        !selectedItem.value || index === 0
-          ? foundItems.value[foundItems.value.length - 1]
-          : foundItems.value[index - 1]
-    }),
+    commonKeyStrokeFunctions(event)
+      .then((index) => {
+        selectedItem.value =
+          !selectedItem.value || index === 0
+            ? foundItems.value[foundItems.value.length - 1]
+            : foundItems.value[index - 1]
+      })
+      .catch(() => {}),
   )
 
   onKeyStroke('Enter', (event) =>
-    commonKeyStrokeFunctions(event).then((index) => {
-      if (index !== -1) {
-        window.dispatchEvent(
-          new CustomEvent<{ item: SearchResultItem }>(QUICK_SEARCH_MODAL_ITEM_SELECTED, {
-            detail: {
-              item: selectedItem.value!,
-            },
-          }),
-        )
-
-        if (!shouldDefaultActionBePrevented(QUICK_SEARCH_MODAL_ITEM_SELECTED)) {
+    commonKeyStrokeFunctions(event)
+      .then((index) => {
+        if (index !== -1) {
           window.dispatchEvent(
-            new CustomEvent<AddAssetToCanvasPayloadType>(ADD_ASSET_TO_CANVAS, {
-              detail: { asset: selectedItem.value! },
+            new CustomEvent<{ item: SearchResultItem }>(QUICK_SEARCH_MODAL_ITEM_SELECTED, {
+              detail: {
+                item: selectedItem.value!,
+              },
             }),
           )
+
+          if (!shouldDefaultActionBePrevented(QUICK_SEARCH_MODAL_ITEM_SELECTED)) {
+            window.dispatchEvent(
+              new CustomEvent<AddAssetToCanvasPayloadType>(ADD_ASSET_TO_CANVAS, {
+                detail: { asset: selectedItem.value! },
+              }),
+            )
+          }
         }
-      }
-    }),
+      })
+      .catch(() => {}),
   )
 
   return { selectedItem }
