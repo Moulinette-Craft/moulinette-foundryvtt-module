@@ -5,7 +5,7 @@ import type {
   SearchCategoryNameType,
 } from '../../stores/quick-search/search-categories'
 
-export type SearchResultItem = MouCollectionAsset
+export type SearchResultItem = MouCollectionAsset & { itemCategory: SearchCategoryNameType }
 export type ItemInTheFocusType = SearchResultItem | undefined
 export type ElementBoundingType = Omit<ReturnType<typeof useElementBounding>, 'update'>
 export type SearchResultsType = Record<

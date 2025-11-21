@@ -73,20 +73,26 @@ onKeyStroke('Tab', (event) => {
   cursor: move;
 }
 
+.active-category-background,
+.category {
+  transition: all 0.3s;
+  border-radius: 6px;
+}
+
 .active-category-background {
   position: absolute;
   left: 0;
   top: 0;
   background: rgba(231, 209, 177, 0.12);
-  // background: red;
-  transition: all 0.3s;
-  border-radius: 6px;
 }
 
 .category {
   padding: 0.5rem 0.9rem;
   cursor: pointer;
   color: #e7d1b1;
-  transition: all 0.3s;
+
+  &:hover {
+    background-color: rgba(231, 209, 177, 0.06);
+  }
 }
 </style>

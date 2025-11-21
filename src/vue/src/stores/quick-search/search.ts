@@ -45,7 +45,10 @@ export const useSearchStore = defineStore('search', () => {
           foundItems.value[category].lastFetchedTerm = term
           foundItems.value[category].lastFetchedAt = new Date()
           const { assets } = await SearchCategoryData.getItems(category, term)
-          foundItems.value[category].items = assets
+          foundItems.value[category].items = assets.map((item) => ({
+            ...item,
+            itemCategory: category,
+          }))
         } catch {
           foundItems.value[category].items = []
         } finally {

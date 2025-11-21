@@ -21,7 +21,7 @@ const onBounding = (data: ElementBoundingType) => {
         <img
           :src="itemInTheFocus?.previewUrl || ''"
           :alt="itemInTheFocus?.name"
-          width="250"
+          width="200"
           class="preview-icon"
         />
         <p class="preview-title">{{ itemInTheFocus?.name }}</p>
@@ -32,8 +32,7 @@ const onBounding = (data: ElementBoundingType) => {
 
 <style lang="scss" scoped>
 .selection-preview {
-  background: rgba(0, 0, 0, 0.6);
-  padding: 0.75rem;
+  padding: 0.5rem;
 }
 
 .preview-icon {

@@ -16,6 +16,7 @@ export function useDisplay(
   selectionPreviewBounding: Ref<ElementBoundingType | undefined>,
   activeSearchCategory: Ref<SearchCategoryNameType>,
   isModalVisible: Ref<boolean>,
+  searchTerm: Ref<string>,
 ) {
   const state = ref(false)
   const modalBounding = useElementBounding(modalRef)
@@ -59,6 +60,7 @@ export function useDisplay(
   watch(
     () => itemInTheFocus.value,
     (newValue) => {
+      console.log('🚀 → useDisplay → newValue:', newValue)
       clearTimeout(changeStateTimeout)
       state.value = false
       if (newValue) {
@@ -70,7 +72,7 @@ export function useDisplay(
   )
 
   watch(
-    () => [activeSearchCategory.value, isModalVisible.value],
+    () => [activeSearchCategory.value, isModalVisible.value, searchTerm.value],
     () => {
       itemInTheFocus.value = undefined
     },

@@ -15,7 +15,7 @@ import RegularFadeTransition from '@vue-src/components/RegularFadeTransition.vue
 import SearchTermInputRow from './SearchTermInputRow.vue'
 import SelectionPreview from '../results/selection-preview/IndexComponent.vue'
 import type { ItemInTheFocusType } from '@vue-src/types/quick-search'
-import SearchCategories from '../SearchCategories.vue'
+import SearchCategories from './SearchCategories.vue'
 
 const { searchTerm, activeSearchCategory, activeSearchCategoryFoundItems, hasSearchedOnce } =
   storeToRefs(useSearchStore())
@@ -42,6 +42,7 @@ const { state: selectionPreviewState, position: selectionPreviewPosition } =
     selectionPreviewElementBounding,
     activeSearchCategory,
     isModalVisible,
+    searchTerm,
   )
 
 provide(KEYBOARD_SELECTED_ITEM_SYMBOL, selectedItem)
@@ -95,10 +96,6 @@ onClickOutside(modalRef, closeModal)
   width: 400px;
   margin: unset;
   padding: 0;
-  border: 1px solid #493a50;
-  outline: none;
-  box-shadow: 0 0 20px #000;
-  backdrop-filter: blur(6px);
   pointer-events: auto;
 
   &.default-position {
@@ -120,6 +117,10 @@ onClickOutside(modalRef, closeModal)
 .quick-search-modal,
 .selection-preview {
   border-radius: 6px;
+  backdrop-filter: blur(6px);
+  border: 1px solid #493a50;
+  box-shadow: 0 0 20px #000;
+  outline: none;
 }
 
 .quick-search-modal,
