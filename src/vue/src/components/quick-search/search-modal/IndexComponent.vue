@@ -36,7 +36,13 @@ const { selectedItem } = useKeyboardSelection(
 )
 const { entireModalLoadingState } = useAddAssetToCanvasHandling({ addedAssetToCanvas: closeModal })
 const { state: selectionPreviewState, position: selectionPreviewPosition } =
-  useSelectionPreviewDisplay(modalRef, itemInTheFocus, selectionPreviewElementBounding)
+  useSelectionPreviewDisplay(
+    modalRef,
+    itemInTheFocus,
+    selectionPreviewElementBounding,
+    activeSearchCategory,
+    isModalVisible,
+  )
 
 provide(KEYBOARD_SELECTED_ITEM_SYMBOL, selectedItem)
 provide(IS_MODAL_VISIBLE, isModalVisible)
@@ -92,7 +98,6 @@ onClickOutside(modalRef, closeModal)
   border: 1px solid #493a50;
   outline: none;
   box-shadow: 0 0 20px #000;
-  border-radius: 6px;
   backdrop-filter: blur(6px);
   pointer-events: auto;
 
@@ -113,7 +118,13 @@ onClickOutside(modalRef, closeModal)
 }
 
 .quick-search-modal,
-.results-list {
+.selection-preview {
+  border-radius: 6px;
+}
+
+.quick-search-modal,
+.results-list,
+.selection-preview {
   background: rgba(48, 40, 49, 0.65);
 }
 
