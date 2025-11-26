@@ -74,6 +74,8 @@ const onDragStart = (event: DragEvent) => {
       element.setAttribute('width', '200')
       element.setAttribute('height', '200')
       element.style.position = 'fixed'
+      element.style.opacity = '1'
+      element.removeAttribute('class')
       document.querySelector('#moulinette-vue-app-container')!.appendChild(element)
 
       return element
