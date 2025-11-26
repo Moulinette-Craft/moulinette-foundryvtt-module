@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import ItemElement from '@quick-search-components/results/ItemElement.vue'
 import { useSearchStore } from '@vue-src/stores/quick-search/search'
-import type { SearchResultItem } from '@vue-src/types/quick-search'
+import type { ItemInTheFocusType, SearchResultItem } from '@vue-src/types/quick-search'
 import { storeToRefs } from 'pinia'
 import { computed } from 'vue'
 
 const { searchTerm, isSearching } = storeToRefs(useSearchStore())
+
+const itemInTheFocus = defineModel<ItemInTheFocusType>('itemInTheFocus', { required: false })
 
 const props = defineProps<{
   items: Array<SearchResultItem>
@@ -14,6 +16,14 @@ const props = defineProps<{
 const isNothingFoundState = computed(
   () => props.items.length === 0 && searchTerm.value.length > 0 && !isSearching.value,
 )
+
+const onItemMouseEnter = (_: MouseEvent, item: SearchResultItem) => {
+  itemInTheFocus.value = item
+}
+
+const onItemMouseLeave = () => {
+  itemInTheFocus.value = undefined
+}
 </script>
 
 <template>
@@ -21,7 +31,14 @@ const isNothingFoundState = computed(
     :class="['quick-search-results-list', { padded: items.length > 0 || isNothingFoundState }]"
     v-auto-animate
   >
-    <ItemElement v-for="item in items" :key="`result-item-${item.id}`" :item="item" />
+    <ItemElement
+      v-for="item in items"
+      :key="`result-item-${item.id}`"
+      :item="item"
+      :data-item-id="item.id"
+      @mouseenter="($event: MouseEvent) => onItemMouseEnter($event, item)"
+      @mouseleave="onItemMouseLeave"
+    />
     <li v-if="isNothingFoundState" class="nothing-found">
       <span>Nothing found</span>
     </li>

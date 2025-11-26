@@ -1,14 +1,17 @@
-import type { AddAssetToCanvasPayloadType } from '../../../../../ts/types'
-import type { SearchResultItem } from '../../../types/quick-search'
+import type { ItemInTheFocusType, SearchResultItem } from '../../../types/quick-search'
 import { onKeyStroke } from '@vueuse/core'
 import { ref, watch, type Ref } from 'vue'
-import { ADD_ASSET_TO_CANVAS, QUICK_SEARCH_MODAL_ITEM_SELECTED } from '../../../../../ts/constants'
+import { QUICK_SEARCH_MODAL_ITEM_SELECTED } from '../../../../../ts/constants'
 import { shouldDefaultActionBePrevented } from '../../../utils/quick-search/outer-subscriptions'
+import type { SearchCategoryNameType } from '../../../stores/quick-search/search-categories'
+import { addAssetToCanvas, signalThatItemIsSelected } from '../commonFunctions'
 
 export function useKeyboardSelection(
   isModalVisible: Ref<boolean>,
   foundItems: Ref<Array<SearchResultItem>>,
   searchTerm: Ref<string>,
+  itemInTheFocus: Ref<ItemInTheFocusType>,
+  activeSearchCategory: Ref<SearchCategoryNameType>,
 ) {
   const selectedItem = ref<SearchResultItem | null>()
 
@@ -22,7 +25,7 @@ export function useKeyboardSelection(
   )
 
   watch(
-    () => searchTerm.value,
+    () => [searchTerm.value, activeSearchCategory.value],
     () => (selectedItem.value = null),
   )
 
@@ -44,6 +47,7 @@ export function useKeyboardSelection(
         !selectedItem.value || index === foundItems.value.length - 1
           ? foundItems.value[0]
           : foundItems.value[index + 1]
+      itemInTheFocus.value = selectedItem.value
     }),
   )
 
@@ -53,26 +57,17 @@ export function useKeyboardSelection(
         !selectedItem.value || index === 0
           ? foundItems.value[foundItems.value.length - 1]
           : foundItems.value[index - 1]
+      itemInTheFocus.value = selectedItem.value
     }),
   )
 
   onKeyStroke('Enter', (event) =>
     commonKeyStrokeFunctions(event).then((index) => {
       if (index !== -1) {
-        window.dispatchEvent(
-          new CustomEvent<{ item: SearchResultItem }>(QUICK_SEARCH_MODAL_ITEM_SELECTED, {
-            detail: {
-              item: selectedItem.value!,
-            },
-          }),
-        )
+        signalThatItemIsSelected({ asset: selectedItem.value! })
 
         if (!shouldDefaultActionBePrevented(QUICK_SEARCH_MODAL_ITEM_SELECTED)) {
-          window.dispatchEvent(
-            new CustomEvent<AddAssetToCanvasPayloadType>(ADD_ASSET_TO_CANVAS, {
-              detail: { asset: selectedItem.value! },
-            }),
-          )
+          addAssetToCanvas({ asset: selectedItem.value! })
         }
       }
     }),

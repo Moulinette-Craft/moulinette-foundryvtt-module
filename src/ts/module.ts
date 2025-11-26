@@ -8,15 +8,15 @@ import MouUser from "./apps/user";
 import MouCloudClient from "./clients/moulinette-cloud";
 import MouConfig, { MODULE_ID, SETTINGS_COLLECTION_CLOUD, SETTINGS_COLLECTION_LOCAL, SETTINGS_DATA_EXCLUSION, SETTINGS_ENABLE_PLAYERS, SETTINGS_PREVS, SETTINGS_S3_BUCKET, SETTINGS_SESSION_ID, SETTINGS_USE_FOLDERS, SETTINGS_ADVANCED, SETTINGS_TOKEN_SELECTOR, SETTINGS_HIDDEN, SETTINGS_TOGGLES, SETTINGS_PICKER_ENABLED, ADD_ASSET_TO_CANVAS, ADDED_ASSET_TO_CANVAS, QUICK_SEARCH_MODAL_ITEM_SELECTED, CLOSE_QUICK_SEARCH_MODAL } from "./constants";
 import MouLayer from "./layers/mou-layer";
-import { AddAssetToCanvasPayloadType, AnyDict, MouModule } from "./types";
+import { AnyDict, MouModule } from "./types";
 import MouCache from "./apps/cache";
 import MouMediaUtils from "./utils/media-utils";
-import { MouCollection } from "./apps/collection";
+import { MouCollection, MouCollectionAssetTypeEnum } from "./apps/collection";
 import { CloudMode } from "./collections/collection-cloud-base";
 import MouEventHandler from "./apps/event-handler";
 import MouHooks from "./utils/hooks";
 import MouCollectionCompendiums from "./collections/collection-compendiums";
-import MouCollectionLocal from "./collections/collection-local-index";
+import MouCollectionLocal, { LocalAssetAction } from "./collections/collection-local-index";
 import { MouCompendiumsDefaults } from "./collections/config/collection-compendiums-defaults";
 import MouApplication from "./apps/application";
 import MouFileManager from "./utils/file-manager";
@@ -30,7 +30,8 @@ import { MouAPI } from "./utils/api";
 import { MoulinetteFilePicker } from "./apps/file-picker";
 import MouCollectionCloudOnline from "./collections/collection-cloud-online";
 import { addOuterSubscriber as addQuickSearchModalOuterSubscriber, removeOuterSubscriber as removeQuickSearchModalOuterSubscriber } from "../vue/src/utils/quick-search/outer-subscriptions";
-import { SearchResultItem } from "../vue/src/types/quick-search";
+import { AddAssetToCanvasPayloadType, ItemIsSelectedPayloadType } from "../vue/src/types/quick-search";
+import { addAssetToCanvas } from "../vue/src/components/quick-search/commonFunctions";
 
 let module: MouModule;
 let canvasInstance: Canvas;
@@ -133,16 +134,31 @@ Hooks.once("init", () => {
 });
 
 const onAddAssetToCanvas = async (payload: CustomEventInit<AddAssetToCanvasPayloadType>) => {
-  const { position, asset, collection = 'mou-gameicons' } = payload.detail || {}
+  const { position, asset, collection } = payload.detail || {}
   if (asset) {
-    await MouApplication.getModule()
-      .collections.find((c) => c.getId() == collection)
-      ?.dropDataCanvas(canvasInstance, asset, {
+    const collectionClass = MouApplication.getModule().collections.find(
+      (c) => c.getId() == collection,
+    )
+    const exceptions: Array<{
+      condition: boolean
+      action: () => Promise<any>
+    }> = [
+      {
+        condition:
+          collection === 'mou-local' &&
+          [MouCollectionAssetTypeEnum.Scene, MouCollectionAssetTypeEnum.Map].includes(asset.type),
+        action: () =>
+          collectionClass?.executeAction(LocalAssetAction.IMPORT, asset) as Promise<any>,
+      },
+    ]
+    const defaultAction = () =>
+      collectionClass?.dropDataCanvas(canvasInstance, asset, {
         moulinette: { asset: asset.id },
         // TODO: the default position defining functionality to be reconsidered
         x: position?.x || canvasInstance.app?.view.width || 0 / 2,
         y: position?.y || canvasInstance.app?.view.height || 0 / 2,
       })
+    await (exceptions.find((item) => item.condition)?.action || defaultAction)()
     window.dispatchEvent(new CustomEvent(ADDED_ASSET_TO_CANVAS))
   }
 }
@@ -189,11 +205,14 @@ Hooks.on('getSceneControlButtons', (buttons) => MouHooks.addMoulinetteControls(b
  * Manage canvas drop
  */
 Hooks.on('dropCanvasData', (canvas, data) => {
-  if("moulinette" in data) {
+  if ('moulinette' in data) {
     // Handle the drop from the "Moulinette Quick Search"-panel
     if (data.data?.isQuickSearch) {
-      window.dispatchEvent(new CustomEvent<AddAssetToCanvasPayloadType>(ADD_ASSET_TO_CANVAS, { detail: { asset: data.data!.fullAssetData, position: { x: Number(data.x), y: Number(data.y) } } }))
-    } else if(data.moulinette.collection) {
+      addAssetToCanvas({
+        asset: data.data!.fullAssetData,
+        position: { x: Number(data.x), y: Number(data.y) },
+      })
+    } else if (data.moulinette.collection) {
       // Drag & drop from a collection
       module.browser.dropDataCanvas(canvas, data)
     }
@@ -204,25 +223,28 @@ Hooks.on('canvasReady', (canvas) => {
   canvasInstance = canvas
 })
 
-Hooks.on("renderFilePicker", (app: FilePicker) => {
-  if (app.type === "image") {
-    addQuickSearchModalOuterSubscriber<{ item: SearchResultItem }>(
+Hooks.on('renderFilePicker', (app: FilePicker) => {
+  if (app.type === 'image') {
+    addQuickSearchModalOuterSubscriber<ItemIsSelectedPayloadType>(
       {
         id: 'SELECT_INTO_IMAGE_PICKER',
         targetEvent: QUICK_SEARCH_MODAL_ITEM_SELECTED,
-        preventDefaultAction: true
+        preventDefaultAction: true,
       },
       {
         callback(eventPayload) {
-          const pickerElement = app.element as unknown as HTMLElement
-            (pickerElement.querySelector('#file-picker-file') as HTMLInputElement).value = eventPayload.item.url
+          if (eventPayload.asset.itemCategory === 'IMAGES') {
+            const pickerElement = app.element as unknown as HTMLElement
+            ;(pickerElement.querySelector('#file-picker-file') as HTMLInputElement).value =
+              eventPayload.asset.url
             pickerElement.querySelector('.files-list > .picked')?.classList?.remove('picked')
             window.dispatchEvent(new CustomEvent(CLOSE_QUICK_SEARCH_MODAL))
 
             // Highlight the selected field via animation
-            let currentFrame = 0, totalFrames = 10;
+            let currentFrame = 0,
+              totalFrames = 10
             const selectedElement = pickerElement.querySelector('.selected-file') as HTMLElement
-            selectedElement.style.borderRadius = '6px';
+            selectedElement.style.borderRadius = '6px'
             const animate = () => {
               if (currentFrame > totalFrames) {
                 selectedElement.style.borderRadius = '0px'
@@ -230,16 +252,17 @@ Hooks.on("renderFilePicker", (app: FilePicker) => {
                 return
               }
 
-              selectedElement.style.boxShadow = `0 0 ${50 * (1 - currentFrame / totalFrames)}px var(--color-light-1)`;
-              currentFrame++;
-              requestAnimationFrame(animate);
+              selectedElement.style.boxShadow = `0 0 ${50 * (1 - currentFrame / totalFrames)}px var(--color-light-1)`
+              currentFrame++
+              requestAnimationFrame(animate)
             }
             animate()
+          }
         },
-      }
+      },
     )
   }
-})
+});
 
 Hooks.on("closeFilePicker", () => removeQuickSearchModalOuterSubscriber('SELECT_INTO_IMAGE_PICKER'))
 
