@@ -18,13 +18,15 @@ defineExpose({ focus })
 </template>
 
 <style lang="scss" scoped>
-input {
-  background: transparent;
-  border: none;
-  box-shadow: none;
-  outline: none;
-  padding: 0;
-  color: #e7d1b1;
-  height: 2rem;
+#mtte-quick-search {
+  input {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    outline: none;
+    padding: 0;
+    color: #e7d1b1;
+    height: 2rem;
+  }
 }
 </style>

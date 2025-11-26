@@ -54,7 +54,7 @@ onClickOutside(modalRef, closeModal)
 
 watch(
   () => [activeSearchCategory.value, isModalVisible.value, searchTerm.value],
-  () => window.dispatchEvent(new CustomEvent(QUICK_SEARCH_MODAL_STOP_ALL_AUDIO))
+  () => window.dispatchEvent(new CustomEvent(QUICK_SEARCH_MODAL_STOP_ALL_AUDIO)),
 )
 </script>
 

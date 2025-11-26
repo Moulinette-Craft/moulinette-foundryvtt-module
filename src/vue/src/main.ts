@@ -6,7 +6,7 @@ import { autoAnimatePlugin } from '@formkit/auto-animate/vue'
 import QuickSearchApp from './components/quick-search/App.vue'
 
 const appContainerNode = document.createElement('div')
-appContainerNode.id = 'moulinette-vue-app-container'
+appContainerNode.id = 'mtte-quick-search'
 document.body.append(appContainerNode)
 
 const app = createApp(QuickSearchApp)

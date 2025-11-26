@@ -36,39 +36,41 @@ watchEffect(() => {
 </template>
 
 <style lang="scss" scoped>
-.search-term-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 1rem;
-  cursor: move;
-}
+#mtte-quick-search {
+  .search-term-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 1rem;
+    cursor: move;
+  }
 
-.magnifying-glass-icon,
-.inline-loading-indicator {
-  transition: all 0.2s;
-  min-width: 18px;
-  max-width: 18px;
-  min-height: 18px;
-  max-height: 18px;
-}
+  .magnifying-glass-icon,
+  .inline-loading-indicator {
+    transition: all 0.2s;
+    min-width: 18px;
+    max-width: 18px;
+    min-height: 18px;
+    max-height: 18px;
+  }
 
-.magnifying-glass-icon {
-  color: rgba(239, 230, 216, 0.5);
-}
+  .magnifying-glass-icon {
+    color: rgba(239, 230, 216, 0.5);
+  }
 
-.inline-loading-indicator {
-  position: absolute;
-  top: 12px;
-  left: 13px;
-}
+  .inline-loading-indicator {
+    position: absolute;
+    top: 12px;
+    left: 13px;
+  }
 
-.non-visible {
-  opacity: 0;
-}
+  .non-visible {
+    opacity: 0;
+  }
 
-.search-term-input {
-  width: 100%;
+  .search-term-input {
+    width: 100%;
+  }
 }
 </style>

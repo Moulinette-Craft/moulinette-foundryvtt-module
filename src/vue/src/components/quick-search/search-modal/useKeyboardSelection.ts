@@ -30,7 +30,9 @@ export function useKeyboardSelection(
   )
 
   const commonKeyStrokeFunctions = (event: KeyboardEvent) => {
-    event.preventDefault()
+    if (isModalVisible.value) {
+      event.preventDefault()
+    }
 
     return new Promise<number>((resolve, reject) => {
       if (!isModalVisible.value) {
@@ -42,35 +44,41 @@ export function useKeyboardSelection(
   }
 
   onKeyStroke('ArrowDown', (event) =>
-    commonKeyStrokeFunctions(event).then((index) => {
-      selectedItem.value =
-        !selectedItem.value || index === foundItems.value.length - 1
-          ? foundItems.value[0]
-          : foundItems.value[index + 1]
-      itemInTheFocus.value = selectedItem.value
-    }),
+    commonKeyStrokeFunctions(event)
+      .then((index) => {
+        selectedItem.value =
+          !selectedItem.value || index === foundItems.value.length - 1
+            ? foundItems.value[0]
+            : foundItems.value[index + 1]
+        itemInTheFocus.value = selectedItem.value
+      })
+      .catch(() => {}),
   )
 
   onKeyStroke('ArrowUp', (event) =>
-    commonKeyStrokeFunctions(event).then((index) => {
-      selectedItem.value =
-        !selectedItem.value || index === 0
-          ? foundItems.value[foundItems.value.length - 1]
-          : foundItems.value[index - 1]
-      itemInTheFocus.value = selectedItem.value
-    }),
+    commonKeyStrokeFunctions(event)
+      .then((index) => {
+        selectedItem.value =
+          !selectedItem.value || index === 0
+            ? foundItems.value[foundItems.value.length - 1]
+            : foundItems.value[index - 1]
+        itemInTheFocus.value = selectedItem.value
+      })
+      .catch(() => {}),
   )
 
   onKeyStroke('Enter', (event) =>
-    commonKeyStrokeFunctions(event).then((index) => {
-      if (index !== -1) {
-        signalThatItemIsSelected({ asset: selectedItem.value! })
+    commonKeyStrokeFunctions(event)
+      .then((index) => {
+        if (index !== -1) {
+          signalThatItemIsSelected({ asset: selectedItem.value! })
 
-        if (!shouldDefaultActionBePrevented(QUICK_SEARCH_MODAL_ITEM_SELECTED)) {
-          addAssetToCanvas({ asset: selectedItem.value! })
+          if (!shouldDefaultActionBePrevented(QUICK_SEARCH_MODAL_ITEM_SELECTED)) {
+            addAssetToCanvas({ asset: selectedItem.value! })
+          }
         }
-      }
-    }),
+      })
+      .catch(() => {}),
   )
 
   return { selectedItem }
