@@ -3,7 +3,7 @@ import ResultsList from '@quick-search-components/results/IndexComponent.vue'
 import { useSearchStore } from '@vue-src/stores/quick-search/search'
 import { storeToRefs } from 'pinia'
 import { onClickOutside } from '@vueuse/core'
-import { provide, ref, shallowRef, useTemplateRef } from 'vue'
+import { provide, ref, shallowRef, useTemplateRef, watch } from 'vue'
 import { useMove } from './useMove'
 import { useDisplay } from './useDisplay'
 import { useKeyboardSelection } from './useKeyboardSelection'
@@ -16,6 +16,7 @@ import SearchTermInputRow from './SearchTermInputRow.vue'
 import SelectionPreview from '../results/selection-preview/IndexComponent.vue'
 import type { ItemInTheFocusType } from '@vue-src/types/quick-search'
 import SearchCategories from './SearchCategories.vue'
+import { QUICK_SEARCH_MODAL_STOP_ALL_AUDIO } from '@root/ts/constants'
 
 const { searchTerm, activeSearchCategory, activeSearchCategoryFoundItems, hasSearchedOnce } =
   storeToRefs(useSearchStore())
@@ -50,6 +51,11 @@ provide(KEYBOARD_SELECTED_ITEM_SYMBOL, selectedItem)
 provide(IS_MODAL_VISIBLE, isModalVisible)
 
 onClickOutside(modalRef, closeModal)
+
+watch(
+  () => [activeSearchCategory.value, isModalVisible.value, searchTerm.value],
+  () => window.dispatchEvent(new CustomEvent(QUICK_SEARCH_MODAL_STOP_ALL_AUDIO))
+)
 </script>
 
 <template>
