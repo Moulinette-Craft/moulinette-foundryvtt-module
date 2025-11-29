@@ -81,10 +81,9 @@ export default class MouHooks {
       
       
       if(isGM) {
-        const isValidUser = module.cache?.user && module.cache?.user.fullName
         MouHooks.compatibilityModeAdd(moulinetteTool.tools, "authenticated", {
           name: "authenticated",
-          icon: isValidUser ? "fa-solid fa-user-check" : "fa-solid fa-user-xmark",
+          icon: "fa-solid fa-user",
           title: (game as Game).i18n.localize("MOU.user_authenticated"),
           button: true,
           onChange: () => {},

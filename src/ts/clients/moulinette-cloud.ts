@@ -101,10 +101,6 @@ export default class MouCloudClient {
       } 
     }
 
-    // update control icon
-    const isValidUser = module.cache.user && module.cache.user.fullName
-    $("#controls .control-tool[data-tool='authenticated'] i").attr('class', isValidUser ? "fa-solid fa-user-check" : "fa-solid fa-user-xmark")
-
     return module.cache.user
   }
 

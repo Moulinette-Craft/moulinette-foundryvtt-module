@@ -484,6 +484,7 @@ export default class MouBrowser extends MouApplication {
   }
 
   showContentLoader (useLoaderBackground: boolean = true) {
+    /*
     const loaderElement = this.html?.find(".content .loader")
     if (useLoaderBackground) {
       loaderElement?.addClass('use-background')
@@ -491,11 +492,12 @@ export default class MouBrowser extends MouApplication {
 
     loaderElement?.height(this.html?.find(".content").height() || 0)
     this.html?.find(".content").addClass('is-loading')
+    */
   }
 
   hideContentLoader () {
-    this.html?.find(".content").removeClass('is-loading')
-    this.html?.find(".content .loader").removeClass('use-background')
+    //this.html?.find(".content").removeClass('is-loading')
+    //this.html?.find(".content .loader").removeClass('use-background')
   }
 
   /** Load more assets and activate events */
@@ -1103,14 +1105,14 @@ export default class MouBrowser extends MouApplication {
   override render(force?: boolean, options?: Application.RenderOptions<ApplicationOptions> | undefined): unknown {
     if(this.html) {
       const parent = this
-      this.html.find(".search-bar .indicator").html('<i class="fa-solid fa-hourglass-start"></i>')
+      //this.html.find(".search-bar .indicator").html('<i class="fa-solid fa-hourglass-start"></i>')
       this.loadInProgress = setInterval(function() {
         let icon = "start"
         switch(parent.loadInProgressState) {
           case 0: icon = "half"; break;
           case 1: icon = "end"; break;
         }
-        parent.html!.find(".search-bar .indicator").html(`<i class="fa-solid fa-hourglass-${icon}"></i>`)
+        //parent.html!.find(".search-bar .indicator").html(`<i class="fa-solid fa-hourglass-${icon}"></i>`)
         parent.loadInProgressState = (parent.loadInProgressState + 1) % 3
       }, 1000);
       this.html.find(".asset").off()
