@@ -82,6 +82,8 @@ export const ADD_ASSET_TO_CANVAS = 'MOULINETTE_EVENT:ADD_ASSET_TO_CANVAS'
 export const ADDED_ASSET_TO_CANVAS = 'MOULINETTE_EVENT:ADDED_ASSET_TO_CANVAS'
 // Indicates that some element has been selected either via "Enter"-press or via mouse click on the element
 export const QUICK_SEARCH_MODAL_ITEM_SELECTED = 'MOULINETTE_EVENT:QUICK_SEARCH_MODAL_ITEM_SELECTED'
+// Signals about a need to stop all audio in the modal that are currently playing
+export const QUICK_SEARCH_MODAL_STOP_ALL_AUDIO = 'MOULINETTE_EVENT:QUICK_SEARCH_MODAL_STOP_ALL_AUDIO'
 
 // Global variables
 // Refers to a global window-property that contains a list of "outer" subscribers that rely on specific events of the "Moulinette Quick Search"-modal

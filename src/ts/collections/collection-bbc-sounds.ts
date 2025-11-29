@@ -121,18 +121,19 @@ export default class MouCollectionBBCSounds implements MouCollection {
     return this.currentHits
   }
 
-  async searchAssets(filters: MouCollectionFilters, page: number): Promise<MouCollectionSearchResults> {
+  async searchAssets(filters: MouCollectionFilters, page: number, options?: { applySearchTermSizeRestriction: boolean }): Promise<MouCollectionSearchResults> {
     return {
       types: await this.getTypes(),
       creators: await this.getCreators(),
       packs: await this.getPacks(),
-      assets: await this.getAssets(filters, page)
+      assets: await this.getAssets(filters, page, options)
     }
   }
 
-  async getAssets(filters: MouCollectionFilters, page: number): Promise<MouCollectionAsset[]> {
+  async getAssets(filters: MouCollectionFilters, page: number, options?: { applySearchTermSizeRestriction: boolean }): Promise<MouCollectionAsset[]> {
+    const applySearchTermSizeRestriction = 'applySearchTermSizeRestriction' in (options || {}) ? options?.applySearchTermSizeRestriction : true
     const assets = [] as MouCollectionBBCAsset[]
-    if(filters.searchTerms && filters.searchTerms.length > 0) {
+    if(filters.searchTerms && (applySearchTermSizeRestriction ? filters.searchTerms.length > 2 : true)) {
       // if max page reached, return empty array
       if(page > 0 && page * MouBrowser.PAGE_SIZE > this.currentHits) {
         return [] as MouCollectionAsset[]

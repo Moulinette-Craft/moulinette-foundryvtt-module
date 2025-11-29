@@ -9,7 +9,7 @@ import MouFoundryUtils from "../utils/foundry-utils";
 import MouMediaUtils from "../utils/media-utils";
 import LocalCollectionConfig from "./config/collection-local-index-config";
 
-enum LocalAssetAction {
+export enum LocalAssetAction {
   DRAG,                     // drag & drop capability for the asset
   CLIPBOARD,                // copy path to clipboard
   IMPORT,                   // import asset (audio)
@@ -373,6 +373,10 @@ export default class MouCollectionLocal implements MouCollection {
         switch(asset.type) {
           case MouCollectionAssetTypeEnum.Map:
             MouFoundryUtils.importSceneFromMap(asset.url, folderPath)
+            break
+          // TODO: this needs to be verified
+          case MouCollectionAssetTypeEnum.Scene:
+            MouFoundryUtils.importScene(asset, folderPath)
             break
           case MouCollectionAssetTypeEnum.Audio:
             MouFoundryUtils.playStopSound(asset.url, MouCollectionLocal.PLAYLIST_NAME);

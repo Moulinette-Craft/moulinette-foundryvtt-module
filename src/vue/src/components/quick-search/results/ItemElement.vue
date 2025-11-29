@@ -1,20 +1,49 @@
 <script setup lang="ts">
-import ImageIcon from '@vue-src/components/icons/ImageIcon.vue'
 import type { SearchResultItem } from '@vue-src/types/quick-search'
 import { KEYBOARD_SELECTED_ITEM_SYMBOL } from '../search-modal/constants'
-import { inject, nextTick, useTemplateRef, watch } from 'vue'
+import { computed, inject, nextTick, ref, useTemplateRef, watch } from 'vue'
 import { MouCollectionAssetTypeEnum } from '@root/ts/apps/collection'
-import type { AddAssetToCanvasPayloadType } from '@root/ts/types'
-import { ADD_ASSET_TO_CANVAS, QUICK_SEARCH_MODAL_ITEM_SELECTED } from '@root/ts/constants'
+import { QUICK_SEARCH_MODAL_ITEM_SELECTED } from '@root/ts/constants'
 import { shouldDefaultActionBePrevented } from '@vue-src/utils/quick-search/outer-subscriptions'
+import MusicNote from '@vue-src/components/icons/MusicNote.vue'
+import { UseImage } from '@vueuse/components'
+import SearchCategoryIcon from '../SearchCategoryIcon.vue'
+import { addAssetToCanvas, signalThatItemIsSelected } from '../commonFunctions'
+import AudioPreviewButton from './AudioPreviewButton.vue'
+import { useElementHover } from '@vueuse/core'
+import InstantFadeTransition from '@vue-src/components/InstantFadeTransition.vue'
 
 const props = defineProps<{
   item: SearchResultItem
 }>()
 
+const itemDragGhostIconId = `icon-${window.crypto.randomUUID()}`
+
 const keyboardSelectedItem = inject(KEYBOARD_SELECTED_ITEM_SYMBOL)
 
 const itemRef = useTemplateRef('itemRef')
+
+const isHovered = useElementHover(itemRef, { delayEnter: 300 })
+
+const isAudioPreviewPlaying = ref(false)
+
+const displayAudioPreviewButton = computed(
+  () =>
+    isHovered.value ||
+    keyboardSelectedItem?.value?.id === props.item.id ||
+    isAudioPreviewPlaying.value,
+)
+
+const itemCategoryName = computed(
+  () =>
+    ({
+      IMAGES: 'Icons',
+      MAPS: 'Maps',
+      SOUNDS: 'Sounds',
+    })[props.item.itemCategory || 'IMAGES'],
+)
+
+const displayItemIcon = computed(() => ['IMAGES', 'MAPS'].includes(props.item.itemCategory || ''))
 
 watch(
   () => keyboardSelectedItem?.value,
@@ -30,14 +59,35 @@ watch(
 )
 
 const onDragStart = (event: DragEvent) => {
-  const iconNode = new Image()
-  iconNode.src = (itemRef.value?.querySelector('.item-icon') as HTMLImageElement)?.src || ''
-  event.dataTransfer?.setDragImage(iconNode, 50, 50)
+  event.dataTransfer?.setDragImage(
+    (() => {
+      const itemIcon = itemRef.value?.querySelector('.item-icon')
+      let element: HTMLElement = new Image()
+      if (itemIcon?.tagName === 'IMG') {
+        ;(element as HTMLImageElement).src =
+          (itemRef.value?.querySelector('.item-icon') as HTMLImageElement)?.src || ''
+      } else {
+        element = itemIcon!.cloneNode(true) as HTMLElement
+      }
+      // Default SVG placeholder image that is always present
+      element.setAttribute('id', itemDragGhostIconId)
+      element.setAttribute('width', '200')
+      element.setAttribute('height', '200')
+      element.style.position = 'fixed'
+      element.style.opacity = '1'
+      element.removeAttribute('class')
+      document.querySelector('#moulinette-vue-app-container')!.appendChild(element)
+
+      return element
+    })(),
+    50,
+    50,
+  )
   // Set the proper data for the handler of the "dropCanvasData"-event in the module
   event.dataTransfer?.setData(
     'text/plain',
     JSON.stringify({
-      moulinette: { asset: props.item.id, collection: 'mou-gameicons' },
+      moulinette: { asset: props.item.id },
       type: MouCollectionAssetTypeEnum[props.item.type],
       data: {
         fullAssetData: props.item,
@@ -47,21 +97,13 @@ const onDragStart = (event: DragEvent) => {
   )
 }
 
+const onDragEnd = () => document.querySelector(`#${itemDragGhostIconId}`)?.remove()
+
 const onItemClick = () => {
-  window.dispatchEvent(
-    new CustomEvent<{ item: SearchResultItem }>(QUICK_SEARCH_MODAL_ITEM_SELECTED, {
-      detail: {
-        item: props.item,
-      },
-    }),
-  )
+  signalThatItemIsSelected({ asset: props.item })
 
   if (!shouldDefaultActionBePrevented(QUICK_SEARCH_MODAL_ITEM_SELECTED)) {
-    window.dispatchEvent(
-      new CustomEvent<AddAssetToCanvasPayloadType>(ADD_ASSET_TO_CANVAS, {
-        detail: { asset: props.item },
-      }),
-    )
+    addAssetToCanvas({ asset: props.item })
   }
 }
 </script>
@@ -75,19 +117,44 @@ const onItemClick = () => {
     ]"
     draggable="true"
     @dragstart="onDragStart"
+    @dragend="onDragEnd"
     @click="onItemClick"
   >
-    <img
+    <UseImage
+      v-if="displayItemIcon"
       :src="item.previewUrl"
-      width="25"
-      height="25"
+      :width="25"
       :alt="`Icon ${item.name}`"
       class="item-icon"
-    />
+    >
+      <template #error>
+        <SearchCategoryIcon
+          :category="item.itemCategory!"
+          width="25"
+          class="item-icon item-icon-placeholder"
+        />
+      </template>
+    </UseImage>
+    <InstantFadeTransition
+      v-model="displayAudioPreviewButton"
+      v-if="item.itemCategory === 'SOUNDS'"
+    >
+      <template #on>
+        <AudioPreviewButton v-model:is-playing="isAudioPreviewPlaying" :item="item" />
+      </template>
+      <template #off>
+        <MusicNote width="25" height="25" class="item-icon item-icon-placeholder" />
+      </template>
+    </InstantFadeTransition>
     <span class="item-name">{{ item.name }}</span>
     <div class="item-actions-panel">
-      <span class="item-category-name">Icons</span>
-      <ImageIcon width="1rem" class="item-category-icon" />
+      <span class="item-category-name">{{ itemCategoryName }}</span>
+      <SearchCategoryIcon
+        :category="item.itemCategory!"
+        width="1rem"
+        height="1rem"
+        class="item-category-icon"
+      />
     </div>
   </li>
 </template>
@@ -117,7 +184,20 @@ const onItemClick = () => {
 }
 
 .item-icon {
+  height: auto;
   border-radius: 0.3rem;
+  flex-shrink: 0;
+}
+
+.sounds-item-icon-wrapper {
+  min-width: 25px;
+  max-width: 25px;
+  min-height: 25px;
+  max-height: 25px;
+}
+
+.item-icon-placeholder {
+  color: rgba(239, 230, 216, 1);
 }
 
 .item-actions-panel {
@@ -128,5 +208,9 @@ const onItemClick = () => {
 .item-category-name,
 .item-category-icon {
   color: #666;
+}
+
+.item-name {
+  color: rgba(239, 230, 216, 1);
 }
 </style>
