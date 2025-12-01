@@ -2,6 +2,11 @@ import type { AssetCollectionNameType, SearchResultItem } from '../../types/quic
 import MouCollectionGameIcons from '../../../../ts/collections/collection-gameicons'
 import MouCollectionBBCAsset from '../../../../ts/collections/collection-bbc-sounds'
 import MouCollectionLocalAsset from '../../../../ts/collections/collection-local-index'
+import { h } from 'vue'
+import type { AnyDict } from '@root/ts/types'
+import { MouCollectionAssetTypeEnum } from '@root/ts/apps/collection'
+import MouApplication from '@root/ts/apps/application'
+import { MouAPI } from '@root/ts/utils/api'
 
 export type SearchCategoryNameType = 'IMAGES' | 'MAPS' | 'SOUNDS' | 'ALL'
 export type SearchCategoryItemCollectionType = Extract<
@@ -21,6 +26,13 @@ export const SEARCH_RESULT_ITEM_CATEGORY_TO_COLLECTIONS_ACCORDANCE: Record<
   IMAGES: 'mou-gameicons',
   MAPS: 'mou-local',
   SOUNDS: 'mou-bbc-sounds',
+}
+
+export const CATEGORY_TO_TYPE = {
+  IMAGES: MouCollectionAssetTypeEnum.Image,
+  MAPS: MouCollectionAssetTypeEnum.Map,
+  SOUNDS: MouCollectionAssetTypeEnum.Audio,
+  ALL: null,
 }
 
 class Category {
@@ -47,9 +59,16 @@ class Category {
 
     this.#isInitialized = true
 
-    const data = await this.#collectionInstance.searchAssets({ searchTerms: term }, 0, {
-      applySearchTermSizeRestriction: false,
-    })
+    const assetType = CATEGORY_TO_TYPE[this.#categoryId]
+    if (assetType == null) {
+      throw new Error('Invalid asset type for category ALL')
+    }
+
+    const data = await MouAPI.searchAssets(term, assetType)
+    
+    //const data = await this.#collectionInstance.searchAssets(searchCriteria, 0, {
+    //  applySearchTermSizeRestriction: false,
+    //})
 
     return {
       ...data,

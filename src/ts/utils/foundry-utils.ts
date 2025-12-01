@@ -135,6 +135,7 @@ export default class MouFoundryUtils {
    * Creates a new scene from the given data
    */
   static async importScene(sceneData: AnyDict, folder:string) {
+    console.log("YOYO")
     if (!(game as Game).user?.isGM) return;
     let needsDims = !("width" in sceneData)
     delete sceneData._stats // causes sometimes incompatibilites

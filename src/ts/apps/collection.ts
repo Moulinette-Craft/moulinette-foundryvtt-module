@@ -48,6 +48,7 @@ export interface MouCollectionAsset {
   background_color?: string,               // background color
   draggable?: boolean,                     // is draggable
   flags: AnyDict                           // asset flags (e.g. is hasAudioPreview)
+  collection?: string                      // collection the asset belongs to
 }
 
 export interface MouCollectionCreator {

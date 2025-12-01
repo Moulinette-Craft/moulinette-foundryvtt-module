@@ -484,6 +484,7 @@ export default class MouBrowser extends MouApplication {
   }
 
   showContentLoader (useLoaderBackground: boolean = true) {
+    useLoaderBackground;
     /*
     const loaderElement = this.html?.find(".content .loader")
     if (useLoaderBackground) {
@@ -1107,11 +1108,11 @@ export default class MouBrowser extends MouApplication {
       const parent = this
       //this.html.find(".search-bar .indicator").html('<i class="fa-solid fa-hourglass-start"></i>')
       this.loadInProgress = setInterval(function() {
-        let icon = "start"
-        switch(parent.loadInProgressState) {
-          case 0: icon = "half"; break;
-          case 1: icon = "end"; break;
-        }
+        //let icon = "start"
+        // switch(parent.loadInProgressState) {
+        //   case 0: icon = "half"; break;
+        //   case 1: icon = "end"; break;
+        // }
         //parent.html!.find(".search-bar .indicator").html(`<i class="fa-solid fa-hourglass-${icon}"></i>`)
         parent.loadInProgressState = (parent.loadInProgressState + 1) % 3
       }, 1000);

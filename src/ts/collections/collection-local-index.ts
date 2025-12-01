@@ -430,6 +430,7 @@ export default class MouCollectionLocal implements MouCollection {
     const position = {x: data.x, y: data.y }
     const asset = this.getAssetById(data.moulinette.asset)
     if(!asset) return
+    if(!data.type) { data.type = MouCollectionAssetTypeEnum[selAsset.type] }
     MouFoundryUtils.createCanvasAsset(canvas, asset.url, data.type, `Moulinette/Local Assets/${asset.pack}`, position)
   }
 

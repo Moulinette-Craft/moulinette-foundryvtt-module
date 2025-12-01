@@ -137,7 +137,7 @@ const onAddAssetToCanvas = async (payload: CustomEventInit<AddAssetToCanvasPaylo
   const { position, asset, collection } = payload.detail || {}
   if (asset) {
     const collectionClass = MouApplication.getModule().collections.find(
-      (c) => c.getId() == collection,
+      (c) => c.getId() == asset.collection,
     )
     const exceptions: Array<{
       condition: boolean
