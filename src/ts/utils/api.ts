@@ -27,8 +27,7 @@ export class MouAPI {
       throw new Error("Unsupported asset type for searchAll");
     }
     // list of all supported collections and types for the searchAll
-    //const supportedColl = ["mou-cloud-cached", "mou-local", "mou-gameicons", "mou-bbc-sounds"];
-    const supportedColl = ["mou-local", "mou-gameicons", "mou-bbc-sounds"];
+    const supportedColl = ["mou-cloud-cached", "mou-local", "mou-gameicons", "mou-bbc-sounds"];
     // retrieve all enabled collections
     const module = MouApplication.getModule()
     const disabled = MouApplication.getSettings(SETTINGS_HIDDEN) as AnyDict
