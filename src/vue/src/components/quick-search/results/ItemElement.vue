@@ -76,7 +76,7 @@ const onDragStart = (event: DragEvent) => {
       element.style.position = 'fixed'
       element.style.opacity = '1'
       element.removeAttribute('class')
-      document.querySelector('#moulinette-vue-app-container')!.appendChild(element)
+      document.querySelector('#mtte-quick-search')!.appendChild(element)
 
       return element
     })(),

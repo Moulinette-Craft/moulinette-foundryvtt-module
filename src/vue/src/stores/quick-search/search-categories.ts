@@ -2,11 +2,8 @@ import type { AssetCollectionNameType, SearchResultItem } from '../../types/quic
 import MouCollectionGameIcons from '../../../../ts/collections/collection-gameicons'
 import MouCollectionBBCAsset from '../../../../ts/collections/collection-bbc-sounds'
 import MouCollectionLocalAsset from '../../../../ts/collections/collection-local-index'
-import { h } from 'vue'
-import type { AnyDict } from '@root/ts/types'
-import { MouCollectionAssetTypeEnum } from '@root/ts/apps/collection'
-import MouApplication from '@root/ts/apps/application'
-import { MouAPI } from '@root/ts/utils/api'
+import { MouCollectionAssetTypeEnum } from '../../../../ts/apps/collection'
+import { MouAPI } from '../../../../ts/utils/api'
 
 export type SearchCategoryNameType = 'IMAGES' | 'MAPS' | 'SOUNDS' | 'ALL'
 export type SearchCategoryItemCollectionType = Extract<
