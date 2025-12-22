@@ -188,7 +188,7 @@ export default class MouCollectionGameIcons implements MouCollection {
     selAsset; // unused
     const position = {x: data.x, y: data.y }
     const adv_settings = MouApplication.getSettings(SETTINGS_ADVANCED) as AnyDict
-    const bgColor = adv_settings.image?.bgcolor || "#000000"
+    const bgColor = adv_settings.image ? adv_settings.image.bgcolor : "#000000"
     const fgColor = adv_settings.image?.fgcolor || "#ffffff"
     const imagePath = await MouGameIconsClient.downloadIcon(data.moulinette.asset, fgColor, bgColor)
     if(imagePath) {

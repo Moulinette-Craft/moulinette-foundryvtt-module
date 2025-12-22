@@ -458,8 +458,9 @@ export default class MouBrowser extends MouApplication {
     html.find(".advanced_settings input[type=color]").on("input", async (ev) => {
       const fgColor = $(ev.currentTarget).closest(".settings").find("input[name=fgColor]").val()
       const bgColor = $(ev.currentTarget).closest(".settings").find("input[name=bgColor]").val()
+      const bgChecked = html.find(".advanced_settings #bgColorEnabled").is(":checked")
       adv_settings.image.fgcolor = fgColor
-      adv_settings.image.bgcolor = bgColor
+      adv_settings.image.bgcolor = bgChecked ? bgColor : ""
       await MouApplication.setSettings(SETTINGS_ADVANCED, adv_settings, true)
     });
     html.find(".advanced_settings #bgColorEnabled").on("change", async (ev) => {

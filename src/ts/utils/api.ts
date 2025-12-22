@@ -47,7 +47,7 @@ export class MouAPI {
         collection: collection.getId(), // Add collection ID to each result
       };
       }),
-    );
+    )
     return {
       assets: result.map((item) => 
       item.assets.map((asset) => ({ ...asset, collection: item.collection }))).flat(),
