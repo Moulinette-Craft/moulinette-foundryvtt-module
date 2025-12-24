@@ -146,7 +146,7 @@ const onItemClick = () => {
         <MusicNote width="25" height="25" class="item-icon item-icon-placeholder" />
       </template>
     </InstantFadeTransition>
-    <span class="item-name">{{ item.name }}</span>
+    <span class="mtte-item-name">{{ item.name }}</span>
     <div class="item-actions-panel">
       <span class="item-category-name">{{ itemCategoryName }}</span>
       <SearchCategoryIcon
@@ -210,7 +210,7 @@ const onItemClick = () => {
   color: #666;
 }
 
-.item-name {
+.mtte-item-name {
   color: rgba(239, 230, 216, 1);
 }
 </style>
