@@ -15,7 +15,7 @@ const onBounding = (data: ElementBoundingType) => {
 </script>
 
 <template>
-  <div v-element-bounding="onBounding" class="selection-preview">
+  <div v-element-bounding="onBounding" :class="$style['selection-preview']">
     <RegularFadeTransition>
       <div :key="itemInTheFocus?.id">
         <img
@@ -30,7 +30,7 @@ const onBounding = (data: ElementBoundingType) => {
   </div>
 </template>
 
-<style lang="scss" scoped>
+<style lang="scss" module>
 .selection-preview {
   padding: 0.5rem;
 }

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { cloneVNode, type VNode, type VNodeChild } from 'vue'
+import { useCssModule } from 'vue'
 
+const style = useCssModule()
 const state = defineModel<boolean>({ required: true })
 
 const { autoCenter = true } = defineProps<{
@@ -31,23 +33,23 @@ function applyClassToSlot(
   return cloneVNode(original, {
     class: [
       (original.props as { class: string })?.class,
-      'fade-transition-element',
-      `fade-transition-element__${id}`,
-      id === 'on' && autoCenter ? 'auto-center' : null,
-      shouldHaveClass ? 'non-visible' : null,
+      style['fade-transition-element'],
+      style[`fade-transition-element__${id}`],
+      id === 'on' && autoCenter ? style['auto-center'] : null,
+      shouldHaveClass ? style['non-visible'] : null,
     ],
   })
 }
 </script>
 
 <template>
-  <div class="transition-wrapper">
+  <div :class="$style['transition-wrapper']">
     <component :is="applyClassToSlot(slots.on, !state, 'on')" />
     <component :is="applyClassToSlot(slots.off, state, 'off')" />
   </div>
 </template>
 
-<style lang="scss" scoped>
+<style module lang="scss">
 .transition-wrapper {
   position: relative;
 }

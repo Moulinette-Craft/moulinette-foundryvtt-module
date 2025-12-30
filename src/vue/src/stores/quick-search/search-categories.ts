@@ -62,7 +62,7 @@ class Category {
     }
 
     const data = await MouAPI.searchAssets(term, assetType)
-    
+
     //const data = await this.#collectionInstance.searchAssets(searchCriteria, 0, {
     //  applySearchTermSizeRestriction: false,
     //})

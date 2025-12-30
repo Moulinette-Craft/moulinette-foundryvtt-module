@@ -63,23 +63,23 @@ watch(
     <dialog
       ref="modalRef"
       :style="position"
-      :class="['quick-search-modal', { 'default-position': !hasSearchedOnce && !hasMoved }]"
+      :class="[$style['quick-search-modal'], { [$style['default-position']]: !hasSearchedOnce && !hasMoved }]"
       closedby="any"
       v-show="isModalVisible"
       open
     >
       <div ref="draggableAreaWrapperRef">
-        <SearchTermInputRow class="search-term-wrapper" />
+        <SearchTermInputRow :class="$style['search-term-wrapper']" />
         <hr style="margin: 0" />
-        <SearchCategories v-model="activeSearchCategory" class="search-categories" />
+        <SearchCategories v-model="activeSearchCategory" :class="$style['search-categories']" />
       </div>
       <ResultsList
         v-model:item-in-the-focus="itemInTheFocus"
         :items="activeSearchCategoryFoundItems"
-        class="results-list"
+        :class="$style['results-list']"
       />
       <RegularFadeTransition>
-        <div v-show="entireModalLoadingState" class="loading-state">
+        <div v-show="entireModalLoadingState" :class="$style['loading-state']">
           <LoadingSpinner />
         </div>
       </RegularFadeTransition>
@@ -89,14 +89,14 @@ watch(
           v-model:element-bounding="selectionPreviewElementBounding"
           :item-in-the-focus="itemInTheFocus"
           :style="selectionPreviewPosition"
-          class="selection-preview"
+          :class="$style['selection-preview']"
         />
       </RegularFadeTransition>
     </dialog>
   </RegularFadeTransition>
 </template>
 
-<style scoped lang="scss">
+<style module lang="scss">
 .quick-search-modal {
   position: fixed;
   z-index: 999;

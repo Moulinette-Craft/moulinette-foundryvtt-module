@@ -65,16 +65,15 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="play-button" @click="onClick">
+  <div :class="$style['play-button']" @click="onClick">
     <PlayIcon
-      :class="['action-icon play-icon', { 'non-visible': isPlaying }]"
-      class="action-icon"
+      :class="[$style['action-icon'], $style['play-icon'], { [$style['non-visible']]: isPlaying }]"
     />
-    <StopIcon :class="['action-icon stop-icon', { 'non-visible': !isPlaying }]" />
+    <StopIcon :class="[$style['action-icon'], $style['stop-icon'], { [$style['non-visible']]: !isPlaying }]" />
   </div>
 </template>
 
-<style lang="scss" scoped>
+<style module lang="scss">
 .play-button {
   display: flex;
   align-items: center;

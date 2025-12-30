@@ -28,7 +28,7 @@ const onItemMouseLeave = () => {
 
 <template>
   <ul
-    :class="['quick-search-results-list', { padded: items.length > 0 || isNothingFoundState }]"
+    :class="[$style['quick-search-results-list'], { [$style['padded']]: items.length > 0 || isNothingFoundState }]"
     v-auto-animate
   >
     <ItemElement
@@ -39,13 +39,13 @@ const onItemMouseLeave = () => {
       @mouseenter="($event: MouseEvent) => onItemMouseEnter($event, item)"
       @mouseleave="onItemMouseLeave"
     />
-    <li v-if="isNothingFoundState" class="nothing-found">
+    <li v-if="isNothingFoundState" :class="$style['nothing-found']">
       <span>Nothing found</span>
     </li>
   </ul>
 </template>
 
-<style lang="scss" scoped>
+<style module lang="scss">
 .quick-search-results-list {
   --gap: 0.75rem;
 

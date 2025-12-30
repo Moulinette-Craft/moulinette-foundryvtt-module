@@ -1,8 +1,8 @@
 <template>
-  <div class="loader"></div>
+  <div :class="$style['loader']"></div>
 </template>
 
-<style lang="scss" scoped>
+<style module lang="scss">
 .loader {
   width: 48px;
   height: 48px;

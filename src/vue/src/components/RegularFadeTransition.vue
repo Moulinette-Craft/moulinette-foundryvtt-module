@@ -4,7 +4,7 @@
   </Transition>
 </template>
 
-<style lang="scss" scoped>
+<style module lang="scss">
 .fade-transition-enter-active {
   animation-name: regular-fade-in;
   animation-duration: 0.2s;

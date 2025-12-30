@@ -58,12 +58,12 @@ onKeyStroke('Tab', (event) => {
 </script>
 
 <template>
-  <div ref="searchCategoriesRef" class="search-categories">
-    <div class="active-category-background" :style="activeCategoryBackgroundStyles"></div>
+  <div ref="searchCategoriesRef" :class="$style['search-categories']">
+    <div :class="$style['active-category-background']" :style="activeCategoryBackgroundStyles"></div>
     <div
       v-for="category in categories"
       :key="`search-category-${category.id}`"
-      :class="['category', { active: activeCategory === category.id }]"
+      :class="[$style['category'], { active: activeCategory === category.id }]"
       ref="categoryRefs"
       data-exclude-from-drag-triggers
       @click="() => onCategoryClick(category)"
@@ -74,7 +74,7 @@ onKeyStroke('Tab', (event) => {
   </div>
 </template>
 
-<style lang="scss" scoped>
+<style lang="scss" module>
 .search-categories {
   position: relative;
   display: flex;

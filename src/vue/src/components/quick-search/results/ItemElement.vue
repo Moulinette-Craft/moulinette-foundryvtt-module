@@ -13,6 +13,9 @@ import AudioPreviewButton from './AudioPreviewButton.vue'
 import { useElementHover } from '@vueuse/core'
 import InstantFadeTransition from '@vue-src/components/InstantFadeTransition.vue'
 
+import { useCssModule } from 'vue'
+const style = useCssModule()
+
 const props = defineProps<{
   item: SearchResultItem
 }>()
@@ -61,11 +64,11 @@ watch(
 const onDragStart = (event: DragEvent) => {
   event.dataTransfer?.setDragImage(
     (() => {
-      const itemIcon = itemRef.value?.querySelector('.item-icon')
+      const itemIcon = itemRef.value?.querySelector(`.${style['item-icon']}`)
       let element: HTMLElement = new Image()
       if (itemIcon?.tagName === 'IMG') {
         ;(element as HTMLImageElement).src =
-          (itemRef.value?.querySelector('.item-icon') as HTMLImageElement)?.src || ''
+          (itemRef.value?.querySelector(`.${style['item-icon']}`) as HTMLImageElement)?.src || ''
       } else {
         element = itemIcon!.cloneNode(true) as HTMLElement
       }
@@ -76,7 +79,7 @@ const onDragStart = (event: DragEvent) => {
       element.style.position = 'fixed'
       element.style.opacity = '1'
       element.removeAttribute('class')
-      document.querySelector('#mtte-quick-search')!.appendChild(element)
+      document.getElementById('mtte-quick-search')!.appendChild(element)
 
       return element
     })(),
@@ -112,8 +115,8 @@ const onItemClick = () => {
   <li
     ref="itemRef"
     :class="[
-      'quick-search-result-item',
-      { 'is-keyboard-selected': keyboardSelectedItem?.id === item.id },
+      $style['quick-search-result-item'],
+      { [style['is-keyboard-selected']]: keyboardSelectedItem?.id === item.id },
     ]"
     draggable="true"
     @dragstart="onDragStart"
@@ -125,13 +128,13 @@ const onItemClick = () => {
       :src="item.previewUrl"
       :width="25"
       :alt="`Icon ${item.name}`"
-      class="item-icon"
+      :class="$style['item-icon']"
     >
       <template #error>
         <SearchCategoryIcon
           :category="item.itemCategory!"
           width="25"
-          class="item-icon item-icon-placeholder"
+          :class="[style['item-icon'], style['item-icon-placeholder']]"
         />
       </template>
     </UseImage>
@@ -143,23 +146,23 @@ const onItemClick = () => {
         <AudioPreviewButton v-model:is-playing="isAudioPreviewPlaying" :item="item" />
       </template>
       <template #off>
-        <MusicNote width="25" height="25" class="item-icon item-icon-placeholder" />
+        <MusicNote width="25" height="25" :class="[style['item-icon'], style['item-icon-placeholder']]" />
       </template>
     </InstantFadeTransition>
-    <span class="mtte-item-name">{{ item.name }}</span>
-    <div class="item-actions-panel">
-      <span class="item-category-name">{{ itemCategoryName }}</span>
+    <span :class="$style['item-name']">{{ item.name }}</span>
+    <div :class="$style['item-actions-panel']">
+      <span :class="$style['item-category-name']">{{ itemCategoryName }}</span>
       <SearchCategoryIcon
         :category="item.itemCategory!"
         width="1rem"
         height="1rem"
-        class="item-category-icon"
+        :class="$style['item-category-icon']"
       />
     </div>
   </li>
 </template>
 
-<style lang="scss" scoped>
+<style module lang="scss">
 .quick-search-result-item,
 .item-actions-panel {
   display: flex;
@@ -210,7 +213,7 @@ const onItemClick = () => {
   color: #666;
 }
 
-.mtte-item-name {
+.item-name {
   color: rgba(239, 230, 216, 1);
 }
 </style>

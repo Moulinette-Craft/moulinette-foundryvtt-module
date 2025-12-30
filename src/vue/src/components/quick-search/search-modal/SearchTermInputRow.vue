@@ -22,21 +22,20 @@ watchEffect(() => {
 </script>
 
 <template>
-  <div class="search-term-wrapper" v-auto-animate>
-    <LoadingSpinner :class="['inline-loading-indicator', { 'non-visible': !isSearching }]" />
-    <MagnifyingGlass :class="['magnifying-glass-icon', { 'non-visible': isSearching }]" />
+  <div :class="$style['search-term-wrapper']" v-auto-animate>
+    <LoadingSpinner :class="[$style['inline-loading-indicator'], { [$style['non-visible']]: !isSearching }]" />
+    <MagnifyingGlass :class="[$style['magnifying-glass-icon'], { [$style['non-visible']]: isSearching }]" />
     <InputElement
       v-model="searchTerm"
       ref="inputRef"
       placeholder="Moulinette Quick Search"
-      class="search-term-input"
+      class="$style['search-term-input']"
       data-exclude-from-drag-triggers
     />
   </div>
 </template>
 
-<style lang="scss" scoped>
-#mtte-quick-search {
+<style module lang="scss">
   .search-term-wrapper {
     position: relative;
     display: flex;
@@ -72,5 +71,4 @@ watchEffect(() => {
   .search-term-input {
     width: 100%;
   }
-}
 </style>

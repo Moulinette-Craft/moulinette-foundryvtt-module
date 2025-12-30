@@ -17,8 +17,8 @@ defineExpose({ focus })
   <input v-model="model" ref="inputRef" type="text" />
 </template>
 
-<style lang="scss" scoped>
-#mtte-quick-search {
+<style lang="scss">
+#quick-search {
   input {
     background: transparent;
     border: none;
