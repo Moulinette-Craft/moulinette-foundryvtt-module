@@ -163,6 +163,10 @@ export interface MouCollection {
 
   /** Must download or handle selected asset and return its path or relevant text to copy */
   selectAsset(asset: MouCollectionAsset): Promise<string | null>
+
+  /** Downloads the desired asset and returns its path */
+  //getAssetPath(selAsset: MouCollectionAsset): Promise<String>
+
 }
 
 

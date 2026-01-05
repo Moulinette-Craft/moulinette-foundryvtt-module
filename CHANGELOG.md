@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 2.0.3 : Key input issues in Foundry Build 13.351 #43 + Enter doesn't work in setting fields #42
 - 2.0.4 : Transparent background doesn't work (Game Icons)
 - 2.0.5 : PF2e Character Sheet Interference #48
+- 2.0.6 : Moulinette FilePicker drag & drop doesn't work. Canvas exception while switching from TilesLayer to MouLayer.
 
 ### Added
 - New interface (PoC) : Moulinette Quick Search limited to game-icons.net images.

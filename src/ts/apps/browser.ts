@@ -1003,6 +1003,7 @@ export default class MouBrowser extends MouApplication {
               moulinette: { asset: assetId, collection: this.collection?.getId() },
               type: MouCollectionAssetTypeEnum[selAsset.type]
             }
+            MouApplication.getModule().cache.curBrowser = this
             this.logInfo("DataTransfer", data)
             originalEvent.dataTransfer?.setData('text/plain', JSON.stringify(data));
           }

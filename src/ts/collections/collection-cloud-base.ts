@@ -564,4 +564,9 @@ export default class MouCollectionCloudBase {
       }
     }
   }
+
+  // async getAssetPath(selAsset: MouCollectionAsset): Promise<String> {
+
+  //   return "";
+  // }
 }

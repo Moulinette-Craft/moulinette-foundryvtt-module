@@ -1,4 +1,3 @@
-
 export default class MouLayer extends ControlsLayer {
 
   override name = "MouLayer";
@@ -24,5 +23,11 @@ export default class MouLayer extends ControlsLayer {
     // @ts-ignore
     coords = canvas.grid.getCenter(tx, ty);
     console.log(coords)
+  }
+
+  _onClickRight(event: any) {
+    event;
+    // @ts-ignore
+    canvas.tiles.activate()
   }
 }

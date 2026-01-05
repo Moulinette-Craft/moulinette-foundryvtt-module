@@ -38,6 +38,9 @@ let canvasInstance: Canvas;
 
 Hooks.once("init", () => {
   console.log(`Initializing ${MODULE_ID}`);
+
+  // @ts-ignore
+  CONFIG.Canvas.layers["moulayer"] = { layerClass: MouLayer, group: "interface" } as AnyDict;
   
   (game as Game).settings.register(MODULE_ID, SETTINGS_SESSION_ID, { scope: "world", config: false, type: String, default: "anonymous" });
   (game as Game).settings.register(MODULE_ID, SETTINGS_DATA_EXCLUSION, { scope: "world", config: false, type: Object, default: {} });
@@ -91,9 +94,6 @@ Hooks.once("init", () => {
   (game as Game).settings.register(MODULE_ID, SETTINGS_TOKEN_SELECTOR, { scope: "world", config: false, type: Object, default: {} as AnyDict });
   (game as Game).settings.register(MODULE_ID, SETTINGS_HIDDEN, { scope: "world", config: false, type: Object, default: {} as AnyDict });
   (game as Game).settings.register(MODULE_ID, SETTINGS_TOGGLES, { scope: "world", config: false, type: Object, default: {} as AnyDict });
-
-  const layers = { moulayer: { layerClass: MouLayer, group: "primary" } }
-  CONFIG.Canvas.layers = foundry.utils.mergeObject(Canvas.layers, layers);
 
   Handlebars.registerHelper('prettyFileSize', function(value, decimals) {
     return MouMediaUtils.prettyFilesize(value, decimals)
@@ -154,6 +154,7 @@ const onAddAssetToCanvas = async (payload: CustomEventInit<AddAssetToCanvasPaylo
     const defaultAction = () =>
       collectionClass?.dropDataCanvas(canvasInstance, asset, {
         moulinette: { asset: asset.id },
+        type: MouCollectionAssetTypeEnum[asset.type],
         // TODO: the default position defining functionality to be reconsidered
         x: position?.x || canvasInstance.app?.view.width || 0 / 2,
         y: position?.y || canvasInstance.app?.view.height || 0 / 2,
@@ -214,7 +215,11 @@ Hooks.on('dropCanvasData', (canvas, data) => {
       })
     } else if (data.moulinette.collection) {
       // Drag & drop from a collection
-      module.browser.dropDataCanvas(canvas, data)
+      if(MouApplication.getModule().cache.curBrowser) {
+        MouApplication.getModule().cache.curBrowser.dropDataCanvas(canvas, data)
+      } else {
+        module.browser.dropDataCanvas(canvas, data)
+      }
     }
   }
 });
@@ -235,8 +240,7 @@ Hooks.on('renderFilePicker', (app: FilePicker) => {
         callback(eventPayload) {
           if (eventPayload.asset.itemCategory === 'IMAGES') {
             const pickerElement = app.element as unknown as HTMLElement
-            ;(pickerElement.querySelector('#file-picker-file') as HTMLInputElement).value =
-              eventPayload.asset.url
+            ;(pickerElement.querySelector('#file-picker-file') as HTMLInputElement).value = eventPayload.asset.url
             pickerElement.querySelector('.files-list > .picked')?.classList?.remove('picked')
             window.dispatchEvent(new CustomEvent(CLOSE_QUICK_SEARCH_MODAL))
 
