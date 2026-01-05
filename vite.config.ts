@@ -13,6 +13,7 @@ export default mergeConfig(
 
   defineConfig({
     build: {
+      // minify: false,
       sourcemap: true,
       rollupOptions: {
         input: "src/ts/module.ts",
@@ -20,7 +21,7 @@ export default mergeConfig(
         output: {
           dir: "dist/scripts",
           format: "es",
-          entryFileNames: "module.js",
+          entryFileNames: "module.js"
         },
       },
     },
