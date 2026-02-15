@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 2.0.5 : PF2e Character Sheet Interference #48
 - 2.0.6 : Moulinette FilePicker drag & drop doesn't work. Canvas exception while switching from TilesLayer to MouLayer.
 - 2.0.7 : BUG Module is causing a door icon display glitch #51
-- 2.0.8 : Button to switch back to normal file picker #39
+- 2.0.8 : Button to switch back to normal file picker #39 && Workaround for Ripper's Media Optimizer
 
 ### Added
 - New interface (PoC) : Moulinette Quick Search limited to game-icons.net images.
