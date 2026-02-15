@@ -46,8 +46,15 @@ export default class MouHooks {
         layer: "moulayer",
         name: (game as Game).version.startsWith("12.") ? "moucontrols" : "moulinette",
         title: "Moulinette Media Search",
-        // @ts-ignore
-        onChange: (event : any, active: boolean) => { if(active) canvas.moulayer.activate() },
+        onChange: (event : any, active: boolean) => { 
+          event;
+          if(active) { 
+            // @ts-ignore
+            canvas.tiles.deactivate(); // UNKNOWN FIX : when switching from tiles to mou layer, exception is thrown
+            // @ts-ignore
+            canvas.moulayer.activate();
+          }
+        },
         onToolChange: () => {},
         tools: (game as Game).version.startsWith("12.") ? [] as AnyDict[] : {} as AnyDict,
         activeTool: "select",
