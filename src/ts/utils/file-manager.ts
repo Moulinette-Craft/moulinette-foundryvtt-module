@@ -210,6 +210,12 @@ export default class MouFileManager {
    */
   static async downloadFile(uri: string, packPath: string, folder: string, force=false): Promise<FilePicker.UploadResult | false> {
 
+    // disable Ripper's Media Optimizer (conflicting)
+    const mediaOptimizerEnabled = (game as Game).settings.settings.has("media-optimizer.slugifyFileNames") && (game as Game).settings.get("media-optimizer", "slugifyFileNames");
+    if(mediaOptimizerEnabled) {
+      await MouFileManager.toggleMediaOptimizer(false)
+    }
+
     folder = MouMediaUtils.getCleanURI(folder)
     const filepath = MouMediaUtils.getCleanURI(uri.split("?")[0])
     const filename  = filepath.substring(filepath.lastIndexOf("/")+1)  // Broken Tower_2.webm (from above example)
@@ -224,6 +230,7 @@ export default class MouFileManager {
     const path = `${targetFolder}/${filename}`
     if(!force && files.includes(path)) {
       MouApplication.logInfo(MouFileManager.APP_NAME, `File ${path} already exists. Download skipped!`)
+      if(mediaOptimizerEnabled) { await MouFileManager.toggleMediaOptimizer(true) }
       return { status: "success", path: path, message: "File already exists" };
     }
 
@@ -240,6 +247,7 @@ export default class MouFileManager {
           const uploadResult = await MouFileManager.uploadFile(new File([blob], filename, { type: blob.type, lastModified: new Date().getTime() }), filename, targetFolder, force)
           if(uploadResult && uploadResult.status == "success") {
             uploadResult.path = decodeURI(uploadResult.path)
+            if(mediaOptimizerEnabled) { await MouFileManager.toggleMediaOptimizer(true) }
             return uploadResult
           }
           else {
@@ -254,6 +262,7 @@ export default class MouFileManager {
       }
       triesCount++
     }
+    if(mediaOptimizerEnabled) { await MouFileManager.toggleMediaOptimizer(true) }
     return false
   }
 
@@ -437,4 +446,10 @@ export default class MouFileManager {
     return true
   }
 
+  /**
+   * Disables Ripper's Media Optimizer (conflicting)
+   */
+  static async toggleMediaOptimizer(status: boolean) {
+    await (game as Game).settings.set("media-optimizer", "slugifyFileNames", status);
+  }
 }
