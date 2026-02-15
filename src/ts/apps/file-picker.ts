@@ -1,4 +1,5 @@
 import { AnyDict } from "../types";
+import MouApplication from "./application";
 import MouBrowser from "./browser";
 
 export class MoulinetteFilePicker extends FilePicker {
@@ -13,9 +14,10 @@ export class MoulinetteFilePicker extends FilePicker {
     const v12 = (game as Game).version.startsWith("12.")
     const kbManager = v12 ? KeyboardManager : (foundry as any).helpers.interaction.KeyboardManager;
     const shiftKeyDown = (game as Game).keyboard!.isModifierActive(kbManager.MODIFIER_KEYS.SHIFT)
-    const forceDefault = shiftKeyDown
+    const forceDefault = shiftKeyDown || MouApplication.getModule().cache.forceDefaultPicker;
 
     if(forceDefault || !["image", "imagevideo"].includes(this.type)) {
+      MouApplication.getModule().cache.forceDefaultPicker = true;
       return super.browse(target, options);
     }
 

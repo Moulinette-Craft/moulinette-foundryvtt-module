@@ -274,3 +274,8 @@ Hooks.on('closeApplicationV1', () => {
   removeQuickSearchModalOuterSubscriber('SELECT_INTO_IMAGE_PICKER')
   window.removeEventListener(ADD_ASSET_TO_CANVAS, onAddAssetToCanvas)
 })
+
+Hooks.on('closeFilePicker', () => {
+  MouApplication.getModule().cache.forceDefaultPicker = false;
+  console.log("CLOSING FILE PICKER")  
+})
