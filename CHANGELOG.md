@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.0.8] - 2026-02-14
+## [2.0.9] - 2026-02-14
 ### Fixed
 - 2.0.2 : changes affecting character sheets in pf2e #41
 - 2.0.3 : Key input issues in Foundry Build 13.351 #43 + Enter doesn't work in setting fields #42
@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 2.0.6 : Moulinette FilePicker drag & drop doesn't work. Canvas exception while switching from TilesLayer to MouLayer.
 - 2.0.7 : BUG Module is causing a door icon display glitch #51
 - 2.0.8 : Button to switch back to normal file picker #39 && Workaround for Ripper's Media Optimizer
+- 2.0.9 : ScenePacker "Import selected" always imports all scenes
 
 ### Added
 - New interface (PoC) : Moulinette Quick Search limited to game-icons.net images.
