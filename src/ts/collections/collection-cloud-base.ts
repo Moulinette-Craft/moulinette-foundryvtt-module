@@ -413,7 +413,18 @@ export default class MouCollectionCloudBase {
             case MouCollectionAssetTypeEnum.Audio: MouFoundryUtils.playStopSound(resultImport.path, MouCollectionCloudBase.PLAYLIST_NAME); break
             case MouCollectionAssetTypeEnum.Playlist: MouFoundryUtils.importPlaylist(JSON.parse(resultImport.message), folderPath); break
             case MouCollectionAssetTypeEnum.JournalEntry: MouFoundryUtils.importJournalEntryFromJSON(resultImport.message, folderPath); break
-            case MouCollectionAssetTypeEnum.ScenePacker: MouFoundryUtils.importScenePacker(JSON.parse(resultImport.message), asset.scenepacker_ref); break
+            case MouCollectionAssetTypeEnum.ScenePacker: 
+              // retrieve SceneID from selected asset
+              const data = JSON.parse(resultImport.message)
+              const sceneData = await fetch(data["mtte.json"]).then(res => res.json())
+              if(sceneData && sceneData.scenes) {
+                const selected = sceneData.scenes.find((s : AnyDict) => s.img == asset.filepath)
+                MouFoundryUtils.importScenePacker(data, selected?.id); 
+              } else {
+                MouApplication.logError(this.APP_NAME, `Failed to retrieve scenepacker data for ${asset.filepath.split("?")[0]}`)
+                MouFoundryUtils.importScenePacker(data, ""); 
+              }
+              break
           }
         }
         break
