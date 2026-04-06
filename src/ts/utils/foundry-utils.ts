@@ -139,8 +139,8 @@ export default class MouFoundryUtils {
     let needsDims = !("width" in sceneData)
     delete sceneData._stats // causes sometimes incompatibilites
     // @ts-ignore
-    const doc = await Scene.fromImport(sceneData)
-    const newScene = await Scene.create(doc) as any
+    const doc = await CONFIG.Scene.documentClass.fromImport(sceneData)
+    const newScene = await CONFIG.Scene.documentClass.create(doc) as any
     if(newScene) {
       const folderObj = await MouFoundryUtils.getOrCreateFolder("Scene", folder)
       let tData = await newScene.createThumbnail({img: newScene["background.src"] ?? newScene.background.src});
@@ -162,7 +162,7 @@ export default class MouFoundryUtils {
   static async importSceneFromJSON(sceneData: string, folder:string) {
     if (!(game as Game).user?.isGM) return;
     // @ts-ignore
-    const sc = await Scene.create({name: "Imported Scene"})
+    const sc = await CONFIG.Scene.documentClass.create({name: "Imported Scene"})
     const newScene = await sc?.importFromJSON(sceneData) as any
     let needsDims = !("width" in newScene)
     if(newScene) {
