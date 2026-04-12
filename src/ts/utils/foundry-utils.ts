@@ -4,6 +4,7 @@ import MouConfig, { MODULE_ID, SETTINGS_ADVANCED, SETTINGS_USE_FOLDERS } from ".
 import { AnyDict } from "../types";
 import MouMediaUtils from "./media-utils";
 import MouCompatUtils from "./compat-utils";
+import MouLayer from "../layers/mou-layer";
 
 declare var ScenePacker: any;
 
@@ -328,8 +329,9 @@ export default class MouFoundryUtils {
       tileSize = 100 // default tile size
     }
 
-    const layerTiles = canvas.layers.find(l => l.name == "TilesLayer")
-    const layerMou = canvas.layers.find(l => l.name == "MouLayer")
+    // @ts-ignore
+    const layerTiles = canvas.layers.find(l => l instanceof TilesLayer)
+    const layerMou = canvas.layers.find(l => l instanceof MouLayer)
 
     if(!canvas.dimensions || !layerTiles || !layerMou) return false
     // Determine the tile size
