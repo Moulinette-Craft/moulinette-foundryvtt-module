@@ -1,0 +1,22 @@
+<form>
+<div class="config">
+  <footer>
+    {{#each predefinedSources as |source|}}
+      <div class="form-group">
+        <div class="predefined-descr">
+          <h2>{{localize source.labelKey}}</h2>
+          <p class="notes">{{localize source.descriptionKey}}</p>
+        </div>
+        <div class="predefined-actions">
+          <a data-id="{{source.id}}" title="{{localize "MOU.add_folder"}}"><i class="fa-solid fa-folder-plus"></i></a>
+          <a data-id="{{source.id}}_browse" title="{{localize "MOU.browse_folder"}}"><i class="fa-solid fa-folder-magnifying-glass"></i></a>
+        </div>
+      </div>
+    {{/each}}
+  </footer>
+  <hr>
+  <div><em>If you'd like to suggest additional predefined sources for this window, 
+    please email us at <a href="mailto:contact@moulinette.cloud">contact@moulinette.cloud</a> 
+    or join our <a href="https://discord.gg/xg3dcMQfP2" target="_blank">Discord</a>.</em></div>
+</div>
+</form>

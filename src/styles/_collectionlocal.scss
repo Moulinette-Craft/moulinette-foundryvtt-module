@@ -4,8 +4,20 @@
     font-style: italic;
   }
 
-  .config button  {
-    flex: 2;
+  .config {
+    .predefined-descr {
+      margin-bottom: 20px;
+    }
+    .predefined-actions {
+      padding: 0 5px;
+      flex: 0 1 auto;
+      font-size: 32px;
+      align-items: flex-end;
+    }
+
+    button  {
+      flex: 2;
+    }
   }
 
   .more {

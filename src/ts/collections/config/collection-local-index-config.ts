@@ -5,6 +5,7 @@ import { AnyDict } from "../../types";
 import MouFileManager from "../../utils/file-manager";
 import MouCompatUtils from "../../utils/compat-utils";
 import LocalCollectionConfigNewSource from "./collection-local-index-config-source";
+import LocalCollectionConfigPredefined from "./collection-local-index-config-predefined";
 
 export interface LocalCollectionSource {
   id?: string,
@@ -159,6 +160,9 @@ export default class LocalCollectionConfig extends MouApplication {
       if(button.data("id") == "add-folder") {
         const newSourceUI = new LocalCollectionConfigNewSource(this._callbackAfterNewSource.bind(this))
         newSourceUI.render(true)
+      } else if(button.data("id") == "add-predefined-folder") {
+        const newPredefinedUI = new LocalCollectionConfigPredefined(this._callbackAfterNewSource.bind(this))
+        newPredefinedUI.render(true)
       } else if(button.data("id") == "index-folders") {
         this.indexAll = true
         this.indexNextFolder()
@@ -240,6 +244,12 @@ export default class LocalCollectionConfig extends MouApplication {
       }
     }
     else {
+      // make sure source doesn't exist yet
+      const existingPath = settings.folders?.find((f: LocalCollectionSource) => f.path == source.path && f.source == source.source)
+      if(existingPath) {
+        ui.notifications?.error((game as Game).i18n.localize("MOU.source_already_exists"))
+        return
+      }
       source.id = foundry.utils.randomID(10)
       if(!settings.folders) {
         settings.folders = [source]
