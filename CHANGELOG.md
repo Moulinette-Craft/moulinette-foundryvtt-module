@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.2] - 2026-04-26
+### Added
+- Force import scene (let's a the user import a scene from newer version of FVTT)
+### Fixed
+- 2.3.1 : support for private images from Moulinette Cloud (The Token Vault & Czepeku Tokens)
+- 2.3.2 : compatibility version for V12 only
+
 ## [2.2.0] - 2026-04-12
 ### Added
 - Support for FVTT 14
