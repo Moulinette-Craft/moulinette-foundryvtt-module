@@ -8,8 +8,8 @@
   "scripts": [],
   "compatibility": {
     "minimum": "12",
-    "verified": "14",
-    "maximum": "14"
+    "verified": "12",
+    "maximum": "12"
   },
   "languages": [
     {
