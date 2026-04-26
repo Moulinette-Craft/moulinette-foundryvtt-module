@@ -160,10 +160,18 @@ export default class MouFoundryUtils {
   /**
    * Creates a new scene from the given data
    */
-  static async importSceneFromJSON(sceneData: string, folder:string) {
+  static async importSceneFromJSON(sceneData: string, folder:string, forceImport = false) {
     if (!(game as Game).user?.isGM) return;
     // @ts-ignore
     const sc = await CONFIG.Scene.documentClass.create({name: "Imported Scene"})
+    
+    if(forceImport) {
+      MouApplication.logWarn(MouFoundryUtils.APP_NAME, "Moulinette modified the Scene data to attempt to ensure backward compatibility. If you encounter any issue with the imported Scene, please try to import it without forcing.")
+      const data = JSON.parse(sceneData) 
+      delete data._stats                 // may causes sometimes incompatibilites
+      sceneData = JSON.stringify(data)
+    }
+
     const newScene = await sc?.importFromJSON(sceneData) as any
     let needsDims = !("width" in newScene)
     if(newScene) {
@@ -243,13 +251,11 @@ export default class MouFoundryUtils {
     
     // compatibility with older versions (not having pages)
     const json = JSON.parse(journalData)
-    console.log(json)
     if (!("pages" in json) && "type" in json) {
       json.pages = [foundry.utils.duplicate(json)]
       journalData = JSON.stringify(json)
     }
-    console.log(journalData)
-
+    
     const jData = await JournalEntry.create({name: "Imported Journal Entry"})
     const newJournalEntry = await jData?.importFromJSON(journalData) as any
     

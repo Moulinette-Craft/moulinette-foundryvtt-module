@@ -25,6 +25,7 @@ export enum CloudAssetAction {
   DRAG,                     // drag & drop capability for the asset
   DOWNLOAD,                 // download asset and copy path to clipboard
   IMPORT,                   // import asset (scenes/...)
+  FORCE_IMPORT,             // import asset even if version is newer
   CREATE_ARTICLE,           // create article from asset
   MEMBERSHIP,               // creator support page,
   PREVIEW,                  // preview audio,
@@ -254,11 +255,16 @@ export default class MouCollectionCloudBase {
       case MouCollectionAssetTypeEnum.ScenePacker:
         actions.push({ id: CloudAssetAction.IMPORT, name: (game as Game).i18n.format("MOU.action_import", { type: "w. ScenePacker"}), icon: "fa-solid fa-file-import" })
         break;
-      case MouCollectionAssetTypeEnum.Scene:
       case MouCollectionAssetTypeEnum.Map:
         actions.push({ id: CloudAssetAction.IMPORT, name: (game as Game).i18n.format("MOU.action_import", { type: assetType}), icon: "fa-solid fa-file-import" })
         actions.push({ id: CloudAssetAction.CREATE_ARTICLE, name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
-        actions.push({ id: CloudAssetAction.PREVIEW, small: true, name: (game as Game).i18n.localize("MOU.action_preview_asset"), icon: "fa-solid fa-eyes" })
+        actions.push({ id: CloudAssetAction.PREVIEW, small: true, name: (game as Game).i18n.localize("MOU.action_preview_asset"), icon: "fa-solid fa-eyes" })        
+        break;
+      case MouCollectionAssetTypeEnum.Scene:
+        actions.push({ id: CloudAssetAction.IMPORT, name: (game as Game).i18n.format("MOU.action_import", { type: assetType}), icon: "fa-solid fa-file-import" })
+        actions.push({ id: CloudAssetAction.CREATE_ARTICLE, name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
+        actions.push({ id: CloudAssetAction.PREVIEW, small: true, name: (game as Game).i18n.localize("MOU.action_preview_asset"), icon: "fa-solid fa-eyes" })        
+        actions.push({ id: CloudAssetAction.FORCE_IMPORT, small: true, name: (game as Game).i18n.format("MOU.action_force_import", { type: assetType}), icon: "fa-solid fa-file-circle-exclamation" })
         break; 
       case MouCollectionAssetTypeEnum.Item:
       case MouCollectionAssetTypeEnum.Actor:
@@ -308,6 +314,8 @@ export default class MouCollectionCloudBase {
           case MouCollectionAssetTypeEnum.Actor: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_drag_actor") }
         }
         break
+      case CloudAssetAction.FORCE_IMPORT:
+        return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_download_force_import_scene") }
       case CloudAssetAction.IMPORT:
         switch(asset.type) {
           case MouCollectionAssetTypeEnum.Map: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_download_import_image") }
@@ -402,12 +410,13 @@ export default class MouCollectionCloudBase {
       case CloudAssetAction.DRAG:
         ui.notifications?.info((game as Game).i18n.localize("MOU.dragdrop_instructions"))
         break
+      case CloudAssetAction.FORCE_IMPORT:
       case CloudAssetAction.IMPORT:
         const resultImport = await this.downloadAsset(asset)
         if(resultImport) {
           switch(asset.type) {
             case MouCollectionAssetTypeEnum.Map: MouFoundryUtils.importSceneFromMap(resultImport.path, folderPath); break
-            case MouCollectionAssetTypeEnum.Scene: MouFoundryUtils.importSceneFromJSON(resultImport.message, folderPath); break
+            case MouCollectionAssetTypeEnum.Scene: MouFoundryUtils.importSceneFromJSON(resultImport.message, folderPath, actionId == CloudAssetAction.FORCE_IMPORT); break
             case MouCollectionAssetTypeEnum.Item: MouFoundryUtils.importItem(JSON.parse(resultImport.message), folderPath); break
             case MouCollectionAssetTypeEnum.Actor: MouFoundryUtils.importActor(JSON.parse(resultImport.message), folderPath); break
             case MouCollectionAssetTypeEnum.Audio: MouFoundryUtils.playStopSound(resultImport.path, MouCollectionCloudBase.PLAYLIST_NAME); break
