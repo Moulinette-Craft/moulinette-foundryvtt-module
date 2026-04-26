@@ -71,6 +71,10 @@ class MouCollectionCloudPrivateAsset implements MouCollectionAsset {
       this.previewUrl = `${pack.path}/${MouMediaUtils.getBasePath(asset.img) + "_thumb.webp"}?${pack.sas}`
       this.name = MouMediaUtils.prettyMediaName((asset.name as string))
       if(asset.type == "scene") this.type = MouCollectionAssetTypeEnum.Scene
+      else if(asset.type == "img") {
+        this.type = MouCollectionAssetTypeEnum.Image
+        this.draggable = true
+      }
       else {
         this.type = MouCollectionAssetTypeEnum.Undefined
         console.log("ERROR", asset)
