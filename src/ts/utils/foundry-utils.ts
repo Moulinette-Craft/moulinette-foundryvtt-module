@@ -148,8 +148,11 @@ export default class MouFoundryUtils {
       // reset width/height
       let tUpdate = { thumb: tData.thumb, folder: folderObj ? folderObj.id : null } as AnyDict
       if ( needsDims && tData.width && tData.height ) {
-        tUpdate.width = tData.width;
-        tUpdate.height = tData.height;
+        const img = await loadTexture(newScene["background.src"] ?? newScene.background.src);
+        if (img) {
+          tUpdate.width = img.baseTexture.width;
+          tUpdate.height = img.baseTexture.height;
+        }
       }  
       await newScene.update(tUpdate); // force generating the thumbnail and width/height (if needsDims)
       newScene?.view()
