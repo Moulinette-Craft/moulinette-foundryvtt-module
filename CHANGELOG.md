@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 2.3.1 : support for private images from Moulinette Cloud (The Token Vault & Czepeku Tokens)
 - 2.3.2 : support for V12
 - 2.3.3 : force latest version to be V13/V14
+- 2.3.4 : Import image as scene, comes in all squished #57
 
 ## [2.2.0] - 2026-04-12
 ### Added
