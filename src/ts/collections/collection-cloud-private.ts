@@ -272,9 +272,7 @@ export default class MouCollectionCloudPrivate implements MouCollection {
         break;    
       case MouCollectionAssetTypeEnum.Audio:
         actions.push({ id: CloudAssetAction.IMPORT, name: (game as Game).i18n.localize("MOU.action_audio_play"), icon: "fa-solid fa-play-pause" })
-        if(asset.flags.hasAudioPreview) {
-          actions.push({ id: CloudAssetAction.PREVIEW, name: (game as Game).i18n.localize("MOU.action_preview"), icon: "fa-solid fa-headphones" })
-        }
+        actions.push({ id: CloudAssetAction.PREVIEW, name: (game as Game).i18n.localize("MOU.action_preview"), icon: "fa-solid fa-headphones" })
         break;
     }
 
@@ -307,7 +305,7 @@ export default class MouCollectionCloudPrivate implements MouCollection {
       
       case CloudAssetAction.PREVIEW:
         switch(asset.type) {
-          case MouCollectionAssetTypeEnum.Audio: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_preview_audio") }
+          case MouCollectionAssetTypeEnum.Audio: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_preview_audio_full") }
           case MouCollectionAssetTypeEnum.Scene: 
           case MouCollectionAssetTypeEnum.Image: 
           case MouCollectionAssetTypeEnum.Map: 
@@ -409,7 +407,7 @@ export default class MouCollectionCloudPrivate implements MouCollection {
       case CloudAssetAction.PREVIEW:
         switch(cAsset.type) {
           case MouCollectionAssetTypeEnum.Audio:
-            const audio_url = selAsset.previewUrl
+            const audio_url = `${cAsset.baseUrl}/${cAsset.url}?${cAsset.sas}`
             // assuming there is an audio preview and there is a audio#audiopreview element on the page
             const audio = $("#audiopreview")[0] as HTMLAudioElement
             if(MouMediaUtils.getCleanURI(audio.src) != MouMediaUtils.getCleanURI(audio_url)) {
