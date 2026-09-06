@@ -122,7 +122,7 @@ export default class MouFileManager {
   /**
    * Uploads a file into the right folder (improved version)
    */
-  static async uploadFile(file: File, filename: string, folderPath: string, overwrite = false): Promise<FilePicker.UploadResult | false> {
+  static async uploadFile(file: File, filename: string, folderPath: string, overwrite = false): Promise<FilePicker.UploadReturn | false> {
     const source = MouFileManager.getSource()
     await MouFileManager.createFolderRecursive(folderPath)
     
@@ -208,10 +208,10 @@ export default class MouFileManager {
    *    pack_path: https://mttestorage.blob.core.windows.net/creator/packname
    *    folder: {MOU_DEF_FOLDER}/scenes/creator/packname
    */
-  static async downloadFile(uri: string, packPath: string, folder: string, force=false): Promise<FilePicker.UploadResult | false> {
+  static async downloadFile(uri: string, packPath: string, folder: string, force=false): Promise<FilePicker.UploadReturn | false> {
 
     // disable Ripper's Media Optimizer (conflicting)
-    const mediaOptimizerEnabled = (game as Game).settings.settings.has("media-optimizer.slugifyFileNames") && (game as Game).settings.get("media-optimizer", "slugifyFileNames");
+    const mediaOptimizerEnabled = ((game as Game).settings as AnyDict).settings.has("media-optimizer.slugifyFileNames") && ((game as Game).settings as AnyDict).get("media-optimizer", "slugifyFileNames");
     if(mediaOptimizerEnabled) {
       await MouFileManager.toggleMediaOptimizer(false)
     }
@@ -283,7 +283,7 @@ export default class MouFileManager {
 
     // for S3 source, check that bucket is configured
     if(source == "s3" && !options.bucket) {
-      const errorMsg = (game as Game).i18n.localize("MOU.error_s3_bucket_not_specified")
+      const errorMsg = (game as Game).i18n!.localize("MOU.error_s3_bucket_not_specified")
       ui.notifications?.error(errorMsg, { permanent: true })
       MouApplication.logError(MouFileManager.APP_NAME, errorMsg)
       return list
@@ -342,7 +342,7 @@ export default class MouFileManager {
   /**
    * Stores provided JSON 
    */
-  static async storeJSON(data: AnyDict, filename: string, folder: string): Promise<FilePicker.UploadResult | false> {
+  static async storeJSON(data: AnyDict, filename: string, folder: string): Promise<FilePicker.UploadReturn | false> {
     return MouFileManager.uploadFile(
       new File([JSON.stringify(data)], filename, { type: "application/json", lastModified: new Date().getTime() }), 
       filename, 
@@ -427,6 +427,7 @@ export default class MouFileManager {
     }
     try {
       const thumb = await ImageHelper.createThumbnail(url, { width: options ? options.width : 200, height: options ? options.width : 200, center: true, format: "image/webp"})
+      if(!thumb) return false;
       // convert to file
       const res = await fetch(thumb.thumb);
       const buf = await res.arrayBuffer();
@@ -450,6 +451,6 @@ export default class MouFileManager {
    * Disables Ripper's Media Optimizer (conflicting)
    */
   static async toggleMediaOptimizer(status: boolean) {
-    await (game as Game).settings.set("media-optimizer", "slugifyFileNames", status);
+    await ((game as Game).settings as AnyDict).set("media-optimizer", "slugifyFileNames", status);
   }
 }

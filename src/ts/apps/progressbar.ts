@@ -1,4 +1,5 @@
 import { MODULE_ID } from "../constants";
+import { AnyDict } from "../types";
 
 export class MoulinetteProgress extends Application {
 
@@ -17,10 +18,10 @@ export class MoulinetteProgress extends Application {
   }
 
   static override get defaultOptions() {
-    return foundry.utils.mergeObject(super.defaultOptions, {
+    return (foundry.utils as AnyDict).mergeObject(super.defaultOptions, {
       id: "mou-progress",
       classes: ["mou"],
-      title: (game as Game).i18n.localize("MOU.progressbar"),
+      title: (game as Game).i18n!.localize("MOU.progressbar"),
       template: `modules/${MODULE_ID}/templates/progressbar.hbs`,
       width: 600,
       height: 90

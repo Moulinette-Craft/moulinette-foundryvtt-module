@@ -25,19 +25,19 @@ export default class MouHooks {
   /**
    * Adds custom Moulinette controls to the scene controls.
    * 
-   * @param {SceneControl[]} buttons - The array of scene control buttons to which the Moulinette controls will be added.
+   * @param {SceneControls.Control[]} buttons - The array of scene control buttons to which the Moulinette controls will be added.
    * 
    * This method checks if the current user is a GM (Game Master). If so, it creates a new control tool for Moulinette,
    * including an icon, layer, name, title, and tools. The tools include an action to open the Moulinette browser and 
    * an authentication status indicator. The authentication status tool's icon changes based on whether the user is 
    * authenticated.
    */
-  static addMoulinetteControls(buttons: SceneControl[] | AnyDict) {
+  static addMoulinetteControls(buttons: SceneControls.Control[] | AnyDict) {
     const module = MouApplication.getModule()
     if(!module) return
 
     const isGM = (game as Game).user?.isGM
-    const enablePlayers = (game as Game).settings.get(MODULE_ID, SETTINGS_ENABLE_PLAYERS)
+    const enablePlayers = ((game as Game).settings as AnyDict).get(MODULE_ID, SETTINGS_ENABLE_PLAYERS)
 
     if(isGM || enablePlayers) {
       let order = 0
@@ -66,7 +66,7 @@ export default class MouHooks {
       const select = { 
         name: "select", 
         icon: "fa-solid fa-expand mou-hidden", 
-        title: (game as Game).i18n.localize("MOU.select"),
+        title: (game as Game).i18n!.localize("MOU.select"),
         button: false, 
         onChange: () => {},
         onClick: () => {},
@@ -78,7 +78,7 @@ export default class MouHooks {
       const search = { 
         name: "search", 
         icon: "fa-solid fa-magnifying-glass", 
-        title: (game as Game).i18n.localize("MOU.browser"),
+        title: (game as Game).i18n!.localize("MOU.browser"),
         button: true, 
         onChange: () => {},
         onClick: () => { module.browser.render(true) },
@@ -92,7 +92,7 @@ export default class MouHooks {
         MouHooks.compatibilityModeAdd(moulinetteTool.tools, "authenticated", {
           name: "authenticated",
           icon: "fa-solid fa-user",
-          title: (game as Game).i18n.localize("MOU.user_authenticated"),
+          title: (game as Game).i18n!.localize("MOU.user_authenticated"),
           button: true,
           onChange: () => {},
           onClick: () => { module.user.render(true) },
@@ -203,9 +203,8 @@ export default class MouHooks {
   }
 
   static registerKeybindings () {
-    (game as Game).keybindings.register(MODULE_ID, 'TOGGLE_OPEN', {
+    (game as Game).keybindings!.register(MODULE_ID, 'TOGGLE_OPEN', {
       name: "MOU.quick_search",
-      // @ts-expect-error: "textInput"-property is surely present on the ClientKeybindings
       textInput: true,
       editable: [
         { key: "KeyM", modifiers: [KeyboardManager.MODIFIER_KEYS.CONTROL] },

@@ -85,20 +85,20 @@ class MouCollectionLocalAsset implements MouCollectionAsset {
       this.meta.push({ 
         icon: "fa-regular fa-expand-wide", 
         text: `${data.width} x ${data.height}`,
-        hint: (game as Game).i18n.localize("MOU.meta_media_size")
+        hint: (game as Game).i18n!.localize("MOU.meta_media_size")
       })
     }
     if(data.duration) {
       this.meta.push({ 
         icon: "fa-regular fa-stopwatch", 
         text: MouMediaUtils.prettyDuration(data.duration),
-        hint: (game as Game).i18n.localize("MOU.meta_audio_duration")
+        hint: (game as Game).i18n!.localize("MOU.meta_audio_duration")
       })
     }
 
     if(this.animated) {
       this.icons.push({
-        descr: (game as Game).i18n.localize("MOU.meta_animated"),
+        descr: (game as Game).i18n!.localize("MOU.meta_animated"),
         icon: "fa-solid fa-film"
       })
     }
@@ -160,11 +160,11 @@ export default class MouCollectionLocal implements MouCollection {
   }
 
   getName(): string {
-    return (game as Game).i18n.localize("MOU.collection_type_local");
+    return (game as Game).i18n!.localize("MOU.collection_type_local");
   }
 
   getDescription(): string {
-    return (game as Game).i18n.localize("MOU.collection_type_local_desc");
+    return (game as Game).i18n!.localize("MOU.collection_type_local_desc");
   }
 
   getSupportedTypes(): MouCollectionAssetTypeEnum[] {
@@ -295,32 +295,32 @@ export default class MouCollectionLocal implements MouCollection {
     switch(cAsset.type) {
       case MouCollectionAssetTypeEnum.Image:
         if(isGM) {
-          actions.push({ id: LocalAssetAction.DRAG, small: true, drag: true, name: (game as Game).i18n.format("MOU.action_drag", { type: assetType}), icon: "fa-solid fa-hand" })
-          actions.push({ id: LocalAssetAction.CREATE_ARTICLE, small: true,name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
+          actions.push({ id: LocalAssetAction.DRAG, small: true, drag: true, name: (game as Game).i18n!.format("MOU.action_drag", { type: assetType}), icon: "fa-solid fa-hand" })
+          actions.push({ id: LocalAssetAction.CREATE_ARTICLE, small: true,name: (game as Game).i18n!.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
         }
-        actions.push({ id: LocalAssetAction.PREVIEW, small: true, name: (game as Game).i18n.localize("MOU.action_preview_asset"), icon: "fa-solid fa-eyes" })
+        actions.push({ id: LocalAssetAction.PREVIEW, small: true, name: (game as Game).i18n!.localize("MOU.action_preview_asset"), icon: "fa-solid fa-eyes" })
         break;    
       case MouCollectionAssetTypeEnum.Map:
         if(isGM) {
-          actions.push({ id: LocalAssetAction.IMPORT, name: (game as Game).i18n.format("MOU.action_import", { type: assetType}), icon: "fa-solid fa-file-import" })
-          actions.push({ id: LocalAssetAction.CREATE_ARTICLE, name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
+          actions.push({ id: LocalAssetAction.IMPORT, name: (game as Game).i18n!.format("MOU.action_import", { type: assetType}), icon: "fa-solid fa-file-import" })
+          actions.push({ id: LocalAssetAction.CREATE_ARTICLE, name: (game as Game).i18n!.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
         }
-        actions.push({ id: LocalAssetAction.PREVIEW, small: true, name: (game as Game).i18n.localize("MOU.action_preview_asset"), icon: "fa-solid fa-eyes" })
+        actions.push({ id: LocalAssetAction.PREVIEW, small: true, name: (game as Game).i18n!.localize("MOU.action_preview_asset"), icon: "fa-solid fa-eyes" })
         break;    
       case MouCollectionAssetTypeEnum.Audio:
         if(isGM) {
-          actions.push({ id: LocalAssetAction.DRAG, drag: true, name: (game as Game).i18n.format("MOU.action_drag", { type: assetType}), icon: "fa-solid fa-hand" })
-          actions.push({ id: LocalAssetAction.IMPORT, name: (game as Game).i18n.localize("MOU.action_audio_play"), icon: "fa-solid fa-play-pause" })
+          actions.push({ id: LocalAssetAction.DRAG, drag: true, name: (game as Game).i18n!.format("MOU.action_drag", { type: assetType}), icon: "fa-solid fa-hand" })
+          actions.push({ id: LocalAssetAction.IMPORT, name: (game as Game).i18n!.localize("MOU.action_audio_play"), icon: "fa-solid fa-play-pause" })
         }
-        actions.push({ id: LocalAssetAction.PREVIEW, name: (game as Game).i18n.localize("MOU.action_preview"), icon: "fa-solid fa-headphones" })
+        actions.push({ id: LocalAssetAction.PREVIEW, name: (game as Game).i18n!.localize("MOU.action_preview"), icon: "fa-solid fa-headphones" })
         break;   
       case MouCollectionAssetTypeEnum.PDF:
         if(isGM) {
-          actions.push({ id: LocalAssetAction.CREATE_ARTICLE, name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
+          actions.push({ id: LocalAssetAction.CREATE_ARTICLE, name: (game as Game).i18n!.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
         }
         break;    
     }
-    actions.push({ id: LocalAssetAction.CLIPBOARD, small: true, name: (game as Game).i18n.localize("MOU.action_clipboard"), icon: "fa-solid fa-clipboard" })
+    actions.push({ id: LocalAssetAction.CLIPBOARD, small: true, name: (game as Game).i18n!.localize("MOU.action_clipboard"), icon: "fa-solid fa-clipboard" })
     
     return actions
   }
@@ -332,26 +332,26 @@ export default class MouCollectionLocal implements MouCollection {
       case LocalAssetAction.DRAG:
         switch(asset.type) {
           case MouCollectionAssetTypeEnum.Map:
-          case MouCollectionAssetTypeEnum.Image: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_drag_image") }
-          case MouCollectionAssetTypeEnum.Audio: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_drag_audio") }
+          case MouCollectionAssetTypeEnum.Image: return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_drag_image") }
+          case MouCollectionAssetTypeEnum.Audio: return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_drag_audio") }
         }
         break
       case LocalAssetAction.IMPORT:
         switch(asset.type) {
-          case MouCollectionAssetTypeEnum.Map: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_import_image") }
-          case MouCollectionAssetTypeEnum.Audio: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_import_audio") }
+          case MouCollectionAssetTypeEnum.Map: return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_import_image") }
+          case MouCollectionAssetTypeEnum.Audio: return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_import_audio") }
         }
         break
       case LocalAssetAction.CLIPBOARD:
-        return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_clipboard") }
+        return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_clipboard") }
       case LocalAssetAction.CREATE_ARTICLE:
-        return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_create_article_asset") }
+        return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_create_article_asset") }
       case LocalAssetAction.PREVIEW:
         switch(asset.type) {
-          case MouCollectionAssetTypeEnum.Audio: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_preview_audio_full") }
+          case MouCollectionAssetTypeEnum.Audio: return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_preview_audio_full") }
           case MouCollectionAssetTypeEnum.Image: 
           case MouCollectionAssetTypeEnum.Map: 
-            return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_preview_asset") }
+            return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_preview_asset") }
         }
         break
     }
@@ -362,7 +362,7 @@ export default class MouCollectionLocal implements MouCollection {
     const folderPath = `Moulinette/Local Assets/${asset.pack}`
     switch(actionId) {
       case LocalAssetAction.DRAG:
-        ui.notifications?.info((game as Game).i18n.localize("MOU.dragdrop_instructions"))
+        ui.notifications?.info((game as Game).i18n!.localize("MOU.dragdrop_instructions"))
         break
       
       case LocalAssetAction.CLIPBOARD:

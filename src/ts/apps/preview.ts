@@ -1,4 +1,5 @@
 import MouConfig, { MODULE_ID } from "../constants";
+import { AnyDict } from "../types";
 import MouApplication from "./application";
 
 /**
@@ -17,15 +18,15 @@ export default class MouPreview extends MouApplication {
     this.animated = MouConfig.MEDIA_VIDEOS.includes(ext);
   }
 
-  static override get defaultOptions(): ApplicationOptions {
-    return foundry.utils.mergeObject(super.defaultOptions, {
+  static override get defaultOptions(): Application.Options {
+    return (foundry.utils as AnyDict).mergeObject(super.defaultOptions, {
       id: "mou-preview",
       classes: ["mou"],
       template: `modules/${MODULE_ID}/templates/preview.hbs`,
       width: "auto",
       height: "auto",
       resizable: true
-    }) as ApplicationOptions;
+    }) as Application.Options;
   }
 
   override async getData() {

@@ -2,16 +2,14 @@ export default class MouLayer extends CanvasLayer {
 
   override name = "MouLayer";
 
-  _draw(): this {
-    return this;
-  }
+  override async _draw(_options: unknown): Promise<void> {}
 
   override async draw() {
     await super.draw();
     return this;
   }
 
-  override activate(): this {
+  activate(): this {
     return this;
   }
 }

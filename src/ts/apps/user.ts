@@ -1,4 +1,5 @@
 import { DISCORD_CLIENT_ID, MODULE_ID, MOU_SERVER_URL, PATREON_CLIENT_ID, SETTINGS_SESSION_ID } from "../constants";
+import { AnyDict } from "../types";
 import MouApplication from "./application";
 
 export default class MouUser extends MouApplication {
@@ -14,11 +15,11 @@ export default class MouUser extends MouApplication {
   private forceRefresh = false
 
   override get title(): string {
-    return (game as Game).i18n.localize("MOU.user");
+    return (game as Game).i18n!.localize("MOU.user");
   }
 
-  static override get defaultOptions(): ApplicationOptions {
-    return foundry.utils.mergeObject(super.defaultOptions, {
+  static override get defaultOptions(): Application.Options {
+    return (foundry.utils as AnyDict).mergeObject(super.defaultOptions, {
       id: "mou-user",
       classes: ["mou"],
       template: `modules/${MODULE_ID}/templates/user.hbs`,
@@ -26,7 +27,7 @@ export default class MouUser extends MouApplication {
       height: "auto",
       closeOnSubmit: false,
       submitOnClose: false
-    }) as ApplicationOptions;
+    }) as Application.Options;
   }
 
   _resetTimer() {
@@ -79,7 +80,7 @@ export default class MouUser extends MouApplication {
     else if(source.hasClass("loginPatreon") || source.hasClass("loginDiscord")) {      
       let authURL = "";
       let authSource = "";
-      const newGUID = foundry.utils.randomID(26)
+      const newGUID = (foundry.utils as AnyDict).randomID(26)
       if(source.hasClass("loginPatreon")) {
         authURL = `https://www.patreon.com/oauth2/authorize?response_type=code&client_id=${PATREON_CLIENT_ID}&redirect_uri=${MOU_SERVER_URL}/patreon/callback&scope=identity identity.memberships&state=${newGUID}`
         authSource = "patreon"
@@ -87,7 +88,7 @@ export default class MouUser extends MouApplication {
         authURL = `https://discord.com/oauth2/authorize?response_type=code&client_id=${DISCORD_CLIENT_ID}&scope=identify guilds guilds.members.read&redirect_uri=${MOU_SERVER_URL}/discord/callback&state=${newGUID}`
         authSource = "discord"
       }
-      this.logInfo(`Signing in with ${authSource?.capitalize()}...`)
+      this.logInfo(`Signing in with ${(authSource as unknown as AnyDict)?.capitalize()}...`)
       
       await MouApplication.setSettings(SETTINGS_SESSION_ID, newGUID)
       window.open(authURL, '_blank');

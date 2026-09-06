@@ -17,10 +17,10 @@ export default class MouBrowserTokenSelector extends MouApplication {
   }
   
   static override get defaultOptions() {
-    return foundry.utils.mergeObject(super.defaultOptions, {
+    return (foundry.utils as AnyDict).mergeObject(super.defaultOptions, {
       id: "mou-browser-token-selector",
       classes: ["mou"],
-      title: (game as Game).i18n.localize("MOU.drop_as_token"),
+      title: (game as Game).i18n!.localize("MOU.drop_as_token"),
       template: `modules/${MODULE_ID}/templates/browser-token-selector.hbs`,
       width: 680,
       height: "auto",
@@ -34,11 +34,11 @@ export default class MouBrowserTokenSelector extends MouApplication {
     const actorId = settings.actorId || null
     const actorType = settings.actorType || null
 
-    const actors = (game as Game).actors?.map( a => { return { id: a.id, name: a.name, selected: a.id == actorId } })
+    const actors = (game as Game).actors?.map( (a: Actor) => { return { id: a.id, name: a.name, selected: a.id == actorId } })
     let actorTypes = []
     actorTypes = Object.keys((game as Game).system.documentTypes.Actor).map( a => { 
       const label = CONFIG.Actor.typeLabels[a] || a;
-      return { id: a, name: (game as Game).i18n.localize(label) , selected: a == actorType } 
+      return { id: a, name: (game as Game).i18n!.localize(label) , selected: a == actorType } 
     })
     
     return { actors: actors, actorTypes: actorTypes, actorId: actorId, actorType: actorType }

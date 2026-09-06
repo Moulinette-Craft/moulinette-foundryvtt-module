@@ -47,17 +47,17 @@ export default class LocalCollectionConfigPredefined extends MouApplication {
    * @returns {string} The localized title string.
    */
   override get title(): string {
-    return (game as Game).i18n.localize("MOU.localcollection_predefined");
+    return (game as Game).i18n!.localize("MOU.localcollection_predefined");
   }
 
-  static override get defaultOptions(): ApplicationOptions {
-    return foundry.utils.mergeObject(super.defaultOptions, {
+  static override get defaultOptions(): Application.Options {
+    return (foundry.utils as AnyDict).mergeObject(super.defaultOptions, {
       id: "mou-local-config-source",
       classes: ["mou"],
       template: `modules/${MODULE_ID}/templates/config-local-collection-predefined.hbs`,
       width: 600,
       height: "auto"
-    }) as ApplicationOptions;
+    }) as Application.Options;
   }
 
   override async getData() {
@@ -101,7 +101,8 @@ export default class LocalCollectionConfigPredefined extends MouApplication {
         this.callback(source)
         this.close()
       } else if(predefined_browse) {
-        new FilePicker({
+        const FilePickerImpl: any = (foundry.applications.apps.FilePicker as AnyDict).implementation;
+        new FilePickerImpl({
           type: "folder",
           current: predefined_browse.path
         }).render(true)

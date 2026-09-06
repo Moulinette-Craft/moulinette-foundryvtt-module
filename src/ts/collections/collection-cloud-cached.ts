@@ -59,14 +59,14 @@ export default class MouCollectionCloudCached extends MouCollectionCloudBase imp
   
   getName(): string {
     if(this.mode == CloudMode.ONLY_SUPPORTED_CREATORS) {
-      return (game as Game).i18n.localize("MOU.collection_type_cloud_supported");
+      return (game as Game).i18n!.localize("MOU.collection_type_cloud_supported");
     } else {
-      return (game as Game).i18n.localize("MOU.collection_type_cloud_owned");
+      return (game as Game).i18n!.localize("MOU.collection_type_cloud_owned");
     }
   }
 
   getDescription(): string {
-    return (game as Game).i18n.localize("MOU.collection_type_cloud_cached_desc");
+    return (game as Game).i18n!.localize("MOU.collection_type_cloud_cached_desc");
   }
 
   private getFilterAssets(filters: MouCollectionFilters): MouCollectionCloudAsset[] {
@@ -92,7 +92,7 @@ export default class MouCollectionCloudCached extends MouCollectionCloudBase imp
   }
 
   async getTypes(filters: MouCollectionFilters): Promise<MouCollectionAssetType[]> {
-    const filterDuplicates = foundry.utils.duplicate(filters)
+    const filterDuplicates = (foundry.utils as AnyDict).duplicate(filters)
     if(filterDuplicates.type) delete filterDuplicates.type
     const assets = this.getFilterAssets(filterDuplicates)
     const results = [] as MouCollectionAssetType[]    
@@ -115,7 +115,7 @@ export default class MouCollectionCloudCached extends MouCollectionCloudBase imp
   }
 
   async getCreators(filters: MouCollectionFilters): Promise<MouCollectionCreator[]> {
-    const filterDuplicates = foundry.utils.duplicate(filters)
+    const filterDuplicates = (foundry.utils as AnyDict).duplicate(filters)
     if(filterDuplicates.creator) delete filterDuplicates.creator
     if(filterDuplicates.pack) delete filterDuplicates.pack
 
@@ -149,7 +149,7 @@ export default class MouCollectionCloudCached extends MouCollectionCloudBase imp
 
   async getPacks(filters: MouCollectionFilters): Promise<MouCollectionPack[]> {
     if(!filters.creator || filters.creator == "") return []
-    const filterDuplicates = foundry.utils.duplicate(filters)
+    const filterDuplicates = (foundry.utils as AnyDict).duplicate(filters)
     if(filterDuplicates.pack) delete filterDuplicates.pack
 
     const assets = this.getFilterAssets(filterDuplicates)
@@ -224,7 +224,7 @@ export default class MouCollectionCloudCached extends MouCollectionCloudBase imp
 
   getCollectionError(): string | null {
     if(this.error == MouCollectionCloudCached.ERROR_SERVER_CNX) {
-      return (game as Game).i18n.localize("MOU.error_server_connection")
+      return (game as Game).i18n!.localize("MOU.error_server_connection")
     }
     return null;
   }

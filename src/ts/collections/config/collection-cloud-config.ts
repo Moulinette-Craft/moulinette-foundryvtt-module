@@ -19,17 +19,17 @@ export default class CloudCollectionConfig extends MouApplication {
   }
 
   override get title(): string {
-    return (game as Game).i18n.localize("MOU.cloudcollection_config");
+    return (game as Game).i18n!.localize("MOU.cloudcollection_config");
   }
 
-  static override get defaultOptions(): ApplicationOptions {
-    return foundry.utils.mergeObject(super.defaultOptions, {
+  static override get defaultOptions(): Application.Options {
+    return (foundry.utils as AnyDict).mergeObject(super.defaultOptions, {
       id: "mou-cloud-config",
       classes: ["mou"],
       template: `modules/${MODULE_ID}/templates/config-cloud-collection.hbs`,
       width: 500,
       height: "auto"
-    }) as ApplicationOptions;
+    }) as Application.Options;
   }
 
   override async getData() {
@@ -39,9 +39,9 @@ export default class CloudCollectionConfig extends MouApplication {
     return {
       mode: mode,
       modes: [
-        { id: CloudMode.ONLY_SUPPORTED_CREATORS, name: (game as Game).i18n.localize("MOU.mode_supported"), desc: (game as Game).i18n.localize("MOU.mode_supported_desc")},
-        { id: CloudMode.ALL_ACCESSIBLE, name: (game as Game).i18n.localize("MOU.mode_accessible"), desc: (game as Game).i18n.localize("MOU.mode_accessible_desc")},
-        //{ id: CloudMode.ALL, name: (game as Game).i18n.localize("MOU.mode_all"), desc: (game as Game).i18n.localize("MOU.mode_all_desc")},
+        { id: CloudMode.ONLY_SUPPORTED_CREATORS, name: (game as Game).i18n!.localize("MOU.mode_supported"), desc: (game as Game).i18n!.localize("MOU.mode_supported_desc")},
+        { id: CloudMode.ALL_ACCESSIBLE, name: (game as Game).i18n!.localize("MOU.mode_accessible"), desc: (game as Game).i18n!.localize("MOU.mode_accessible_desc")},
+        //{ id: CloudMode.ALL, name: (game as Game).i18n!.localize("MOU.mode_all"), desc: (game as Game).i18n!.localize("MOU.mode_all_desc")},
       ]
     };
   }

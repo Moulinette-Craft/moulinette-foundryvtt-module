@@ -55,11 +55,11 @@ export default class MouFoundryUtils {
     
     const paths = path.split("/")
     // first level
-    let folders : Folder[] = (game as Game).folders?.filter( f => f.name == paths[0] && f.type == entityType ) || []
+    let folders : Folder[] = (game as Game).folders?.filter( (f: Folder) => f.name == paths[0] && f.type == entityType ) || []
     let curLevel = folders.length == 0 ? await Folder.create({name: paths[0], type: entityType, folder: null, color: MouConfig.MOU_DEF_FOLDER_COLOR}) : folders[0]
     
     for(let lvl = 1; lvl < Math.min(paths.length, MouFoundryUtils.FOLDER_MAX_LEVELS); lvl++ ) {
-      folders = curLevel?.getSubfolders() ? curLevel?.getSubfolders().filter( f => f.name == paths[lvl] ) : []
+      folders = curLevel?.getSubfolders() ? curLevel?.getSubfolders().filter( (f: Folder) => f.name == paths[lvl] ) : []
       curLevel = folders.length == 0 ? await Folder.create({name: paths[lvl], type: entityType, folder: curLevel?.id}) : folders[0]
     }
     
@@ -84,7 +84,7 @@ export default class MouFoundryUtils {
       // @ts-ignore
       json_text = await MouCompatUtils.renderTemplate(`modules/${MODULE_ID}/templates/json/note-image.hbs`, { path: path, folder: folderObj ? `"${folderObj.id}"` : "null", name: articleName })
     } else {
-      return ui.notifications?.error((game as Game).i18n.format("MOU.error_create_journal_format"))
+      return ui.notifications?.error((game as Game).i18n!.format("MOU.error_create_journal_format"))
     }
     const entry = await JournalEntry.create(JSON.parse(json_text))
     if(renderSheet) {
@@ -103,7 +103,7 @@ export default class MouFoundryUtils {
     if(path) {
       await MouFoundryUtils.createJournalImageOrVideo(path, folder, true)
     } else {
-      ui.notifications?.error((game as Game).i18n.localize("MOU.error_create_journal_path"))
+      ui.notifications?.error((game as Game).i18n!.localize("MOU.error_create_journal_path"))
     }
   }
 
@@ -150,8 +150,8 @@ export default class MouFoundryUtils {
       if ( needsDims && tData.width && tData.height ) {
         const img = await loadTexture(newScene["background.src"] ?? newScene.background.src);
         if (img) {
-          tUpdate.width = img.baseTexture.width;
-          tUpdate.height = img.baseTexture.height;
+          tUpdate.width = (img as AnyDict).baseTexture.width;
+          tUpdate.height = (img as AnyDict).baseTexture.height;
         }
       }  
       await newScene.update(tUpdate); // force generating the thumbnail and width/height (if needsDims)
@@ -255,7 +255,7 @@ export default class MouFoundryUtils {
     // compatibility with older versions (not having pages)
     const json = JSON.parse(journalData)
     if (!("pages" in json) && "type" in json) {
-      json.pages = [foundry.utils.duplicate(json)]
+      json.pages = [(foundry.utils as AnyDict).duplicate(json)]
       journalData = JSON.stringify(json)
     }
     
@@ -289,12 +289,12 @@ export default class MouFoundryUtils {
         }
       } catch(e) {
         MouApplication.logInfo(MouFoundryUtils.APP_NAME, `Unhandled exception`, e)  
-        ui.notifications?.error((game as Game).i18n.localize("MOU.error_scenepacker"))
+        ui.notifications?.error((game as Game).i18n!.localize("MOU.error_scenepacker"))
       }
       
     } else {
       MouApplication.logInfo(MouFoundryUtils.APP_NAME, `ScenePacker module required! See: https://foundryvtt.com/packages/scene-packer.`)
-      return ui.notifications?.error((game as Game).i18n.localize("MOU.error_scenepacker_required"))
+      return ui.notifications?.error((game as Game).i18n!.localize("MOU.error_scenepacker_required"))
     }
   }
 
@@ -310,14 +310,14 @@ export default class MouFoundryUtils {
     const volume = foundry.audio.AudioHelper.inputToVolume(volumeInput)
       
     // get playlist
-    let playlist = (game as Game).playlists?.find( pl => pl.name == playlistName)
+    let playlist = (game as Game).playlists?.find( (pl: AnyDict) => pl.name == playlistName)
     if(!playlist) {
       const folder = await MouFoundryUtils.getOrCreateFolder("Playlist", "Moulinette")
       playlist = await Playlist.create({name: playlistName, mode: -1, folder: folder})
     }
     if(!playlist) return
     // get sound
-    let sound = playlist.sounds.find( s => s.path == MouMediaUtils.getCleanURI(path))
+    let sound = playlist.sounds.find( (s: AnyDict) => s.path == MouMediaUtils.getCleanURI(path))
     if(!sound) {
       const name = soundName ? soundName : MouMediaUtils.prettyMediaName(path)
       const soundData = (await playlist.createEmbeddedDocuments("PlaylistSound", [{name: name, path: path, channel: channel, volume: volume}], {}))[0]
@@ -347,9 +347,9 @@ export default class MouFoundryUtils {
     const data = {} as AnyDict
     const tex = await loadTexture(imgPath);
     if(!tex) return false
-    const ratio = canvas.dimensions.size / (tileSize || canvas.dimensions.size);
-    data.width = tex.baseTexture.width * ratio;
-    data.height = tex.baseTexture.height * ratio;
+    const ratio = (canvas.dimensions as AnyDict).size / (tileSize || (canvas.dimensions as AnyDict).size);
+    data.width = (tex as AnyDict).baseTexture.width * ratio;
+    data.height = (tex as AnyDict).baseTexture.height * ratio;
     data.texture = { src: imgPath }
 
     // Validate that the drop position is in-bounds and snap to grid
@@ -425,7 +425,7 @@ export default class MouFoundryUtils {
     note = note._object
     // @ts-ignore
     if(!layerNotes.active && !layerMou.active) {
-      layerNotes.activate()
+      (layerNotes as AnyDict).activate()
     }
 
     // @ts-ignore
@@ -457,8 +457,8 @@ export default class MouFoundryUtils {
       volume: 1
     }
     // @ts-ignore
-    const sound = (await canvas.scene.createEmbeddedDocuments("AmbientSound", [soundData], { parent: canvas.scene }))[0]
-    layerSounds.activate();
+    const sound = (await canvas.scene.createEmbeddedDocuments("AmbientSound", [soundData], { parent: canvas.scene }))[0];
+    (layerSounds as AnyDict).activate();
     // @ts-ignore
     sound.sheet.render(true)
     return true
@@ -561,7 +561,7 @@ export default class MouFoundryUtils {
     if(match) {
       // retrieve list
       const listPath = path.substring(0, match.index)
-      const list = foundry.utils.getProperty(object, listPath)
+      const list = (foundry.utils as AnyDict).getProperty(object, listPath)
       if(list) {
         // find matching element in list
         const keyVal = match[0].substring(1,match[0].length-1).split("==")
@@ -574,11 +574,11 @@ export default class MouFoundryUtils {
     }
     // count
     else if(path.startsWith("#")) {
-      const value = foundry.utils.getProperty(object, path.substring(1))
+      const value = (foundry.utils as AnyDict).getProperty(object, path.substring(1))
       return value ? value.size : 0
     }
     else {
-      return foundry.utils.getProperty(object, path)
+      return (foundry.utils as AnyDict).getProperty(object, path)
     }
     return null
   }

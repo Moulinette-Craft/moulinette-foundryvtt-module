@@ -173,7 +173,7 @@ export interface MouCollection {
 export class MouCollectionUtils {
   static getTranslatedType(value: number): string {
     const key : string = MouCollectionAssetTypeEnum[value];    
-    return key ? (game as Game).i18n.localize(`MOU.type_${key.toLowerCase()}`) : "Unknown" + value;
+    return key ? (game as Game).i18n!.localize(`MOU.type_${key.toLowerCase()}`) : "Unknown" + value;
   }
 
   static findType(key: string): MouCollectionAssetTypeEnum | null {

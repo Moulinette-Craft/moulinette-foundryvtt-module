@@ -136,11 +136,11 @@ export default class MouCollectionCloudPrivate implements MouCollection {
   }
   
   getName(): string {
-    return (game as Game).i18n.localize("MOU.collection_type_cloud_private")
+    return (game as Game).i18n!.localize("MOU.collection_type_cloud_private")
   }
 
   getDescription(): string {
-    return (game as Game).i18n.localize("MOU.collection_type_cloud_private_desc");
+    return (game as Game).i18n!.localize("MOU.collection_type_cloud_private_desc");
   }
 
   private getScope() {
@@ -169,7 +169,7 @@ export default class MouCollectionCloudPrivate implements MouCollection {
   }
 
   async getTypes(filters: MouCollectionFilters): Promise<MouCollectionAssetType[]> {
-    const filterDuplicates = foundry.utils.duplicate(filters)
+    const filterDuplicates = (foundry.utils as AnyDict).duplicate(filters)
     if(filterDuplicates.type) delete filterDuplicates.type
     const assets = this.getFilterAssets(filterDuplicates)
     const results = [] as MouCollectionAssetType[]    
@@ -180,7 +180,7 @@ export default class MouCollectionCloudPrivate implements MouCollection {
   }
 
   async getCreators(filters: MouCollectionFilters): Promise<MouCollectionCreator[]> {
-    const filterDuplicates = foundry.utils.duplicate(filters)
+    const filterDuplicates = (foundry.utils as AnyDict).duplicate(filters)
     if(filterDuplicates.creator) delete filterDuplicates.creator
     if(filterDuplicates.pack) delete filterDuplicates.pack
 
@@ -212,7 +212,7 @@ export default class MouCollectionCloudPrivate implements MouCollection {
 
   async getPacks(filters: MouCollectionFilters): Promise<MouCollectionPack[]> {
     if(!filters.creator || filters.creator == "") return []
-    const filterDuplicates = foundry.utils.duplicate(filters)
+    const filterDuplicates = (foundry.utils as AnyDict).duplicate(filters)
     if(filterDuplicates.pack) delete filterDuplicates.pack
 
     const assets = this.getFilterAssets(filterDuplicates)
@@ -258,25 +258,25 @@ export default class MouCollectionCloudPrivate implements MouCollection {
     switch(cAsset.type) {
       case MouCollectionAssetTypeEnum.Scene:
       case MouCollectionAssetTypeEnum.Map:
-        actions.push({ id: CloudAssetAction.IMPORT, name: (game as Game).i18n.format("MOU.action_import", { type: assetType}), icon: "fa-solid fa-file-import" })
-        actions.push({ id: CloudAssetAction.CREATE_ARTICLE, name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
-        actions.push({ id: CloudAssetAction.PREVIEW, small: true, name: (game as Game).i18n.localize("MOU.action_preview_asset"), icon: "fa-solid fa-eyes" })
+        actions.push({ id: CloudAssetAction.IMPORT, name: (game as Game).i18n!.format("MOU.action_import", { type: assetType}), icon: "fa-solid fa-file-import" })
+        actions.push({ id: CloudAssetAction.CREATE_ARTICLE, name: (game as Game).i18n!.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
+        actions.push({ id: CloudAssetAction.PREVIEW, small: true, name: (game as Game).i18n!.localize("MOU.action_preview_asset"), icon: "fa-solid fa-eyes" })
         break; 
       case MouCollectionAssetTypeEnum.Image:
-        actions.push({ id: CloudAssetAction.DRAG, drag: true, name: (game as Game).i18n.format("MOU.action_drag", { type: assetType}), icon: "fa-solid fa-hand" })
-        actions.push({ id: CloudAssetAction.CREATE_ARTICLE, name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
-        actions.push({ id: CloudAssetAction.PREVIEW, small: true, name: (game as Game).i18n.localize("MOU.action_preview_asset"), icon: "fa-solid fa-eyes" })
+        actions.push({ id: CloudAssetAction.DRAG, drag: true, name: (game as Game).i18n!.format("MOU.action_drag", { type: assetType}), icon: "fa-solid fa-hand" })
+        actions.push({ id: CloudAssetAction.CREATE_ARTICLE, name: (game as Game).i18n!.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
+        actions.push({ id: CloudAssetAction.PREVIEW, small: true, name: (game as Game).i18n!.localize("MOU.action_preview_asset"), icon: "fa-solid fa-eyes" })
         break;    
       case MouCollectionAssetTypeEnum.PDF:
-        actions.push({ id: CloudAssetAction.CREATE_ARTICLE, name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
+        actions.push({ id: CloudAssetAction.CREATE_ARTICLE, name: (game as Game).i18n!.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
         break;    
       case MouCollectionAssetTypeEnum.Audio:
-        actions.push({ id: CloudAssetAction.IMPORT, name: (game as Game).i18n.localize("MOU.action_audio_play"), icon: "fa-solid fa-play-pause" })
-        actions.push({ id: CloudAssetAction.PREVIEW, name: (game as Game).i18n.localize("MOU.action_preview"), icon: "fa-solid fa-headphones" })
+        actions.push({ id: CloudAssetAction.IMPORT, name: (game as Game).i18n!.localize("MOU.action_audio_play"), icon: "fa-solid fa-play-pause" })
+        actions.push({ id: CloudAssetAction.PREVIEW, name: (game as Game).i18n!.localize("MOU.action_preview"), icon: "fa-solid fa-headphones" })
         break;
     }
 
-    actions.push({ id: CloudAssetAction.DOWNLOAD, small: true, name: (game as Game).i18n.localize("MOU.action_download"), icon: "fa-solid fa-cloud-arrow-down" })
+    actions.push({ id: CloudAssetAction.DOWNLOAD, small: true, name: (game as Game).i18n!.localize("MOU.action_download"), icon: "fa-solid fa-cloud-arrow-down" })
     
     return actions
   }
@@ -287,29 +287,29 @@ export default class MouCollectionCloudPrivate implements MouCollection {
     switch(actionId) {
       case CloudAssetAction.IMPORT:
         switch(asset.type) {
-          case MouCollectionAssetTypeEnum.Audio: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_download_import_audio") }
-          case MouCollectionAssetTypeEnum.Scene: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_download_import_scene") }
+          case MouCollectionAssetTypeEnum.Audio: return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_download_import_audio") }
+          case MouCollectionAssetTypeEnum.Scene: return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_download_import_scene") }
           
         }
         break
       case CloudAssetAction.DOWNLOAD:
         switch(asset.type) {
-          case MouCollectionAssetTypeEnum.Scene: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_download_scene") }
-          default: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_download_asset") }
+          case MouCollectionAssetTypeEnum.Scene: return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_download_scene") }
+          default: return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_download_asset") }
         }
       case CloudAssetAction.CREATE_ARTICLE:
         switch(asset.type) {
-          case MouCollectionAssetTypeEnum.Scene: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_download_create_article_scene") }
-          default: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_download_create_article_asset") }
+          case MouCollectionAssetTypeEnum.Scene: return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_download_create_article_scene") }
+          default: return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_download_create_article_asset") }
         }
       
       case CloudAssetAction.PREVIEW:
         switch(asset.type) {
-          case MouCollectionAssetTypeEnum.Audio: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_preview_audio_full") }
+          case MouCollectionAssetTypeEnum.Audio: return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_preview_audio_full") }
           case MouCollectionAssetTypeEnum.Scene: 
           case MouCollectionAssetTypeEnum.Image: 
           case MouCollectionAssetTypeEnum.Map: 
-            return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_preview_asset") }
+            return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_preview_asset") }
         }
         break
     }
@@ -323,7 +323,7 @@ export default class MouCollectionCloudPrivate implements MouCollection {
    *  * UploadResult (with path) for a single file
    *  * AnyDict (JSON) for entities
    */
-  private static async downloadAsset(asset: MouCollectionCloudPrivateAsset): Promise<FilePicker.UploadResult | false> {
+  private static async downloadAsset(asset: MouCollectionCloudPrivateAsset): Promise<FilePicker.UploadReturn | false> {
     if(!asset.baseUrl.startsWith(MouCloudClient.AZURE_BASEURL_PRIVATE)) {
       throw new Error("Invalid URL?")
     }
@@ -356,7 +356,7 @@ export default class MouCollectionCloudPrivate implements MouCollection {
     const cAsset = (selAsset as MouCollectionCloudPrivateAsset);
     switch(actionId) {
       case CloudAssetAction.DRAG:
-        ui.notifications?.info((game as Game).i18n.localize("MOU.dragdrop_instructions"))
+        ui.notifications?.info((game as Game).i18n!.localize("MOU.dragdrop_instructions"))
         break
       case CloudAssetAction.IMPORT:
         const resultImport = await MouCollectionCloudPrivate.downloadAsset(cAsset)
@@ -479,7 +479,7 @@ export default class MouCollectionCloudPrivate implements MouCollection {
 
   getCollectionError(): string | null {
     if(this.error == MouCollectionCloudPrivate.ERROR_SERVER_CNX) {
-      return (game as Game).i18n.localize("MOU.error_server_connection")
+      return (game as Game).i18n!.localize("MOU.error_server_connection")
     }
     return null;
   }

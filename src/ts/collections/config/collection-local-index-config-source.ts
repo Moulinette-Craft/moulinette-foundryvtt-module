@@ -1,6 +1,7 @@
 import MouApplication from "../../apps/application";
 import { MODULE_ID } from "../../constants";
 import MouMediaUtils from "../../utils/media-utils";
+import { AnyDict } from "../../types";
 import { LocalCollectionSource } from "./collection-local-index-config";
 
 /**
@@ -43,17 +44,17 @@ export default class LocalCollectionConfigNewSource extends MouApplication {
    * @returns {string} The localized title string.
    */
   override get title(): string {
-    return (game as Game).i18n.localize("MOU.localcollection_config_source");
+    return (game as Game).i18n!.localize("MOU.localcollection_config_source");
   }
 
-  static override get defaultOptions(): ApplicationOptions {
-    return foundry.utils.mergeObject(super.defaultOptions, {
+  static override get defaultOptions(): Application.Options {
+    return (foundry.utils as AnyDict).mergeObject(super.defaultOptions, {
       id: "mou-local-config-source",
       classes: ["mou"],
       template: `modules/${MODULE_ID}/templates/config-local-collection-source.hbs`,
       width: 600,
       height: "auto"
-    }) as ApplicationOptions;
+    }) as Application.Options;
   }
 
   override async getData() {
@@ -87,20 +88,19 @@ export default class LocalCollectionConfigNewSource extends MouApplication {
       const parent = this
       const button = $(event.currentTarget)
       if(button.data("id") == "folder") {
-        new FilePicker({
+        const FilePickerImpl: any = (foundry.applications.apps.FilePicker as AnyDict).implementation;
+        new FilePickerImpl({
           type: "folder",
-          // @ts-ignore
-          callback: async (path, picker) => {
+          callback: async (path: string, picker: AnyDict) => {
             parent.source.path = path
             parent.source.source = picker.activeSource
-            parent.source.name = MouMediaUtils.prettyMediaName(path.split("/").pop())
+            parent.source.name = MouMediaUtils.prettyMediaName(path.split("/").pop() || path)
             parent.render()
           },
-        // @ts-ignore
         }).browse()
       } else if(button.data("id") == "save") {
-        if(!this.source.name || this.source.name.length == 0) return ui.notifications?.error((game as Game).i18n.localize("MOU.error_source_name"))
-        if(!this.source.path || this.source.path.length == 0) return ui.notifications?.error((game as Game).i18n.localize("MOU.error_source_folder"))
+        if(!this.source.name || this.source.name.length == 0) return ui.notifications?.error((game as Game).i18n!.localize("MOU.error_source_name"))
+        if(!this.source.path || this.source.path.length == 0) return ui.notifications?.error((game as Game).i18n!.localize("MOU.error_source_folder"))
         this.callback(this.source)
         this.close()
       } else if(button.data("id") == "cancel") {

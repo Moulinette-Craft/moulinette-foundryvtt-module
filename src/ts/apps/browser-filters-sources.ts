@@ -19,10 +19,10 @@ export default class MouBrowserFiltersSources extends MouApplication {
   }
   
   static override get defaultOptions() {
-    return foundry.utils.mergeObject(super.defaultOptions, {
+    return (foundry.utils as AnyDict).mergeObject(super.defaultOptions, {
       id: "mou-filters-sources",
       classes: ["mou"],
-      title: (game as Game).i18n.localize("MOU.browser_filters_visibility"),
+      title: (game as Game).i18n!.localize("MOU.browser_filters_visibility"),
       template: `modules/${MODULE_ID}/templates/browser-filters-sources.hbs`,
       width: 400,
       height: "auto",

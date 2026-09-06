@@ -33,7 +33,7 @@ export default class MouBrowser extends MouApplication {
   private pickerType?: MouCollectionAssetTypeEnum; // picker mode : no filter and only action is to download and return the asset path
   private pickerCallback?: (path: string) => void;
   
-  constructor(options?: ApplicationOptions, pickerType?: string, pickerCallback?: (path: string) => void) {
+  constructor(options?: Application.Options, pickerType?: string, pickerCallback?: (path: string) => void) {
     super(options);
     this.pickerType = MouCollectionAssetTypeEnum[pickerType as keyof typeof MouCollectionAssetTypeEnum];
     this.pickerCallback = pickerCallback;
@@ -52,18 +52,18 @@ export default class MouBrowser extends MouApplication {
   }
 
   override get title(): string {
-    return (game as Game).i18n.localize("MOU.browser");
+    return (game as Game).i18n!.localize("MOU.browser");
   }
 
-  static override get defaultOptions(): ApplicationOptions {
-    const options = foundry.utils.mergeObject(super.defaultOptions, {
+  static override get defaultOptions(): Application.Options {
+    const options = (foundry.utils as AnyDict).mergeObject(super.defaultOptions, {
       id: "mou-browser",
       classes: ["mou"],
       template: `modules/${MODULE_ID}/templates/browser.hbs`,
       resizable: true,
       width: 1250,
       height: 1000
-    }) as ApplicationOptions;
+    }) as Application.Options;
     super.adjustPosition(options, MouBrowser.APP_NAME)
     return options
   }
@@ -187,7 +187,7 @@ export default class MouBrowser extends MouApplication {
       results = await this.collection.searchAssets(this.filters, 0)
     } catch(error: any) {
       this.logError("Unexpected exception while searching assets", error)
-      ui.notifications?.error((game as Game).i18n.localize("MOU.error_loading_assets"))
+      ui.notifications?.error((game as Game).i18n!.localize("MOU.error_loading_assets"))
     }
     
     this.page = 0
@@ -208,7 +208,7 @@ export default class MouBrowser extends MouApplication {
     typesObj.sort((a, b) => a.name.localeCompare(b.name))
     
     const creators = results.creators
-    let packs = foundry.utils.duplicate(results.packs)
+    let packs = (foundry.utils as AnyDict).duplicate(results.packs)
     const folders = await this.collection.getFolders(this.filters);
 
     // improve folders by removing common path
@@ -219,8 +219,8 @@ export default class MouBrowser extends MouApplication {
 
     // sort and filter packs
     if(packs) {
-      packs.sort((a, b) => a.name.toLocaleLowerCase().localeCompare(b.name.toLocaleLowerCase()))
-      packs = packs.filter(p => p.assetsCount > 0)
+      packs.sort((a: AnyDict, b: AnyDict) => a.name.toLocaleLowerCase().localeCompare(b.name.toLocaleLowerCase()))
+      packs = packs.filter((p: AnyDict) => p.assetsCount > 0)
       // look for selected pack
       if(this.filters.pack && this.filters.pack.length > 0) {
         // filter by packName
@@ -387,7 +387,7 @@ export default class MouBrowser extends MouApplication {
     const header = html.closest(".window-app").find(".window-header")
     const help = header.find(".help")
     if(help.length == 0) {
-      const helpHTML = $(`<a class="help"><i class="fa-solid fa-up-right-from-square"></i> ${(game as Game).i18n.localize("MOU.help")}</a>`);
+      const helpHTML = $(`<a class="help"><i class="fa-solid fa-up-right-from-square"></i> ${(game as Game).i18n!.localize("MOU.help")}</a>`);
       header.find(".close").before(helpHTML)
       header.find(".help").on("click", () => {
         window.open("https://assets.moulinette.cloud/docs", "_blank")
@@ -524,7 +524,7 @@ export default class MouBrowser extends MouApplication {
       }
     } catch (error) {
       this.logError("Error loading assets:", error)
-      ui.notifications?.error((game as Game).i18n.localize("MOU.error_loading_assets"));
+      ui.notifications?.error((game as Game).i18n!.localize("MOU.error_loading_assets"));
     }
     
     // handle collection errors (like server connection errors)
@@ -611,11 +611,11 @@ export default class MouBrowser extends MouApplication {
     // show count
     let countHTML = ""
     if(this.currentAssetsCount > 0) {
-      countHTML = (game as Game).i18n.format("MOU.asset_count", { 
-        count: MouMediaUtils.prettyNumber(this.currentAssets.length, true), 
-        total: MouMediaUtils.prettyNumber(this.currentAssetsCount, true) })
+      countHTML = (game as Game).i18n!.format("MOU.asset_count", {
+        count: String(MouMediaUtils.prettyNumber(this.currentAssets.length, true)),
+        total: String(MouMediaUtils.prettyNumber(this.currentAssetsCount, true)) })
     } else {
-      countHTML = (game as Game).i18n.format("MOU.asset_count_nototal", { count: MouMediaUtils.prettyNumber(this.currentAssets.length, true) })
+      countHTML = (game as Game).i18n!.format("MOU.asset_count_nototal", { count: String(MouMediaUtils.prettyNumber(this.currentAssets.length, true)) })
     }
     this.html?.find(".count").text(countHTML)
   }
@@ -1089,7 +1089,7 @@ export default class MouBrowser extends MouApplication {
         this.logError(`Asset '${assetId}' not found. This must be a bug in Moulinette.`)
       }
     }
-    ui.notifications?.error((game as Game).i18n.localize("MOU.error_selecting_asset"))
+    ui.notifications?.error((game as Game).i18n!.localize("MOU.error_selecting_asset"))
   }
 
   
@@ -1105,7 +1105,7 @@ export default class MouBrowser extends MouApplication {
    * Overrides the render method to disable the search bar and asset click events.
    * This avoids the user from triggering more rendering while the current one is still processing.
    */
-  override render(force?: boolean, options?: Application.RenderOptions<ApplicationOptions> | undefined): unknown {
+  override render(force?: boolean, options?: Application.RenderOptions<Application.Options> | undefined): this {
     if(this.html) {
       const parent = this
       //this.html.find(".search-bar .indicator").html('<i class="fa-solid fa-hourglass-start"></i>')
@@ -1139,7 +1139,7 @@ export default class MouBrowser extends MouApplication {
   static async initializeAdvSettings(settings: AnyDict, type: string, defaults: AnyDict) {
     if(!(type in settings)) {
       settings[type] = defaults;
-      await (game as Game).settings.set(MODULE_ID, SETTINGS_ADVANCED, settings) // save new settings
+      await ((game as Game).settings as AnyDict).set(MODULE_ID, SETTINGS_ADVANCED, settings) // save new settings
       return
     }
     let changed = false
@@ -1150,7 +1150,7 @@ export default class MouBrowser extends MouApplication {
       }
     }
     if(changed) {
-      await (game as Game).settings.set(MODULE_ID, SETTINGS_ADVANCED, settings) // save new settings
+      await ((game as Game).settings as AnyDict).set(MODULE_ID, SETTINGS_ADVANCED, settings) // save new settings
     }
   }
 
@@ -1169,13 +1169,13 @@ export default class MouBrowser extends MouApplication {
     if(packIds.length > 0) {
       const ids = packIds.split(";")
       const creator = $(target).data("creator").slugify();
-      const pack = $(target).closest(".pack-select").find("select option:selected").text().slugify();
+      const pack = ($(target).closest(".pack-select").find("select option:selected").text() as unknown as AnyDict).slugify();
       if(ids.length == 1) {
         window.open(`https://assets.moulinette.cloud/marketplace/product/${packIds}/${creator}/${pack}`, "_blank")
       } else if(ids.length > 1) {
         Dialog.confirm({
-          title: (game as Game).i18n.localize("MOU.confirm_open_multiple_website"),
-          content: (game as Game).i18n.format("MOU.confirm_open_multiple_website_note", {count: ids.length}),
+          title: (game as Game).i18n!.localize("MOU.confirm_open_multiple_website"),
+          content: (game as Game).i18n!.format("MOU.confirm_open_multiple_website_note", {count: String(ids.length)}),
           yes: async function() {
             for(const id of ids) {
               window.open(`https://assets.moulinette.cloud/marketplace/product/${id}/${creator}/${pack}`, "_blank")
@@ -1194,7 +1194,7 @@ export default class MouBrowser extends MouApplication {
       const module = MouApplication.getModule()
       new MouBrowserFiltersSources(
         module.collections.map(c => { return { id: c.getId(), name: c.getName(), desc: c.getDescription() }}), 
-        (game as Game).i18n.localize("MOU.filters_sources_description"),
+        (game as Game).i18n!.localize("MOU.filters_sources_description"),
         this._callbackRefresh.bind(this)
       ).render(true);
     }
@@ -1208,10 +1208,10 @@ export default class MouBrowser extends MouApplication {
         Object.entries(MouCollectionAssetTypeEnum).filter(([key, value]) => (!["Undefined", "Scene", "ScenePacker"].includes(key)) && !isNaN(Number(value)))
         .map(([key, value]) => ({ 
           id: "type_" + value, 
-          name: (game as Game).i18n.localize("MOU.type_" + key.toLowerCase()),
-          desc: (game as Game).i18n.localize("MOU.asset_type_desc_" + key.toLowerCase())
+          name: (game as Game).i18n!.localize("MOU.type_" + key.toLowerCase()),
+          desc: (game as Game).i18n!.localize("MOU.asset_type_desc_" + key.toLowerCase())
         })).sort((a, b) => a.name.localeCompare(b.name)),
-        (game as Game).i18n.localize("MOU.filters_types_description"),
+        (game as Game).i18n!.localize("MOU.filters_types_description"),
         this._callbackRefresh.bind(this)
       ).render(true);
     }

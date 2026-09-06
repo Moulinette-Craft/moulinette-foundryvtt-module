@@ -39,24 +39,24 @@ export default class LocalCollectionConfig extends MouApplication {
   }
 
   override get title(): string {
-    return (game as Game).i18n.localize("MOU.localcollection_config");
+    return (game as Game).i18n!.localize("MOU.localcollection_config");
   }
 
-  static override get defaultOptions(): ApplicationOptions {
-    return foundry.utils.mergeObject(super.defaultOptions, {
+  static override get defaultOptions(): Application.Options {
+    return (foundry.utils as AnyDict).mergeObject(super.defaultOptions, {
       id: "mou-local-config",
       classes: ["mou"],
       template: `modules/${MODULE_ID}/templates/config-local-collection.hbs`,
       width: 800,
       height: "auto"
-    }) as ApplicationOptions;
+    }) as Application.Options;
   }
 
   override async getData() {
     const settings = MouApplication.getSettings(SETTINGS_COLLECTION_LOCAL) as AnyDict
     let folders = null
     if(settings.folders && settings.folders.length > 0) {
-      folders = foundry.utils.duplicate(settings.folders) as AnyDict
+      folders = (foundry.utils as AnyDict).duplicate(settings.folders) as AnyDict
       for(const f of folders as AnyDict[]) {
         f.noAsset = (f.assets < 0)
       }
@@ -88,8 +88,8 @@ export default class LocalCollectionConfig extends MouApplication {
         const folder = settings.folders[idx]
         if(actionId == "delete") {
           Dialog.confirm({
-            title: (game as Game).i18n.localize("MOU.confirm_delete_source"),
-            content: (game as Game).i18n.format("MOU.confirm_delete_source_note", {folder: folder.name}),
+            title: (game as Game).i18n!.localize("MOU.confirm_delete_source"),
+            content: (game as Game).i18n!.format("MOU.confirm_delete_source_note", {folder: folder.name}),
             yes: async function() {
               settings.folders.splice(idx, 1)
               await MouApplication.setSettings(SETTINGS_COLLECTION_LOCAL, settings)
@@ -168,8 +168,8 @@ export default class LocalCollectionConfig extends MouApplication {
         this.indexNextFolder()
       } else if(button.data("id") == "delete-index") {
         Dialog.confirm({
-          title: (game as Game).i18n.localize("MOU.confirm_delete_index"),
-          content: (game as Game).i18n.localize("MOU.confirm_delete_index_note"),
+          title: (game as Game).i18n!.localize("MOU.confirm_delete_index"),
+          content: (game as Game).i18n!.localize("MOU.confirm_delete_index_note"),
           yes: async function() {
             await MouFileManager.storeJSON({}, MouLocalClient.INDEX_LOCAL_ASSETS, MouConfig.MOU_DEF_FOLDER)
             const settings = MouApplication.getSettings(SETTINGS_COLLECTION_LOCAL) as AnyDict
@@ -179,7 +179,7 @@ export default class LocalCollectionConfig extends MouApplication {
               }
               await MouApplication.setSettings(SETTINGS_COLLECTION_LOCAL, settings)
             }
-            ui.notifications?.info((game as Game).i18n.localize("MOU.index_deleted"))
+            ui.notifications?.info((game as Game).i18n!.localize("MOU.index_deleted"))
             parent.render()
           },
           no: () => {}
@@ -195,8 +195,8 @@ export default class LocalCollectionConfig extends MouApplication {
           title: `Import Data: Moulinette Local Assets Configuration`,
           // @ts-ignore
           content: await MouCompatUtils.renderTemplate(`templates/apps/import-data.${v12 ? "html" : "hbs"}`, {
-            hint1: (game as Game).i18n.format("DOCUMENT.ImportDataHint1", {document: "configuration"}),
-            hint2: (game as Game).i18n.format("DOCUMENT.ImportDataHint2", {name: "this configuration"})
+            hint1: (game as Game).i18n!.format("DOCUMENT.ImportDataHint1", {document: "configuration"}),
+            hint2: (game as Game).i18n!.format("DOCUMENT.ImportDataHint2", {name: "this configuration"})
           }),
           buttons: {
             import: {
@@ -216,7 +216,7 @@ export default class LocalCollectionConfig extends MouApplication {
             },
             no: {
               icon: '<i class="fa-solid fa-times"></i>',
-              label: (game as Game).i18n.localize("MOU.cancel")
+              label: (game as Game).i18n!.localize("MOU.cancel")
             }
           },
           default: "Import"
@@ -247,10 +247,10 @@ export default class LocalCollectionConfig extends MouApplication {
       // make sure source doesn't exist yet
       const existingPath = settings.folders?.find((f: LocalCollectionSource) => f.path == source.path && f.source == source.source)
       if(existingPath) {
-        ui.notifications?.error((game as Game).i18n.localize("MOU.source_already_exists"))
+        ui.notifications?.error((game as Game).i18n!.localize("MOU.source_already_exists"))
         return
       }
-      source.id = foundry.utils.randomID(10)
+      source.id = (foundry.utils as AnyDict).randomID(10)
       if(!settings.folders) {
         settings.folders = [source]
       } else {
@@ -272,7 +272,7 @@ export default class LocalCollectionConfig extends MouApplication {
       const folder : LocalCollectionSource = settings.folders.find((f: LocalCollectionSource) => f.path == path && f.source == source)
       if(folder) {
         folder.assets = assetsCount
-        ui.notifications?.info((game as Game).i18n.format("MOU.index_completed", {path: path}))
+        ui.notifications?.info((game as Game).i18n!.format("MOU.index_completed", {path: path}))
         this.advanced = false
         await MouApplication.setSettings(SETTINGS_COLLECTION_LOCAL, settings)
         if(this.indexAll) {

@@ -165,10 +165,10 @@ export default class MouMediaUtils {
   static copyToClipboard(data: string) {
     if(data) {
       navigator.clipboard.writeText(data).then(() => {
-        ui.notifications?.info((game as Game).i18n.localize("MOU.clipboard_copy_success"))
+        ui.notifications?.info((game as Game).i18n!.localize("MOU.clipboard_copy_success"))
       })
       .catch(() => {
-        ui.notifications?.warn((game as Game).i18n.localize("MOU.clipboard_copy_failed"))
+        ui.notifications?.warn((game as Game).i18n!.localize("MOU.clipboard_copy_failed"))
       });
     }
   }

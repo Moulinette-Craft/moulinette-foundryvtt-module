@@ -63,11 +63,11 @@ export default class MouCollectionGameIcons implements MouCollection {
   }
   
   getName(): string {
-    return (game as Game).i18n.localize("MOU.collection_type_gameicons");
+    return (game as Game).i18n!.localize("MOU.collection_type_gameicons");
   }
 
   getDescription(): string {
-    return (game as Game).i18n.localize("MOU.collection_type_gameicons_desc");
+    return (game as Game).i18n!.localize("MOU.collection_type_gameicons_desc");
   }
 
   async initialize(): Promise<void> {
@@ -144,9 +144,9 @@ export default class MouCollectionGameIcons implements MouCollection {
   getActions(asset: MouCollectionAsset): MouCollectionAction[] {
     const actions = [] as MouCollectionAction[]
     const assetType = MouCollectionAssetTypeEnum[asset.type]
-    actions.push({ id: GameIconsAssetAction.DRAG, small: true, drag: true, name: (game as Game).i18n.format("MOU.action_drag", { type: assetType}), icon: "fa-solid fa-hand" })
+    actions.push({ id: GameIconsAssetAction.DRAG, small: true, drag: true, name: (game as Game).i18n!.format("MOU.action_drag", { type: assetType}), icon: "fa-solid fa-hand" })
     if(MouFoundryUtils.userCanUpload()) {
-      actions.push({ id: GameIconsAssetAction.CLIPBOARD, small: true, name: (game as Game).i18n.localize("MOU.action_clipboard"), icon: "fa-solid fa-clipboard" })
+      actions.push({ id: GameIconsAssetAction.CLIPBOARD, small: true, name: (game as Game).i18n!.localize("MOU.action_clipboard"), icon: "fa-solid fa-clipboard" })
     }
     return actions
   }
@@ -155,8 +155,8 @@ export default class MouCollectionGameIcons implements MouCollection {
     const action = this.getActions(asset).find(a => a.id == actionId)
     if(!action) return null
     switch(actionId) {
-      case GameIconsAssetAction.DRAG: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_drag_image") }
-      case GameIconsAssetAction.CLIPBOARD: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_clipboard") }
+      case GameIconsAssetAction.DRAG: return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_drag_image") }
+      case GameIconsAssetAction.CLIPBOARD: return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_clipboard") }
     }
     return null
   }
@@ -165,7 +165,7 @@ export default class MouCollectionGameIcons implements MouCollection {
     //const folderPath = `Moulinette/Game Icons`
     switch(actionId) {
       case GameIconsAssetAction.DRAG:
-        ui.notifications?.info((game as Game).i18n.localize("MOU.dragdrop_instructions"))
+        ui.notifications?.info((game as Game).i18n!.localize("MOU.dragdrop_instructions"))
         break
       
       case GameIconsAssetAction.CLIPBOARD:
@@ -210,7 +210,7 @@ export default class MouCollectionGameIcons implements MouCollection {
 
   getCollectionError(): string | null {
     if(this.error == MouCollectionGameIcons.ERROR_SERVER_CNX) {
-      return (game as Game).i18n.localize("MOU.error_gameicons_connection")
+      return (game as Game).i18n!.localize("MOU.error_gameicons_connection")
     }
     return null;
   }

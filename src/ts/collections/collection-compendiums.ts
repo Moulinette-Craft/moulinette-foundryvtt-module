@@ -98,11 +98,11 @@ export default class MouCollectionCompendiums implements MouCollection {
   }
 
   getName(): string {
-    return (game as Game).i18n.localize("MOU.collection_type_compendiums");
+    return (game as Game).i18n!.localize("MOU.collection_type_compendiums");
   }
 
   getDescription(): string {
-    return (game as Game).i18n.localize("MOU.collection_type_compendiums_desc");
+    return (game as Game).i18n!.localize("MOU.collection_type_compendiums_desc");
   }
 
   getSupportedTypes(): MouCollectionAssetTypeEnum[] {
@@ -273,35 +273,35 @@ export default class MouCollectionCompendiums implements MouCollection {
       case MouCollectionAssetTypeEnum.Scene:
       case MouCollectionAssetTypeEnum.Map:
         if(isGM) {
-          actions.push({ id: CompendiumAssetAction.IMPORT, name: (game as Game).i18n.format("MOU.action_import", { type: assetType}), icon: "fa-solid fa-file-import" })
-          actions.push({ id: CompendiumAssetAction.CREATE_ARTICLE, name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
+          actions.push({ id: CompendiumAssetAction.IMPORT, name: (game as Game).i18n!.format("MOU.action_import", { type: assetType}), icon: "fa-solid fa-file-import" })
+          actions.push({ id: CompendiumAssetAction.CREATE_ARTICLE, name: (game as Game).i18n!.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
         }
-        actions.push({ id: CompendiumAssetAction.VIEW, small: true, name: (game as Game).i18n.localize("MOU.action_view"), icon: "fa-solid fa-eye" })
+        actions.push({ id: CompendiumAssetAction.VIEW, small: true, name: (game as Game).i18n!.localize("MOU.action_view"), icon: "fa-solid fa-eye" })
         break; 
       case MouCollectionAssetTypeEnum.Item:
       case MouCollectionAssetTypeEnum.Actor:
-        actions.push({ id: CompendiumAssetAction.DRAG, drag: true, name: (game as Game).i18n.format("MOU.action_drag", { type: assetType}), icon: "fa-solid fa-hand" })
+        actions.push({ id: CompendiumAssetAction.DRAG, drag: true, name: (game as Game).i18n!.format("MOU.action_drag", { type: assetType}), icon: "fa-solid fa-hand" })
         if(isGM) {
-          actions.push({ id: CompendiumAssetAction.IMPORT, name: (game as Game).i18n.format("MOU.action_import", { type: assetType}), icon: "fa-solid fa-file-import" })
-          actions.push({ id: CompendiumAssetAction.CREATE_ARTICLE, name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
+          actions.push({ id: CompendiumAssetAction.IMPORT, name: (game as Game).i18n!.format("MOU.action_import", { type: assetType}), icon: "fa-solid fa-file-import" })
+          actions.push({ id: CompendiumAssetAction.CREATE_ARTICLE, name: (game as Game).i18n!.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
         }
-        actions.push({ id: CompendiumAssetAction.VIEW, small: true, name: (game as Game).i18n.localize("MOU.action_view"), icon: "fa-solid fa-eye" })
+        actions.push({ id: CompendiumAssetAction.VIEW, small: true, name: (game as Game).i18n!.localize("MOU.action_view"), icon: "fa-solid fa-eye" })
         break;    
       case MouCollectionAssetTypeEnum.RollTable:
         if(isGM) {
-          actions.push({ id: CompendiumAssetAction.IMPORT, name: (game as Game).i18n.format("MOU.action_import", { type: assetType}), icon: "fa-solid fa-file-import" })
+          actions.push({ id: CompendiumAssetAction.IMPORT, name: (game as Game).i18n!.format("MOU.action_import", { type: assetType}), icon: "fa-solid fa-file-import" })
         }
         break;
       case MouCollectionAssetTypeEnum.JournalEntry:
       case MouCollectionAssetTypeEnum.Macro:
-        actions.push({ id: CompendiumAssetAction.DRAG, drag: true, name: (game as Game).i18n.format("MOU.action_drag", { type: assetType}), icon: "fa-solid fa-hand" })
+        actions.push({ id: CompendiumAssetAction.DRAG, drag: true, name: (game as Game).i18n!.format("MOU.action_drag", { type: assetType}), icon: "fa-solid fa-hand" })
         if(isGM) {
-          actions.push({ id: CompendiumAssetAction.IMPORT, name: (game as Game).i18n.format("MOU.action_import", { type: assetType}), icon: "fa-solid fa-file-import" })
+          actions.push({ id: CompendiumAssetAction.IMPORT, name: (game as Game).i18n!.format("MOU.action_import", { type: assetType}), icon: "fa-solid fa-file-import" })
         }
-        actions.push({ id: CompendiumAssetAction.VIEW, small: true, name: (game as Game).i18n.localize("MOU.action_view"), icon: "fa-solid fa-eye" })
+        actions.push({ id: CompendiumAssetAction.VIEW, small: true, name: (game as Game).i18n!.localize("MOU.action_view"), icon: "fa-solid fa-eye" })
         break
     }
-    actions.push({ id: CompendiumAssetAction.CLIPBOARD, small: true, name: (game as Game).i18n.localize("MOU.action_clipboard"), icon: "fa-solid fa-clipboard" })
+    actions.push({ id: CompendiumAssetAction.CLIPBOARD, small: true, name: (game as Game).i18n!.localize("MOU.action_clipboard"), icon: "fa-solid fa-clipboard" })
     
     return actions
   }
@@ -312,30 +312,30 @@ export default class MouCollectionCompendiums implements MouCollection {
     switch(actionId) {
       case CompendiumAssetAction.DRAG:
         switch(asset.type) {
-          case MouCollectionAssetTypeEnum.Item: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_drag_item") }
-          case MouCollectionAssetTypeEnum.Actor: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_drag_actor") }
-          case MouCollectionAssetTypeEnum.JournalEntry: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_drag_journalentry") }
-          case MouCollectionAssetTypeEnum.Macro: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_drag_macro") }
+          case MouCollectionAssetTypeEnum.Item: return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_drag_item") }
+          case MouCollectionAssetTypeEnum.Actor: return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_drag_actor") }
+          case MouCollectionAssetTypeEnum.JournalEntry: return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_drag_journalentry") }
+          case MouCollectionAssetTypeEnum.Macro: return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_drag_macro") }
         }
         break
       case CompendiumAssetAction.IMPORT:
         switch(asset.type) {
-          case MouCollectionAssetTypeEnum.Map: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_import_image") }
-          case MouCollectionAssetTypeEnum.Scene: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_import_asset") }
-          case MouCollectionAssetTypeEnum.Item: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_import_asset") }
-          case MouCollectionAssetTypeEnum.Actor: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_import_asset") }
-          case MouCollectionAssetTypeEnum.RollTable: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_import_rolltable") }
+          case MouCollectionAssetTypeEnum.Map: return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_import_image") }
+          case MouCollectionAssetTypeEnum.Scene: return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_import_asset") }
+          case MouCollectionAssetTypeEnum.Item: return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_import_asset") }
+          case MouCollectionAssetTypeEnum.Actor: return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_import_asset") }
+          case MouCollectionAssetTypeEnum.RollTable: return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_import_rolltable") }
         }
         break
       case CompendiumAssetAction.CLIPBOARD:
-        return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_clipboard") }
+        return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_clipboard") }
       case CompendiumAssetAction.CREATE_ARTICLE:
-        return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_create_article_asset") }
+        return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_create_article_asset") }
       case CompendiumAssetAction.VIEW:
-        return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_view_asset") }
+        return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_view_asset") }
       case CompendiumAssetAction.PREVIEW:
         switch(asset.type) {
-          case MouCollectionAssetTypeEnum.Audio: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_preview_audio") }
+          case MouCollectionAssetTypeEnum.Audio: return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_preview_audio") }
         }
         break
     }
@@ -346,7 +346,7 @@ export default class MouCollectionCompendiums implements MouCollection {
     const folderPath = `Moulinette/${asset.creator}/${asset.pack}`
     switch(actionId) {
       case CompendiumAssetAction.DRAG:
-        ui.notifications?.info((game as Game).i18n.localize("MOU.dragdrop_instructions"))
+        ui.notifications?.info((game as Game).i18n!.localize("MOU.dragdrop_instructions"))
         break
       
       case CompendiumAssetAction.CLIPBOARD:

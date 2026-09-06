@@ -56,7 +56,7 @@ export default class MouApplication extends Application {
   logError(message: string, data?: any, error?: Error) { MouApplication.logError(this.APP_NAME, message, data, error) }
 
   static getModule(): MouModule {
-    return (game as Game).modules.get(MODULE_ID) as MouModule;
+    return ((game as Game).modules as unknown as Map<string, unknown>).get(MODULE_ID) as MouModule;
   }
 
   /**
@@ -74,18 +74,18 @@ export default class MouApplication extends Application {
     if(delay) {
       MouApplication._timeout = setTimeout(() => {
         MouApplication.logInfo(MouApplication.APP_NAME, `Storing data for settings ${key}`);
-        (game as Game).settings.set("moulinette", key, value);
+        ((game as Game).settings as AnyDict).set("moulinette", key, value);
         MouApplication._timeout = null;
       }, 500);
     } else {
       MouApplication.logInfo(MouApplication.APP_NAME, `Storing data for settings ${key}`);
-      await (game as Game).settings.set("moulinette", key, value);
+      await ((game as Game).settings as AnyDict).set("moulinette", key, value);
       MouApplication._timeout = null;
     }
   }
 
   static getSettings(key: string): unknown {
-    return (game as Game).settings.get("moulinette", key)
+    return ((game as Game).settings as AnyDict).get("moulinette", key)
   }
 
   /** Forces FoundryVTT to automatically resize the window (when auto) */
@@ -102,7 +102,7 @@ export default class MouApplication extends Application {
    * If the `storePosition` option is enabled, this method retrieves the previous window position
    * from the settings and updates the `options` object with these values.
    */
-  static adjustPosition(options: ApplicationOptions, APP_NAME: string) {
+  static adjustPosition(options: Application.Options, APP_NAME: string) {
     const prevSettings = MouApplication.getSettings(SETTINGS_PREVS) as AnyDict
     if("winPos" in prevSettings && APP_NAME in prevSettings["winPos"]) {
       const prevPos = prevSettings["winPos"][APP_NAME]

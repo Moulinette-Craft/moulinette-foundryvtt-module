@@ -64,11 +64,11 @@ export default class MouCollectionFontAwesome implements MouCollection {
   }
   
   getName(): string {
-    return (game as Game).i18n.localize("MOU.collection_type_fontawesome");
+    return (game as Game).i18n!.localize("MOU.collection_type_fontawesome");
   }
 
   getDescription(): string {
-    return (game as Game).i18n.localize("MOU.collection_type_fontawesome_desc");
+    return (game as Game).i18n!.localize("MOU.collection_type_fontawesome_desc");
   }
 
   async initialize(): Promise<void> {
@@ -192,8 +192,8 @@ export default class MouCollectionFontAwesome implements MouCollection {
   getActions(asset: MouCollectionAsset): MouCollectionAction[] {
     asset; // unused
     const actions = [] as MouCollectionAction[]
-    actions.push({ id: FontAwesomeAssetAction.CLIPBOARD, small: true, name: (game as Game).i18n.localize("MOU.action_clipboard"), icon: "fa-solid fa-clipboard" })
-    actions.push({ id: FontAwesomeAssetAction.FONTAWESOME, small: true, name: (game as Game).i18n.localize("MOU.action_fontawesome"), icon: "fa-brands fa-font-awesome" })
+    actions.push({ id: FontAwesomeAssetAction.CLIPBOARD, small: true, name: (game as Game).i18n!.localize("MOU.action_clipboard"), icon: "fa-solid fa-clipboard" })
+    actions.push({ id: FontAwesomeAssetAction.FONTAWESOME, small: true, name: (game as Game).i18n!.localize("MOU.action_fontawesome"), icon: "fa-brands fa-font-awesome" })
     return actions
   }
 
@@ -201,8 +201,8 @@ export default class MouCollectionFontAwesome implements MouCollection {
     const action = this.getActions(asset).find(a => a.id == actionId)
     if(!action) return null
     switch(actionId) {
-      case FontAwesomeAssetAction.FONTAWESOME: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_fontawesome") }
-      case FontAwesomeAssetAction.CLIPBOARD: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_clipboard_icon") }
+      case FontAwesomeAssetAction.FONTAWESOME: return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_fontawesome") }
+      case FontAwesomeAssetAction.CLIPBOARD: return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_clipboard_icon") }
     }
     return null
   }

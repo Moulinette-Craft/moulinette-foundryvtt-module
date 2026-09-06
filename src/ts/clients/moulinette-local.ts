@@ -51,11 +51,11 @@ export default class MouLocalClient {
     let idx = 0
     let processed = 0
     
-    const progressbar = (new MoulinetteProgress((game as Game).i18n.localize("MOU.index_compendiums")))
+    const progressbar = (new MoulinetteProgress((game as Game).i18n!.localize("MOU.index_compendiums")))
     progressbar.render(true)
 
     for(const p of _game.packs as any) {
-      progressbar.setProgress(Math.round((idx / (game as Game).packs.size)*100), (game as Game).i18n.format("MOU.indexing", { count: processed++ }))
+      progressbar.setProgress(Math.round((idx / (game as Game).packs.size)*100), (game as Game).i18n!.format("MOU.indexing", { count: String(processed++) }))
     
       if(!p.testUserPermission(_game.user, "OBSERVER")) {
         continue;
@@ -76,7 +76,7 @@ export default class MouLocalClient {
       }
       // compendium from module => creator = title of the module
       else if(p.metadata.packageType == "module") {
-        const module = _game.modules.get(p.metadata.packageName) as AnyDict
+        const module = (_game.modules as unknown as Map<string, unknown>).get(p.metadata.packageName) as AnyDict
         creatorName = module.title
         version = module.version
       }
@@ -90,10 +90,10 @@ export default class MouLocalClient {
       if(!reindex && packId in indexData && version && indexData[packId].version == version) {
         MouApplication.logInfo(MouLocalClient.APP_NAME, `Re-using existing index for ${packId} (v. ${version})... (remove index ${indexPath} to force re-indexing)`)
         // retrieve pack and assets
-        const pack = foundry.utils.duplicate(indexData[packId].pack)
+        const pack = (foundry.utils as AnyDict).duplicate(indexData[packId].pack)
         pack.idx = idx,
         assetsPacks.push(pack)
-        const indexedAssets = foundry.utils.duplicate(indexData[packId].assets)
+        const indexedAssets = (foundry.utils as AnyDict).duplicate(indexData[packId].assets)
         for(const a of indexedAssets) {
           a.pack = idx
           assets.push(a)
@@ -124,7 +124,7 @@ export default class MouLocalClient {
       if(p.metadata.packageType != "world") {
         indexData[packId] = {
           version: version,
-          pack: foundry.utils.duplicate(packData),
+          pack: (foundry.utils as AnyDict).duplicate(packData),
           assets: []
         }
         updated = true
@@ -151,7 +151,7 @@ export default class MouLocalClient {
         }
         // store in index (except local)
         if(p.metadata.packageType != "world") {
-          indexData[packId].assets.push(foundry.utils.duplicate(asset))
+          indexData[packId].assets.push((foundry.utils as AnyDict).duplicate(asset))
         }
         asset.pack = idx
         assets.push(asset)
@@ -160,7 +160,7 @@ export default class MouLocalClient {
       idx++;
     }
 
-    progressbar.setProgress(100, (game as Game).i18n.format("MOU.indexing", { count: processed++ }))
+    progressbar.setProgress(100, (game as Game).i18n!.format("MOU.indexing", { count: String(processed++) }))
     setTimeout(() => progressbar.close(), 1000);
 
     // store index if updated
@@ -196,7 +196,7 @@ export default class MouLocalClient {
     const assets = indexData[indexFolder] = [] as AnyDict
 
     const module = MouApplication.getModule()
-    const progressbar = (new MoulinetteProgress((game as Game).i18n.localize("MOU.index_folders"), 1, (game as Game).i18n.format("MOU.index_folders_list", { path })))
+    const progressbar = (new MoulinetteProgress((game as Game).i18n!.localize("MOU.index_folders"), 1, (game as Game).i18n!.format("MOU.index_folders_list", { path })))
     progressbar.render(true)
     
     try {
@@ -265,9 +265,9 @@ export default class MouLocalClient {
             i++;
             if (i >= files.length) break
             if (i % MouConfig.FILEMANAGER_LOOP_UPDATE == 0) {
-              const message = (game as Game).i18n.format("MOU.index_folders_assets", { 
-                index: MouMediaUtils.prettyNumber(i, true), 
-                count: MouMediaUtils.prettyNumber(files.length, true) 
+              const message = (game as Game).i18n!.format("MOU.index_folders_assets", {
+                index: String(MouMediaUtils.prettyNumber(i, true)),
+                count: String(MouMediaUtils.prettyNumber(files.length, true))
               })
               progressbar.setProgress(100*i/files.length, message)
               break
@@ -284,7 +284,7 @@ export default class MouLocalClient {
             }
           }
         } catch(error: any) {
-          ui.notifications?.warn((game as Game).i18n.localize("MOU.error_folder_indexing_failed"))
+          ui.notifications?.warn((game as Game).i18n!.localize("MOU.error_folder_indexing_failed"))
           MouApplication.logError(MouLocalClient.APP_NAME, "Folder indexing failed", error)
           MouFileManager.storeJSON(indexData, MouLocalClient.INDEX_LOCAL_ASSETS, MouConfig.MOU_DEF_FOLDER)
           await progressbar.close()
@@ -292,7 +292,7 @@ export default class MouLocalClient {
       })();
      
     } catch(error: any) {
-      ui.notifications?.warn((game as Game).i18n.localize("MOU.error_folder_indexing_failed"))
+      ui.notifications?.warn((game as Game).i18n!.localize("MOU.error_folder_indexing_failed"))
       MouApplication.logError(MouLocalClient.APP_NAME, "Folder indexing failed", error)
       await progressbar.close()
     }    

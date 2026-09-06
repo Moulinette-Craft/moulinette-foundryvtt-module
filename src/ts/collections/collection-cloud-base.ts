@@ -80,11 +80,11 @@ export class MouCollectionCloudAsset implements MouCollectionAsset {
     this.icons = []
     this.flags = {}
     if(data.filepath.endsWith(".webm") || data.filepath.endsWith(".mp4")) {
-      this.icons.push({descr: (game as Game).i18n.localize("MOU.asset_is_animated"), icon: "fa-solid fa-film"})
+      this.icons.push({descr: (game as Game).i18n!.localize("MOU.asset_is_animated"), icon: "fa-solid fa-film"})
     }
 
     if(data.perms == 0) {
-      this.icons.push({descr: (game as Game).i18n.localize("MOU.pack_is_free"), icon: "fa-solid fa-gift"})
+      this.icons.push({descr: (game as Game).i18n!.localize("MOU.pack_is_free"), icon: "fa-solid fa-gift"})
       this.cloud_type = CloudAssetType.FREE
       if(data.type != MouCollectionAssetTypeEnum.Audio) {
         this.previewUrl = `${MOU_STORAGE}${data.pack.creator_ref}/${data.pack.path}/${data.thumb}`
@@ -111,31 +111,31 @@ export class MouCollectionCloudAsset implements MouCollectionAsset {
           this.meta.push({ 
             icon: "fa-solid fa-headphones", 
             text: "",
-            hint: (game as Game).i18n.localize("MOU.meta_audio_has_preview")
+            hint: (game as Game).i18n!.localize("MOU.meta_audio_has_preview")
           })
         }
         this.meta.push({ 
           icon: "fa-regular fa-stopwatch", 
           text: MouMediaUtils.prettyDuration(data.audio.duration),
-          hint: (game as Game).i18n.localize("MOU.meta_audio_duration")
+          hint: (game as Game).i18n!.localize("MOU.meta_audio_duration")
         })
         break
       case MouCollectionAssetTypeEnum.ScenePacker:
-        this.iconTL = {descr: (game as Game).i18n.localize("MOU.scene_packer"), icon: "mou-icon mou-scenepacker"}
+        this.iconTL = {descr: (game as Game).i18n!.localize("MOU.scene_packer"), icon: "mou-icon mou-scenepacker"}
       case MouCollectionAssetTypeEnum.Scene:
         this.draggable = data.perms >= 0 && data.type != MouCollectionAssetTypeEnum.ScenePacker
         if(data.scene.width) {
           this.meta.push({ 
             icon: "fa-regular fa-border-all", 
             text: `${data.scene.width} x ${data.scene.height}`,
-            hint: (game as Game).i18n.localize("MOU.meta_scene_dims")
+            hint: (game as Game).i18n!.localize("MOU.meta_scene_dims")
           })
         } else {
           if(data.size) {
             this.meta.push({ 
               icon: "fa-regular fa-expand-wide", 
               text: `${MouMediaUtils.prettyNumber(data.size.width, true)} x ${MouMediaUtils.prettyNumber(data.size.height, true)}`,
-              hint: (game as Game).i18n.localize("MOU.meta_media_size")
+              hint: (game as Game).i18n!.localize("MOU.meta_media_size")
             })
           }
         }
@@ -143,18 +143,18 @@ export class MouCollectionCloudAsset implements MouCollectionAsset {
           console.error("Scene without pack", data)
         }
 
-        if(data.scene.hasWalls) this.icons.push({descr: (game as Game).i18n.localize("MOU.scene_has_walls"), icon: "fa-solid fa-block-brick"})
-        if(data.scene.hasLights) this.icons.push({descr: (game as Game).i18n.localize("MOU.scene_has_lights"), icon: "fa-regular fa-lightbulb"})
-        if(data.scene.hasSounds) this.icons.push({descr: (game as Game).i18n.localize("MOU.scene_has_sounds"), icon: "fa-solid fa-music"})
-        if(data.scene.hasTokens) this.icons.push({descr: (game as Game).i18n.localize("MOU.scene_has_tokens"), icon: "fa-solid fa-user-alt"})
-        if(data.scene.hasTiles) this.icons.push({descr: (game as Game).i18n.localize("MOU.scene_has_tiles"), icon: "fa-solid fa-cubes"})
-        if(data.scene.hasDrawings) this.icons.push({descr: (game as Game).i18n.localize("MOU.scene_has_drawings"), icon: "fa-solid fa-pencil-alt"})
-        if(data.scene.hasNotes) this.icons.push({descr: (game as Game).i18n.localize("MOU.scene_has_notes"), icon: "fa-solid fa-bookmark"})
+        if(data.scene.hasWalls) this.icons.push({descr: (game as Game).i18n!.localize("MOU.scene_has_walls"), icon: "fa-solid fa-block-brick"})
+        if(data.scene.hasLights) this.icons.push({descr: (game as Game).i18n!.localize("MOU.scene_has_lights"), icon: "fa-regular fa-lightbulb"})
+        if(data.scene.hasSounds) this.icons.push({descr: (game as Game).i18n!.localize("MOU.scene_has_sounds"), icon: "fa-solid fa-music"})
+        if(data.scene.hasTokens) this.icons.push({descr: (game as Game).i18n!.localize("MOU.scene_has_tokens"), icon: "fa-solid fa-user-alt"})
+        if(data.scene.hasTiles) this.icons.push({descr: (game as Game).i18n!.localize("MOU.scene_has_tiles"), icon: "fa-solid fa-cubes"})
+        if(data.scene.hasDrawings) this.icons.push({descr: (game as Game).i18n!.localize("MOU.scene_has_drawings"), icon: "fa-solid fa-pencil-alt"})
+        if(data.scene.hasNotes) this.icons.push({descr: (game as Game).i18n!.localize("MOU.scene_has_notes"), icon: "fa-solid fa-bookmark"})
         if(this.pack && this.pack.toUpperCase().endsWith("HD") || this.name.toUpperCase().endsWith("HD")) { 
-          this.iconTR = {descr: (game as Game).i18n.localize("MOU.scene_hd"), text: "HD"}
+          this.iconTR = {descr: (game as Game).i18n!.localize("MOU.scene_hd"), text: "HD"}
         }
         if(this.pack && this.pack.toUpperCase().endsWith("4K") || this.name.toUpperCase().endsWith("4K")) { 
-          this.iconTR = {descr: (game as Game).i18n.localize("MOU.scene_4k"), text: "4K"}
+          this.iconTR = {descr: (game as Game).i18n!.localize("MOU.scene_4k"), text: "4K"}
         }
         break
       case MouCollectionAssetTypeEnum.Image:
@@ -163,22 +163,22 @@ export class MouCollectionCloudAsset implements MouCollectionAsset {
         this.meta.push({ 
           icon: "fa-regular fa-expand-wide", 
           text: `${MouMediaUtils.prettyNumber(data.size.width, true)} x ${MouMediaUtils.prettyNumber(data.size.height, true)}`,
-          hint: (game as Game).i18n.localize("MOU.meta_media_size")
+          hint: (game as Game).i18n!.localize("MOU.meta_media_size")
         })
         break
       case MouCollectionAssetTypeEnum.PDF:
         this.meta.push({ 
           icon: "fa-regular fa-file-pdf", 
-          text: `${data.pdf?.pages} ` + (game as Game).i18n.localize(data.pdf.pages > 1 ? "MOU.pages" : "MOU.page"),
-          hint: (game as Game).i18n.localize("MOU.meta_pdf_pages")
+          text: `${data.pdf?.pages} ` + (game as Game).i18n!.localize(data.pdf.pages > 1 ? "MOU.pages" : "MOU.page"),
+          hint: (game as Game).i18n!.localize("MOU.meta_pdf_pages")
         })
         break
       case MouCollectionAssetTypeEnum.Playlist:
         if(data.playlist?.sounds) {
           this.meta.push({ 
             icon: "fa-regular fa-music", 
-            text: `${data.playlist.sounds} ` + (game as Game).i18n.localize(data.playlist.sounds > 1 ? "MOU.tracks" : "MOU.track"),
-            hint: (game as Game).i18n.localize("MOU.meta_playlist_tracks")
+            text: `${data.playlist.sounds} ` + (game as Game).i18n!.localize(data.playlist.sounds > 1 ? "MOU.tracks" : "MOU.track"),
+            hint: (game as Game).i18n!.localize("MOU.meta_playlist_tracks")
           })
         }
         break
@@ -186,8 +186,8 @@ export class MouCollectionCloudAsset implements MouCollectionAsset {
         if(data.journal?.pages) {
           this.meta.push({ 
             icon: "fa-regular fa-file-lines", 
-            text: `${data.journal.pages} ` + (game as Game).i18n.localize(data.journal.pages > 1 ? "MOU.pages" : "MOU.page"),
-            hint: (game as Game).i18n.localize("MOU.meta_journal_pages")
+            text: `${data.journal.pages} ` + (game as Game).i18n!.localize(data.journal.pages > 1 ? "MOU.pages" : "MOU.page"),
+            hint: (game as Game).i18n!.localize("MOU.meta_journal_pages")
           })
         }
         break
@@ -195,7 +195,7 @@ export class MouCollectionCloudAsset implements MouCollectionAsset {
     this.meta.push({ 
       icon: "fa-regular fa-weight-hanging",
       text: MouMediaUtils.prettyFilesize(data.filesize, 0),
-      hint: (game as Game).i18n.localize("MOU.meta_filesize")
+      hint: (game as Game).i18n!.localize("MOU.meta_filesize")
     })
   }
 }
@@ -244,62 +244,62 @@ export default class MouCollectionCloudBase {
     const cAsset = (asset as MouCollectionCloudAsset)
     if(cAsset.cloud_type == CloudAssetType.PREVIEW) {
       if(cAsset.type == MouCollectionAssetTypeEnum.Audio && asset.flags.hasAudioPreview) {
-        actions.push({ id: CloudAssetAction.PREVIEW, name: (game as Game).i18n.localize("MOU.action_preview"), icon: "fa-solid fa-headphones" })
+        actions.push({ id: CloudAssetAction.PREVIEW, name: (game as Game).i18n!.localize("MOU.action_preview"), icon: "fa-solid fa-headphones" })
       }
-      actions.push({ id: CloudAssetAction.MEMBERSHIP, name: (game as Game).i18n.localize("MOU.action_support"), small: cAsset.type == MouCollectionAssetTypeEnum.Image,  icon: "fa-solid fa-hands-praying" })
+      actions.push({ id: CloudAssetAction.MEMBERSHIP, name: (game as Game).i18n!.localize("MOU.action_support"), small: cAsset.type == MouCollectionAssetTypeEnum.Image,  icon: "fa-solid fa-hands-praying" })
       return actions
     }
     
     const assetType = MouCollectionAssetTypeEnum[asset.type]
     switch(cAsset.type) {
       case MouCollectionAssetTypeEnum.ScenePacker:
-        actions.push({ id: CloudAssetAction.IMPORT, name: (game as Game).i18n.format("MOU.action_import", { type: "w. ScenePacker"}), icon: "fa-solid fa-file-import" })
+        actions.push({ id: CloudAssetAction.IMPORT, name: (game as Game).i18n!.format("MOU.action_import", { type: "w. ScenePacker"}), icon: "fa-solid fa-file-import" })
         break;
       case MouCollectionAssetTypeEnum.Map:
-        actions.push({ id: CloudAssetAction.IMPORT, name: (game as Game).i18n.format("MOU.action_import", { type: assetType}), icon: "fa-solid fa-file-import" })
-        actions.push({ id: CloudAssetAction.CREATE_ARTICLE, name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
-        actions.push({ id: CloudAssetAction.PREVIEW, small: true, name: (game as Game).i18n.localize("MOU.action_preview_asset"), icon: "fa-solid fa-eyes" })        
+        actions.push({ id: CloudAssetAction.IMPORT, name: (game as Game).i18n!.format("MOU.action_import", { type: assetType}), icon: "fa-solid fa-file-import" })
+        actions.push({ id: CloudAssetAction.CREATE_ARTICLE, name: (game as Game).i18n!.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
+        actions.push({ id: CloudAssetAction.PREVIEW, small: true, name: (game as Game).i18n!.localize("MOU.action_preview_asset"), icon: "fa-solid fa-eyes" })        
         break;
       case MouCollectionAssetTypeEnum.Scene:
-        actions.push({ id: CloudAssetAction.IMPORT, name: (game as Game).i18n.format("MOU.action_import", { type: assetType}), icon: "fa-solid fa-file-import" })
-        actions.push({ id: CloudAssetAction.CREATE_ARTICLE, name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
-        actions.push({ id: CloudAssetAction.PREVIEW, small: true, name: (game as Game).i18n.localize("MOU.action_preview_asset"), icon: "fa-solid fa-eyes" })        
-        actions.push({ id: CloudAssetAction.FORCE_IMPORT, small: true, name: (game as Game).i18n.format("MOU.action_force_import", { type: assetType}), icon: "fa-solid fa-file-circle-exclamation" })
+        actions.push({ id: CloudAssetAction.IMPORT, name: (game as Game).i18n!.format("MOU.action_import", { type: assetType}), icon: "fa-solid fa-file-import" })
+        actions.push({ id: CloudAssetAction.CREATE_ARTICLE, name: (game as Game).i18n!.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
+        actions.push({ id: CloudAssetAction.PREVIEW, small: true, name: (game as Game).i18n!.localize("MOU.action_preview_asset"), icon: "fa-solid fa-eyes" })        
+        actions.push({ id: CloudAssetAction.FORCE_IMPORT, small: true, name: (game as Game).i18n!.format("MOU.action_force_import", { type: assetType}), icon: "fa-solid fa-file-circle-exclamation" })
         break; 
       case MouCollectionAssetTypeEnum.Item:
       case MouCollectionAssetTypeEnum.Actor:
-        actions.push({ id: CloudAssetAction.DRAG, drag: true, name: (game as Game).i18n.format("MOU.action_drag", { type: assetType}), icon: "fa-solid fa-hand" })
-        actions.push({ id: CloudAssetAction.IMPORT, name: (game as Game).i18n.format("MOU.action_import", { type: assetType}), icon: "fa-solid fa-file-import" })
-        actions.push({ id: CloudAssetAction.CREATE_ARTICLE, name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
+        actions.push({ id: CloudAssetAction.DRAG, drag: true, name: (game as Game).i18n!.format("MOU.action_drag", { type: assetType}), icon: "fa-solid fa-hand" })
+        actions.push({ id: CloudAssetAction.IMPORT, name: (game as Game).i18n!.format("MOU.action_import", { type: assetType}), icon: "fa-solid fa-file-import" })
+        actions.push({ id: CloudAssetAction.CREATE_ARTICLE, name: (game as Game).i18n!.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
         break;    
       case MouCollectionAssetTypeEnum.Image:
-        //actions.push({ id: CloudAssetAction.DRAG, drag: true, small: true, name: (game as Game).i18n.format("MOU.action_drag", { type: assetType}), icon: "fa-solid fa-hand" })
-        actions.push({ id: CloudAssetAction.CREATE_ARTICLE, small: true, name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
-        actions.push({ id: CloudAssetAction.PREVIEW, small: true, name: (game as Game).i18n.localize("MOU.action_preview_asset"), icon: "fa-solid fa-eyes" })
+        //actions.push({ id: CloudAssetAction.DRAG, drag: true, small: true, name: (game as Game).i18n!.format("MOU.action_drag", { type: assetType}), icon: "fa-solid fa-hand" })
+        actions.push({ id: CloudAssetAction.CREATE_ARTICLE, small: true, name: (game as Game).i18n!.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
+        actions.push({ id: CloudAssetAction.PREVIEW, small: true, name: (game as Game).i18n!.localize("MOU.action_preview_asset"), icon: "fa-solid fa-eyes" })
         break;    
       case MouCollectionAssetTypeEnum.PDF:
-        actions.push({ id: CloudAssetAction.CREATE_ARTICLE, name: (game as Game).i18n.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
+        actions.push({ id: CloudAssetAction.CREATE_ARTICLE, name: (game as Game).i18n!.localize("MOU.action_create_article"), icon: "fa-solid fa-book-open" })
         break;    
       case MouCollectionAssetTypeEnum.Audio:
-        actions.push({ id: CloudAssetAction.IMPORT, name: (game as Game).i18n.localize("MOU.action_audio_play"), icon: "fa-solid fa-play-pause" })
+        actions.push({ id: CloudAssetAction.IMPORT, name: (game as Game).i18n!.localize("MOU.action_audio_play"), icon: "fa-solid fa-play-pause" })
         if(asset.flags.hasAudioPreview) {
-          actions.push({ id: CloudAssetAction.PREVIEW, name: (game as Game).i18n.localize("MOU.action_preview"), icon: "fa-solid fa-headphones" })
+          actions.push({ id: CloudAssetAction.PREVIEW, name: (game as Game).i18n!.localize("MOU.action_preview"), icon: "fa-solid fa-headphones" })
         }
         break;
       case MouCollectionAssetTypeEnum.JournalEntry:
-        actions.push({ id: CloudAssetAction.IMPORT, name: (game as Game).i18n.format("MOU.action_import", { type: assetType}), icon: "fa-solid fa-file-import" })
+        actions.push({ id: CloudAssetAction.IMPORT, name: (game as Game).i18n!.format("MOU.action_import", { type: assetType}), icon: "fa-solid fa-file-import" })
         break;
       case MouCollectionAssetTypeEnum.Playlist:
-        actions.push({ id: CloudAssetAction.IMPORT, name: (game as Game).i18n.localize("MOU.action_audio_play"), icon: "fa-solid fa-play-pause" })
+        actions.push({ id: CloudAssetAction.IMPORT, name: (game as Game).i18n!.localize("MOU.action_audio_play"), icon: "fa-solid fa-play-pause" })
         break;    
     }
 
     if(cAsset.type != MouCollectionAssetTypeEnum.ScenePacker) {
-      actions.push({ id: CloudAssetAction.DOWNLOAD, small: true, name: (game as Game).i18n.localize("MOU.action_download"), icon: "fa-solid fa-cloud-arrow-down" })
+      actions.push({ id: CloudAssetAction.DOWNLOAD, small: true, name: (game as Game).i18n!.localize("MOU.action_download"), icon: "fa-solid fa-cloud-arrow-down" })
     } else {
-      actions.push({ id: CloudAssetAction.SCENEPACKER, small: true, name: (game as Game).i18n.localize("MOU.action_scenepacker_page"), icon: "mou-icon mou-scenepacker" })
+      actions.push({ id: CloudAssetAction.SCENEPACKER, small: true, name: (game as Game).i18n!.localize("MOU.action_scenepacker_page"), icon: "mou-icon mou-scenepacker" })
     }
-    actions.push({ id: CloudAssetAction.MEMBERSHIP, small: true, name: (game as Game).i18n.localize("MOU.action_support"), icon: "fa-solid fa-hands-praying" })
+    actions.push({ id: CloudAssetAction.MEMBERSHIP, small: true, name: (game as Game).i18n!.localize("MOU.action_support"), icon: "fa-solid fa-hands-praying" })
     
     return actions
   }
@@ -310,52 +310,52 @@ export default class MouCollectionCloudBase {
     switch(actionId) {
       case CloudAssetAction.DRAG:
         switch(asset.type) {
-          case MouCollectionAssetTypeEnum.Item: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_drag_item") }
-          case MouCollectionAssetTypeEnum.Actor: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_drag_actor") }
+          case MouCollectionAssetTypeEnum.Item: return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_drag_item") }
+          case MouCollectionAssetTypeEnum.Actor: return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_drag_actor") }
         }
         break
       case CloudAssetAction.FORCE_IMPORT:
-        return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_download_force_import_scene") }
+        return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_download_force_import_scene") }
       case CloudAssetAction.IMPORT:
         switch(asset.type) {
-          case MouCollectionAssetTypeEnum.Map: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_download_import_image") }
-          case MouCollectionAssetTypeEnum.Scene: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_download_import_scene") }
-          case MouCollectionAssetTypeEnum.Item: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_download_import_asset") }
-          case MouCollectionAssetTypeEnum.Actor: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_download_import_asset") }
-          case MouCollectionAssetTypeEnum.Image: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_download_import_image") }
-          case MouCollectionAssetTypeEnum.Audio: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_download_import_audio") }
-          case MouCollectionAssetTypeEnum.Playlist: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_download_import_playlist") }
-          case MouCollectionAssetTypeEnum.JournalEntry: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_download_import_journal") }
+          case MouCollectionAssetTypeEnum.Map: return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_download_import_image") }
+          case MouCollectionAssetTypeEnum.Scene: return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_download_import_scene") }
+          case MouCollectionAssetTypeEnum.Item: return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_download_import_asset") }
+          case MouCollectionAssetTypeEnum.Actor: return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_download_import_asset") }
+          case MouCollectionAssetTypeEnum.Image: return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_download_import_image") }
+          case MouCollectionAssetTypeEnum.Audio: return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_download_import_audio") }
+          case MouCollectionAssetTypeEnum.Playlist: return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_download_import_playlist") }
+          case MouCollectionAssetTypeEnum.JournalEntry: return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_download_import_journal") }
         }
         break
       case CloudAssetAction.DOWNLOAD:
         switch(asset.type) {
-          case MouCollectionAssetTypeEnum.Scene: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_download_scene") }
-          default: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_download_asset") }
+          case MouCollectionAssetTypeEnum.Scene: return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_download_scene") }
+          default: return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_download_asset") }
         }
       case CloudAssetAction.CREATE_ARTICLE:
         switch(asset.type) {
-          case MouCollectionAssetTypeEnum.Scene: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_download_create_article_scene") }
-          default: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_download_create_article_asset") }
+          case MouCollectionAssetTypeEnum.Scene: return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_download_create_article_scene") }
+          default: return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_download_create_article_asset") }
         }
       case CloudAssetAction.MEMBERSHIP:
         if((asset as MouCollectionCloudAsset).cloud_type == CloudAssetType.PREVIEW) { 
-          return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_subscribe_creator") }
+          return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_subscribe_creator") }
         } else {
-          return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_visit_creator") }
+          return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_visit_creator") }
         }
 
       case CloudAssetAction.PREVIEW:
         switch(asset.type) {
-          case MouCollectionAssetTypeEnum.Audio: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_preview_audio") }
+          case MouCollectionAssetTypeEnum.Audio: return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_preview_audio") }
           case MouCollectionAssetTypeEnum.Scene: 
           case MouCollectionAssetTypeEnum.Image: 
           case MouCollectionAssetTypeEnum.Map: 
-            return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_preview_asset") }
+            return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_preview_asset") }
         }
         break;
       case CloudAssetAction.SCENEPACKER:
-        return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_scene_packer_page") }
+        return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_scene_packer_page") }
     }
     return null
   }
@@ -367,7 +367,7 @@ export default class MouCollectionCloudBase {
    *  * UploadResult (with path) for a single file
    *  * AnyDict (JSON) for entities
    */
-  protected async downloadAsset(asset: any): Promise<FilePicker.UploadResult | false> {
+  protected async downloadAsset(asset: any): Promise<FilePicker.UploadReturn | false> {
     if(asset.type == MouCollectionAssetTypeEnum.ScenePacker) {
       const assets = await MouApplication.getModule().cloudclient.apiPOST(`/scenepacker-assets/${asset.pack_ref}`, { scope: this.getScope() })
       return {
@@ -408,7 +408,7 @@ export default class MouCollectionCloudBase {
     const folderPath = `Moulinette/${asset.creator}/${asset.pack}`
     switch(actionId) {
       case CloudAssetAction.DRAG:
-        ui.notifications?.info((game as Game).i18n.localize("MOU.dragdrop_instructions"))
+        ui.notifications?.info((game as Game).i18n!.localize("MOU.dragdrop_instructions"))
         break
       case CloudAssetAction.FORCE_IMPORT:
       case CloudAssetAction.IMPORT:

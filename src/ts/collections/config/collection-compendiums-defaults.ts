@@ -82,20 +82,20 @@ export class MouCompendiumsDefaults {
       Item: function(meta: AnyDict) {
         const infos = new MouCompendiumsDefaultsInfos()
         if(meta.type) {
-          let type = (game as Game).i18n.localize(`TYPES.Item.${meta.type}`)
+          let type = (game as Game).i18n!.localize(`TYPES.Item.${meta.type}`)
           if(meta.rarity) {
-            type += ` (${(game as Game).i18n.localize((CONFIG as any).DND5E.itemRarity[meta.rarity])})`
+            type += ` (${(game as Game).i18n!.localize((CONFIG as any).DND5E.itemRarity[meta.rarity])})`
           }
           infos.meta.push({ icon: "fa-solid fa-circle-info", label: type })
         }
         if(meta.weaponType) {
-          infos.meta.push({ icon: "fa-solid fa-swords", label: (game as Game).i18n.localize((CONFIG as any).DND5E.weaponTypes[meta.weaponType]) })
+          infos.meta.push({ icon: "fa-solid fa-swords", label: (game as Game).i18n!.localize((CONFIG as any).DND5E.weaponTypes[meta.weaponType]) })
         }
         else if(meta.armorType) {
-          infos.meta.push({ icon: "fa-solid fa-vest", label: (game as Game).i18n.localize((CONFIG as any).DND5E.armorTypes[meta.armorType]) })
+          infos.meta.push({ icon: "fa-solid fa-vest", label: (game as Game).i18n!.localize((CONFIG as any).DND5E.armorTypes[meta.armorType]) })
         }
         else if(meta.toolType) {
-          infos.meta.push({ icon: "fa-solid fa-hammer", label: (game as Game).i18n.localize((CONFIG as any).DND5E.toolTypes[meta.toolType]) })
+          infos.meta.push({ icon: "fa-solid fa-hammer", label: (game as Game).i18n!.localize((CONFIG as any).DND5E.toolTypes[meta.toolType]) })
         }
         return infos
       },
@@ -150,19 +150,19 @@ export class MouCompendiumsDefaults {
           }
         }
         // components
-        if(meta.walls > 0)    { infos.flags.push({ img: "fa-solid fa-block-brick", label: (game as Game).i18n.localize("MOU.scene_has_walls") }) }
-        if(meta.lights > 0)   { infos.flags.push({ img: "fa-regular fa-lightbulb", label: (game as Game).i18n.localize("MOU.scene_has_lights") }) }
-        if(meta.sounds > 0)   { infos.flags.push({ img: "fa-solid fa-music", label: (game as Game).i18n.localize("MOU.scene_has_sounds") }) }
-        if(meta.tokens > 0)   { infos.flags.push({ img: "fa-solid fa-user-alt", label: (game as Game).i18n.localize("MOU.scene_has_tokens") }) }
-        if(meta.notes > 0)    { infos.flags.push({ img: "fa-solid fa-bookmark", label: (game as Game).i18n.localize("MOU.scene_has_notes") }) }
-        if(meta.drawings > 0) { infos.flags.push({ img: "fa-solid fa-pencil-alt", label: (game as Game).i18n.localize("MOU.scene_has_drawings") }) }
+        if(meta.walls > 0)    { infos.flags.push({ img: "fa-solid fa-block-brick", label: (game as Game).i18n!.localize("MOU.scene_has_walls") }) }
+        if(meta.lights > 0)   { infos.flags.push({ img: "fa-regular fa-lightbulb", label: (game as Game).i18n!.localize("MOU.scene_has_lights") }) }
+        if(meta.sounds > 0)   { infos.flags.push({ img: "fa-solid fa-music", label: (game as Game).i18n!.localize("MOU.scene_has_sounds") }) }
+        if(meta.tokens > 0)   { infos.flags.push({ img: "fa-solid fa-user-alt", label: (game as Game).i18n!.localize("MOU.scene_has_tokens") }) }
+        if(meta.notes > 0)    { infos.flags.push({ img: "fa-solid fa-bookmark", label: (game as Game).i18n!.localize("MOU.scene_has_notes") }) }
+        if(meta.drawings > 0) { infos.flags.push({ img: "fa-solid fa-pencil-alt", label: (game as Game).i18n!.localize("MOU.scene_has_drawings") }) }
         return infos
       },
 
       // JournalEntries
       JournalEntry: function(meta : AnyDict) {
         const infos = new MouCompendiumsDefaultsInfos()
-        infos.meta.push({ icon: "fa-solid fa-files", label: `${meta.pages} ${(game as Game).i18n.localize(meta.pages > 1 ? "MOU.pages" : "MOU.page")}` })
+        infos.meta.push({ icon: "fa-solid fa-files", label: `${meta.pages} ${(game as Game).i18n!.localize(meta.pages > 1 ? "MOU.pages" : "MOU.page")}` })
         return infos
       },
       // Macros
@@ -177,7 +177,7 @@ export class MouCompendiumsDefaults {
       // RollTables
       RollTable: function(meta : AnyDict) {
         const infos = new MouCompendiumsDefaultsInfos()
-        const text = `${meta.results} ${(game as Game).i18n.localize(meta.results > 1 ? "MOU.results" : "MOU.result")}`
+        const text = `${meta.results} ${(game as Game).i18n!.localize(meta.results > 1 ? "MOU.results" : "MOU.result")}`
         infos.meta.push({ icon: "fa-solid fa-th-list", label: text })
         return infos
       },

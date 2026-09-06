@@ -108,10 +108,10 @@ export class MouGameIconsClient {
     // check colors
     let re = /#[\da-f]{6}/;
     if(fgColor && !re.test(fgColor)) {
-      ui.notifications?.error((game as Game).i18n.format("MOU.error_invalid_color", { format: fgColor }))
+      ui.notifications?.error((game as Game).i18n!.format("MOU.error_invalid_color", { format: fgColor }))
       return null
     } else if (bgColor && !re.test(bgColor)) {
-      ui.notifications?.error((game as Game).i18n.format("MOU.error_invalid_color", { format: bgColor }))
+      ui.notifications?.error((game as Game).i18n!.format("MOU.error_invalid_color", { format: bgColor }))
       return null
     }
         

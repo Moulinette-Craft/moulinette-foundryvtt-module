@@ -52,7 +52,7 @@ class MouCollectionBBCAsset implements MouCollectionAsset {
       this.meta.push({ 
         icon: "fa-regular fa-stopwatch", 
         text: MouMediaUtils.prettyDuration(asset.duration / 1000),
-        hint: (game as Game).i18n.localize("MOU.meta_audio_duration")
+        hint: (game as Game).i18n!.localize("MOU.meta_audio_duration")
       })
     }
 
@@ -60,7 +60,7 @@ class MouCollectionBBCAsset implements MouCollectionAsset {
       this.meta.push({ 
         icon: "fa-regular fa-weight-hanging",
         text: MouMediaUtils.prettyFilesize(asset.fileSizes.mp3FileSize, 0),
-        hint: (game as Game).i18n.localize("MOU.meta_filesize")})
+        hint: (game as Game).i18n!.localize("MOU.meta_filesize")})
     }
   }
 }
@@ -81,11 +81,11 @@ export default class MouCollectionBBCSounds implements MouCollection {
   }
   
   getName(): string {
-    return (game as Game).i18n.localize("MOU.collection_type_bbc_sounds");
+    return (game as Game).i18n!.localize("MOU.collection_type_bbc_sounds");
   }
 
   getDescription(): string {
-    return (game as Game).i18n.localize("MOU.collection_type_bbc_desc");
+    return (game as Game).i18n!.localize("MOU.collection_type_bbc_desc");
   }
 
   async initialize(): Promise<void> {
@@ -157,11 +157,11 @@ export default class MouCollectionBBCSounds implements MouCollection {
     const actions = [] as MouCollectionAction[]
     const assetType = MouCollectionAssetTypeEnum[asset.type]
     if(isGM) {
-      actions.push({ id: BBCAssetAction.IMPORT, name: (game as Game).i18n.localize("MOU.action_audio_play"), icon: "fa-solid fa-play-pause" })
+      actions.push({ id: BBCAssetAction.IMPORT, name: (game as Game).i18n!.localize("MOU.action_audio_play"), icon: "fa-solid fa-play-pause" })
     }
-    actions.push({ id: BBCAssetAction.PREVIEW, name: (game as Game).i18n.localize("MOU.action_preview"), icon: "fa-solid fa-headphones" })
-    actions.push({ id: BBCAssetAction.DRAG, small: true, drag: true, name: (game as Game).i18n.format("MOU.action_drag", { type: assetType}), icon: "fa-solid fa-hand" })
-    actions.push({ id: BBCAssetAction.CLIPBOARD, small: true, name: (game as Game).i18n.localize("MOU.action_clipboard"), icon: "fa-solid fa-clipboard" })
+    actions.push({ id: BBCAssetAction.PREVIEW, name: (game as Game).i18n!.localize("MOU.action_preview"), icon: "fa-solid fa-headphones" })
+    actions.push({ id: BBCAssetAction.DRAG, small: true, drag: true, name: (game as Game).i18n!.format("MOU.action_drag", { type: assetType}), icon: "fa-solid fa-hand" })
+    actions.push({ id: BBCAssetAction.CLIPBOARD, small: true, name: (game as Game).i18n!.localize("MOU.action_clipboard"), icon: "fa-solid fa-clipboard" })
     return actions
   }
 
@@ -169,9 +169,9 @@ export default class MouCollectionBBCSounds implements MouCollection {
     const action = this.getActions(asset).find(a => a.id == actionId)
     if(!action) return null
     switch(actionId) {
-      case BBCAssetAction.DRAG: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_drag_image") }
-      case BBCAssetAction.CLIPBOARD: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_clipboard") }
-      case BBCAssetAction.PREVIEW: return { name: action.name, description: (game as Game).i18n.localize("MOU.action_hint_preview_audio_full") }
+      case BBCAssetAction.DRAG: return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_drag_image") }
+      case BBCAssetAction.CLIPBOARD: return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_clipboard") }
+      case BBCAssetAction.PREVIEW: return { name: action.name, description: (game as Game).i18n!.localize("MOU.action_hint_preview_audio_full") }
     }
     return null
   }
@@ -180,7 +180,7 @@ export default class MouCollectionBBCSounds implements MouCollection {
     //const folderPath = `Moulinette/BBC Sound Effects`
     switch(actionId) {
       case BBCAssetAction.DRAG:
-        ui.notifications?.info((game as Game).i18n.localize("MOU.dragdrop_instructions"))
+        ui.notifications?.info((game as Game).i18n!.localize("MOU.dragdrop_instructions"))
         break
       
       case BBCAssetAction.CLIPBOARD:
@@ -231,7 +231,7 @@ export default class MouCollectionBBCSounds implements MouCollection {
 
   getCollectionError(): string | null {
     if(this.error == MouCollectionBBCSounds.ERROR_SERVER_CNX) {
-      return (game as Game).i18n.localize("MOU.error_bbcsounds_connection")
+      return (game as Game).i18n!.localize("MOU.error_bbcsounds_connection")
     }
     return null;
   }
