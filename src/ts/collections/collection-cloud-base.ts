@@ -282,9 +282,10 @@ export default class MouCollectionCloudBase {
         break;    
       case MouCollectionAssetTypeEnum.Audio:
         actions.push({ id: CloudAssetAction.IMPORT, name: (game as Game).i18n!.localize("MOU.action_audio_play"), icon: "fa-solid fa-play-pause" })
-        if(asset.flags.hasAudioPreview) {
-          actions.push({ id: CloudAssetAction.PREVIEW, name: (game as Game).i18n!.localize("MOU.action_preview"), icon: "fa-solid fa-headphones" })
-        }
+        // below the sample-preview duration threshold, Preview plays the full sound
+        // directly instead (see executeAction) - the user already has access to this
+        // asset, so there's no reason to hide the button, only to change what it does.
+        actions.push({ id: CloudAssetAction.PREVIEW, name: (game as Game).i18n!.localize("MOU.action_preview"), icon: "fa-solid fa-headphones" })
         break;
       case MouCollectionAssetTypeEnum.JournalEntry:
         actions.push({ id: CloudAssetAction.IMPORT, name: (game as Game).i18n!.format("MOU.action_import", { type: assetType}), icon: "fa-solid fa-file-import" })
@@ -481,15 +482,23 @@ export default class MouCollectionCloudBase {
       case CloudAssetAction.PREVIEW:
         switch(asset.type) {
           case MouCollectionAssetTypeEnum.Audio:
-            const audio_url = selAsset.previewUrl
+            // below the sample-preview duration threshold, there's no separate preview
+            // clip to stream - play the full sound directly instead, straight from the
+            // cloud storage URL (no local download, unlike "Import & play").
+            const audio_url = selAsset.flags.hasAudioPreview ? selAsset.previewUrl : `${asset.base_url}/${asset.file_url}`
             // assuming there is an audio preview and there is a audio#audiopreview element on the page
             const audio = $("#audiopreview")[0] as HTMLAudioElement
-            if(MouMediaUtils.getCleanURI(audio.src) != MouMediaUtils.getCleanURI(audio_url)) {
+            // compare ignoring the query string: cloud storage URLs carry a signed token
+            // that can differ between calls for the very same asset, which would
+            // otherwise always be seen as a "different" track and restart it instead of
+            // pausing it on the second click
+            const isSameTrack = MouMediaUtils.getCleanURI(audio.src).split("?")[0] == MouMediaUtils.getCleanURI(audio_url).split("?")[0]
+            if(!isSameTrack) {
               audio.pause()
               audio.src = audio_url
             }
-            if (audio.paused) {
-              audio.src = audio_url
+            if (!isSameTrack || audio.paused) {
+              audio.src = audio_url // always use a fresh (non-expired) signed URL when (re)starting playback
               audio.play();
             } else {
               audio.pause();
