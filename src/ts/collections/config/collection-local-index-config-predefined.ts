@@ -4,13 +4,26 @@ import { AnyDict } from "../../types";
 import { LocalCollectionSource } from "./collection-local-index-config";
 
 export default class LocalCollectionConfigPredefined extends MouApplication {
- 
+
   override APP_NAME = "LocalCollectionConfigPredefined"
 
   //private html?: JQuery<HTMLElement>;
   private callback: Function;
   private predefinedSources: AnyDict;
-  
+
+  static DEFAULT_OPTIONS = {
+    id: "mou-local-config-source",
+    classes: ["mou"],
+    position: {
+      width: 600,
+      height: "auto"
+    }
+  }
+
+  static PARTS = {
+    content: { template: `modules/${MODULE_ID}/templates/config-local-collection-predefined.hbs` }
+  }
+
   constructor(callback: Function) {
     super();
     this.callback = callback;
@@ -46,42 +59,36 @@ export default class LocalCollectionConfigPredefined extends MouApplication {
    * @override
    * @returns {string} The localized title string.
    */
-  override get title(): string {
+  get title(): string {
     return (game as Game).i18n!.localize("MOU.localcollection_predefined");
   }
 
-  static override get defaultOptions(): Application.Options {
-    return (foundry.utils as AnyDict).mergeObject(super.defaultOptions, {
-      id: "mou-local-config-source",
-      classes: ["mou"],
-      template: `modules/${MODULE_ID}/templates/config-local-collection-predefined.hbs`,
-      width: 600,
-      height: "auto"
-    }) as Application.Options;
-  }
-
-  override async getData() {
+  async _prepareContext(_options: AnyDict) {
     return {
       "predefinedSources": this.predefinedSources
     }
   }
 
-  override activateListeners(html: JQuery<HTMLElement>): void {
-    super.activateListeners(html);
+  /**
+   * V2: activateListeners(html) is replaced by _onRender(context, options).
+   */
+  async _onRender(context: AnyDict, options: AnyDict): Promise<void> {
+    await super._onRender(context, options)
+    const html = $((this as AnyDict).element as HTMLElement)
     html.find("a").on("click", this._onAction.bind(this))
     //this.html = html
   }
 
   /**
    * Handles action events triggered by user interactions.
-   * 
+   *
    * @param event - The event object representing the user interaction.
-   * 
+   *
    * This method performs different actions based on the data-id attribute of the event's current target:
    * - "folder": Opens a FilePicker to select a folder and updates the source path, source, and name.
    * - "save": Validates the source name and path, then calls the callback function with the source and closes the dialog.
    * - "cancel": Closes the dialog without performing any action.
-   * 
+   *
    * If the source name or path is invalid when attempting to save, an error notification is displayed.
    */
   _onAction(event: Event): void {

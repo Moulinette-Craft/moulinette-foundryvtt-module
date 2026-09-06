@@ -3,7 +3,7 @@ import { AnyDict } from "../types";
 import MouApplication from "./application";
 
 export default class MouUser extends MouApplication {
-  
+
   override APP_NAME = "MouUser"
   static TIMER_DURATION = 120;  // authentication workflow max duration
   static TIMER_CHECK_EVERY = 2; // interval (in seconds) for checking if user completed the authentication
@@ -14,20 +14,24 @@ export default class MouUser extends MouApplication {
 
   private forceRefresh = false
 
-  override get title(): string {
+  get title(): string {
     return (game as Game).i18n!.localize("MOU.user");
   }
 
-  static override get defaultOptions(): Application.Options {
-    return (foundry.utils as AnyDict).mergeObject(super.defaultOptions, {
-      id: "mou-user",
-      classes: ["mou"],
-      template: `modules/${MODULE_ID}/templates/user.hbs`,
+  static DEFAULT_OPTIONS = {
+    id: "mou-user",
+    classes: ["mou"],
+    window: {
+      title: "MOU.user"
+    },
+    position: {
       width: 600,
-      height: "auto",
-      closeOnSubmit: false,
-      submitOnClose: false
-    }) as Application.Options;
+      height: "auto"
+    }
+  }
+
+  static PARTS = {
+    content: { template: `modules/${MODULE_ID}/templates/user.hbs` }
   }
 
   _resetTimer() {
@@ -38,31 +42,35 @@ export default class MouUser extends MouApplication {
     }
   }
 
-  override async close(options?: Application.CloseOptions): Promise<void> {
+  async close(options?: AnyDict): Promise<void> {
     this._resetTimer()
-    super.close(options)
+    await super.close(options)
   }
 
-  override async getData() {
+  async _prepareContext(_options: AnyDict) {
     this._resetTimer()
     const user = await MouApplication.getModule().cloudclient.getUser(true, this.forceRefresh)
-    const data = { 
+    const data = {
       refreshed: this.forceRefresh,
-      user: user 
+      user: user
     }
     this.forceRefresh = false
     return data
   }
 
-  override activateListeners(html: JQuery<HTMLElement>): void {
-    super.activateListeners(html);
+  /**
+   * V2: activateListeners(html) is replaced by _onRender(context, options).
+   */
+  async _onRender(context: AnyDict, options: AnyDict) {
+    await super._onRender(context, options)
+    const html = $((this as AnyDict).element as HTMLElement)
     this.html = html
-    
+
     // buttons
     this.html.find("button").on("click", this._onClickButton.bind(this))
 
     // make sure window is on top of others
-    this.bringToTop()
+    ;(this as AnyDict).bringToFront()
   }
 
   /**
@@ -76,8 +84,8 @@ export default class MouUser extends MouApplication {
       this.html?.find(".login button").prop('disabled', true);
       this.forceRefresh = true
       this.render()
-    } 
-    else if(source.hasClass("loginPatreon") || source.hasClass("loginDiscord")) {      
+    }
+    else if(source.hasClass("loginPatreon") || source.hasClass("loginDiscord")) {
       let authURL = "";
       let authSource = "";
       const newGUID = (foundry.utils as AnyDict).randomID(26)
@@ -89,7 +97,7 @@ export default class MouUser extends MouApplication {
         authSource = "discord"
       }
       this.logInfo(`Signing in with ${(authSource as unknown as AnyDict)?.capitalize()}...`)
-      
+
       await MouApplication.setSettings(SETTINGS_SESSION_ID, newGUID)
       window.open(authURL, '_blank');
 
@@ -127,6 +135,5 @@ export default class MouUser extends MouApplication {
       //new MoulinettePatreonGift(this).render(true)
     }
   }
-  
+
 }
-  

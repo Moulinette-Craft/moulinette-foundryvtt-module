@@ -3,7 +3,7 @@ import { AnyDict } from "../types.js";
 import MouApplication from "./application.js";
 
 export default class MouBrowserFiltersSources extends MouApplication {
-  
+
   static override APP_NAME = "MouBrowserFiltersSources"
   override APP_NAME = MouBrowserFiltersSources.APP_NAME
 
@@ -11,43 +11,50 @@ export default class MouBrowserFiltersSources extends MouApplication {
   private description: string;
   private callback?: Function;
 
+  static DEFAULT_OPTIONS = {
+    id: "mou-filters-sources",
+    classes: ["mou"],
+    window: {
+      title: "MOU.browser_filters_visibility"
+    },
+    position: {
+      width: 400,
+      height: "auto"
+    }
+  }
+
+  static PARTS = {
+    content: { template: `modules/${MODULE_ID}/templates/browser-filters-sources.hbs` }
+  }
+
   constructor(sources : any[], descr: string, callback?: Function) {
     super({})
     this.sources = sources;
     this.description = descr;
     this.callback = callback;
   }
-  
-  static override get defaultOptions() {
-    return (foundry.utils as AnyDict).mergeObject(super.defaultOptions, {
-      id: "mou-filters-sources",
-      classes: ["mou"],
-      title: (game as Game).i18n!.localize("MOU.browser_filters_visibility"),
-      template: `modules/${MODULE_ID}/templates/browser-filters-sources.hbs`,
-      width: 400,
-      height: "auto",
-      closeOnSubmit: true,
-      submitOnClose: false,
-    });
-  }
-  
-  override getData() {
+
+  async _prepareContext(_options: AnyDict) {
     const disabled = MouApplication.getSettings(SETTINGS_HIDDEN) as AnyDict
-    return { 
-      sources: this.sources.map((s) => { return { 
-        id: s.id, 
-        name: s.name, 
+    return {
+      sources: this.sources.map((s) => { return {
+        id: s.id,
+        name: s.name,
         desc: s.desc,
         disabled: disabled[s.id] ?? false,
       }}),
-      description: this.description, 
+      description: this.description,
       disabled: disabled
     }
   }
 
-  override activateListeners(html: JQuery<HTMLElement>) {
-    super.activateListeners(html);
-    this.bringToTop()
+  /**
+   * V2: activateListeners(html) is replaced by _onRender(context, options).
+   */
+  async _onRender(context: AnyDict, options: AnyDict) {
+    await super._onRender(context, options)
+    ;(this as AnyDict).bringToFront()
+    const html = $((this as AnyDict).element as HTMLElement)
     html.find("button").on("click", (ev) => {
       const actionId = ev.currentTarget.dataset.id;
       if(actionId == "save") {
@@ -70,7 +77,6 @@ export default class MouBrowserFiltersSources extends MouApplication {
       }
     });
   }
-  
 
-    
+
 }

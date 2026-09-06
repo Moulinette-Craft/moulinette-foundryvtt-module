@@ -24,7 +24,7 @@ export class MoulinetteFilePicker extends FilePickerBase {
       return super.browse(target, options);
     }
 
-    const browser = new MouBrowser({} as Application.Options, "Image", this.options.callback ? this.options.callback : undefined);
+    const browser = new MouBrowser({}, "Image", this.options.callback ? this.options.callback : undefined);
     browser.render(true)
 
     return {

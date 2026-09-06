@@ -6,10 +6,26 @@ import MouApplication from "./application";
  * This class server allow Moulinette Application to be independant from FVTT
  */
 export default class MouPreview extends MouApplication {
- 
+
   override APP_NAME = "MouPreview";
   private assetURL: string;
   private animated: boolean;
+
+  static DEFAULT_OPTIONS = {
+    id: "mou-preview",
+    classes: ["mou"],
+    window: {
+      resizable: true
+    },
+    position: {
+      width: "auto",
+      height: "auto"
+    }
+  }
+
+  static PARTS = {
+    content: { template: `modules/${MODULE_ID}/templates/preview.hbs` }
+  }
 
   constructor(assetURL: string) {
     super();
@@ -18,28 +34,20 @@ export default class MouPreview extends MouApplication {
     this.animated = MouConfig.MEDIA_VIDEOS.includes(ext);
   }
 
-  static override get defaultOptions(): Application.Options {
-    return (foundry.utils as AnyDict).mergeObject(super.defaultOptions, {
-      id: "mou-preview",
-      classes: ["mou"],
-      template: `modules/${MODULE_ID}/templates/preview.hbs`,
-      width: "auto",
-      height: "auto",
-      resizable: true
-    }) as Application.Options;
-  }
-
-  override async getData() {
-    
+  async _prepareContext(_options: AnyDict) {
     return {
       animated: this.animated,
       asset: this.assetURL
     };
   }
 
-  override activateListeners(html: JQuery<HTMLElement>): void {
-    super.activateListeners(html);
-    const parent = this;
+  /**
+   * V2: activateListeners(html) is replaced by _onRender(context, options).
+   */
+  async _onRender(context: AnyDict, options: AnyDict) {
+    await super._onRender(context, options)
+    const html = $((this as AnyDict).element as HTMLElement)
+    const parent = this
     html.find(".previewImg").one("load", function() {
       parent.autoResize();
     }).each(function() {

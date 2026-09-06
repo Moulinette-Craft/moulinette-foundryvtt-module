@@ -23,13 +23,26 @@ export interface LocalCollectionSource {
  * This class for configuring local collections
  */
 export default class LocalCollectionConfig extends MouApplication {
- 
+
   override APP_NAME = "LocalCollectionConfig"
 
   //private html?: JQuery<HTMLElement>;
   private advanced: boolean;
   private callback: Function;
   private indexAll: boolean;
+
+  static DEFAULT_OPTIONS = {
+    id: "mou-local-config",
+    classes: ["mou"],
+    position: {
+      width: 800,
+      height: "auto"
+    }
+  }
+
+  static PARTS = {
+    content: { template: `modules/${MODULE_ID}/templates/config-local-collection.hbs` }
+  }
 
   constructor(callback: Function) {
     super();
@@ -38,21 +51,11 @@ export default class LocalCollectionConfig extends MouApplication {
     this.indexAll = false
   }
 
-  override get title(): string {
+  get title(): string {
     return (game as Game).i18n!.localize("MOU.localcollection_config");
   }
 
-  static override get defaultOptions(): Application.Options {
-    return (foundry.utils as AnyDict).mergeObject(super.defaultOptions, {
-      id: "mou-local-config",
-      classes: ["mou"],
-      template: `modules/${MODULE_ID}/templates/config-local-collection.hbs`,
-      width: 800,
-      height: "auto"
-    }) as Application.Options;
-  }
-
-  override async getData() {
+  async _prepareContext(_options: AnyDict) {
     const settings = MouApplication.getSettings(SETTINGS_COLLECTION_LOCAL) as AnyDict
     let folders = null
     if(settings.folders && settings.folders.length > 0) {
@@ -69,8 +72,12 @@ export default class LocalCollectionConfig extends MouApplication {
     };
   }
 
-  override activateListeners(html: JQuery<HTMLElement>): void {
-    super.activateListeners(html);
+  /**
+   * V2: activateListeners(html) is replaced by _onRender(context, options).
+   */
+  async _onRender(context: AnyDict, options: AnyDict): Promise<void> {
+    await super._onRender(context, options)
+    const html = $((this as AnyDict).element as HTMLElement)
     html.find(".cfg-actions a").on("click", this._onFolderAction.bind(this))
     html.find("footer button").on("click", this._onAction.bind(this))
     html.find(".more a").on("click", this._onToggleAvancedOptions.bind(this))
@@ -108,7 +115,7 @@ export default class LocalCollectionConfig extends MouApplication {
       }
     }
   }
-  
+
   /**
    * Show/hide advanced options
    */
@@ -119,19 +126,19 @@ export default class LocalCollectionConfig extends MouApplication {
     this.render()
   }
 
-  
+
   /**
    * Indexes the next folder in the local collection settings that has not yet been indexed.
-   * 
+   *
    * This method retrieves the local collection settings and iterates through the folders.
    * If a folder has not been indexed (i.e., `assets` is 0) and has a valid path and source,
    * it triggers the indexing process for that folder using `MouLocalClient.indexAllLocalAssets`.
-   * 
+   *
    * @remarks
    * The indexing process is asynchronous and uses a callback function `_callbackAfterIndexing`
    * to handle post-indexing operations. If indexAll is set to true, `_callbackAfterIndexing` will
    * trigger the indexing of the next folder in the collection.
-   * 
+   *
    * @returns {void}
    */
   indexNextFolder(): void {
@@ -233,7 +240,7 @@ export default class LocalCollectionConfig extends MouApplication {
    */
   _callbackAfterNewSource(source: LocalCollectionSource): void {
     const parent = this
-    
+
     if(!source) return;
     const settings = MouApplication.getSettings(SETTINGS_COLLECTION_LOCAL) as AnyDict
     if(source.id && settings.folders) {
@@ -284,8 +291,8 @@ export default class LocalCollectionConfig extends MouApplication {
     }
   }
 
-  override async close(options?: Application.CloseOptions): Promise<void> {
-    super.close(options)
+  async close(options?: AnyDict): Promise<void> {
+    await super.close(options)
     this.callback()
   }
 }

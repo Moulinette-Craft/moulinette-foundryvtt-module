@@ -7,32 +7,35 @@ import { CloudMode } from "../collection-cloud-base";
  * This class for configuring cloud collection
  */
 export default class CloudCollectionConfig extends MouApplication {
- 
+
   override APP_NAME = "CloudCollectionConfig"
 
   private html?: JQuery<HTMLElement>;
   private callback: Function;
+
+  static DEFAULT_OPTIONS = {
+    id: "mou-cloud-config",
+    classes: ["mou"],
+    position: {
+      width: 500,
+      height: "auto"
+    }
+  }
+
+  static PARTS = {
+    content: { template: `modules/${MODULE_ID}/templates/config-cloud-collection.hbs` }
+  }
 
   constructor(callback: Function) {
     super();
     this.callback = callback;
   }
 
-  override get title(): string {
+  get title(): string {
     return (game as Game).i18n!.localize("MOU.cloudcollection_config");
   }
 
-  static override get defaultOptions(): Application.Options {
-    return (foundry.utils as AnyDict).mergeObject(super.defaultOptions, {
-      id: "mou-cloud-config",
-      classes: ["mou"],
-      template: `modules/${MODULE_ID}/templates/config-cloud-collection.hbs`,
-      width: 500,
-      height: "auto"
-    }) as Application.Options;
-  }
-
-  override async getData() {
+  async _prepareContext(_options: AnyDict) {
     const settings = MouApplication.getSettings(SETTINGS_COLLECTION_CLOUD) as AnyDict
     const mode = "mode" in settings ? settings.mode : CloudMode.ALL_ACCESSIBLE
 
@@ -46,8 +49,12 @@ export default class CloudCollectionConfig extends MouApplication {
     };
   }
 
-  override activateListeners(html: JQuery<HTMLElement>): void {
-    super.activateListeners(html);
+  /**
+   * V2: activateListeners(html) is replaced by _onRender(context, options).
+   */
+  async _onRender(context: AnyDict, options: AnyDict): Promise<void> {
+    await super._onRender(context, options)
+    const html = $((this as AnyDict).element as HTMLElement)
     html.find("footer button").on("click", this._onAction.bind(this))
     this.html = html
   }

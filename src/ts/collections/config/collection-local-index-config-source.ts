@@ -11,12 +11,25 @@ import { LocalCollectionSource } from "./collection-local-index-config";
  * setting the source path, name, and options such as thumbnails and metadata.
  */
 export default class LocalCollectionConfigNewSource extends MouApplication {
- 
+
   override APP_NAME = "LocalCollectionConfigNewSource"
 
   //private html?: JQuery<HTMLElement>;
   private callback: Function;
   private source: LocalCollectionSource
+
+  static DEFAULT_OPTIONS = {
+    id: "mou-local-config-source",
+    classes: ["mou"],
+    position: {
+      width: 600,
+      height: "auto"
+    }
+  }
+
+  static PARTS = {
+    content: { template: `modules/${MODULE_ID}/templates/config-local-collection-source.hbs` }
+  }
 
   constructor(callback: Function, source?: LocalCollectionSource) {
     super();
@@ -43,28 +56,22 @@ export default class LocalCollectionConfigNewSource extends MouApplication {
    * @override
    * @returns {string} The localized title string.
    */
-  override get title(): string {
+  get title(): string {
     return (game as Game).i18n!.localize("MOU.localcollection_config_source");
   }
 
-  static override get defaultOptions(): Application.Options {
-    return (foundry.utils as AnyDict).mergeObject(super.defaultOptions, {
-      id: "mou-local-config-source",
-      classes: ["mou"],
-      template: `modules/${MODULE_ID}/templates/config-local-collection-source.hbs`,
-      width: 600,
-      height: "auto"
-    }) as Application.Options;
-  }
-
-  override async getData() {
+  async _prepareContext(_options: AnyDict) {
     return {
       source: this.source
     };
   }
 
-  override activateListeners(html: JQuery<HTMLElement>): void {
-    super.activateListeners(html);
+  /**
+   * V2: activateListeners(html) is replaced by _onRender(context, options).
+   */
+  async _onRender(context: AnyDict, options: AnyDict): Promise<void> {
+    await super._onRender(context, options)
+    const html = $((this as AnyDict).element as HTMLElement)
     html.find("button").on("click", this._onAction.bind(this))
     html.find("input").on("change", this._onInputChange.bind(this))
     //this.html = html
@@ -72,14 +79,14 @@ export default class LocalCollectionConfigNewSource extends MouApplication {
 
   /**
    * Handles action events triggered by user interactions.
-   * 
+   *
    * @param event - The event object representing the user interaction.
-   * 
+   *
    * This method performs different actions based on the data-id attribute of the event's current target:
    * - "folder": Opens a FilePicker to select a folder and updates the source path, source, and name.
    * - "save": Validates the source name and path, then calls the callback function with the source and closes the dialog.
    * - "cancel": Closes the dialog without performing any action.
-   * 
+   *
    * If the source name or path is invalid when attempting to save, an error notification is displayed.
    */
   _onAction(event: Event): void {
@@ -111,7 +118,7 @@ export default class LocalCollectionConfigNewSource extends MouApplication {
 
   /**
    * Handles the input change event for the collection local index configuration source.
-   * 
+   *
    * @param event - The input change event.
    */
   _onInputChange(event: Event): void {

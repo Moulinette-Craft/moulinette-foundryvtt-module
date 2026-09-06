@@ -33,8 +33,8 @@ export default class MouBrowser extends MouApplication {
   private pickerType?: MouCollectionAssetTypeEnum; // picker mode : no filter and only action is to download and return the asset path
   private pickerCallback?: (path: string) => void;
   
-  constructor(options?: Application.Options, pickerType?: string, pickerCallback?: (path: string) => void) {
-    super(options);
+  constructor(options?: AnyDict, pickerType?: string, pickerCallback?: (path: string) => void) {
+    super(MouApplication.adjustPosition(options || {}, MouBrowser.APP_NAME));
     this.pickerType = MouCollectionAssetTypeEnum[pickerType as keyof typeof MouCollectionAssetTypeEnum];
     this.pickerCallback = pickerCallback;
   }
@@ -51,24 +51,27 @@ export default class MouBrowser extends MouApplication {
     folder: ""
   }
 
-  override get title(): string {
+  get title(): string {
     return (game as Game).i18n!.localize("MOU.browser");
   }
 
-  static override get defaultOptions(): Application.Options {
-    const options = (foundry.utils as AnyDict).mergeObject(super.defaultOptions, {
-      id: "mou-browser",
-      classes: ["mou"],
-      template: `modules/${MODULE_ID}/templates/browser.hbs`,
-      resizable: true,
+  static DEFAULT_OPTIONS = {
+    id: "mou-browser",
+    classes: ["mou"],
+    window: {
+      resizable: true
+    },
+    position: {
       width: 1250,
       height: 1000
-    }) as Application.Options;
-    super.adjustPosition(options, MouBrowser.APP_NAME)
-    return options
+    }
   }
 
-  override async getData() {
+  static PARTS = {
+    content: { template: `modules/${MODULE_ID}/templates/browser.hbs` }
+  }
+
+  async _prepareContext(_options: AnyDict) {
     // check that module and collections are properly loaded
     const module = MouApplication.getModule()
     if(!module || !module.collections || module.collections.length == 0) 
@@ -277,8 +280,9 @@ export default class MouBrowser extends MouApplication {
     return filtersHTML;
   }
 
-  override async activateListeners(html: JQuery<HTMLElement>): Promise<void> {
-    super.activateListeners(html);
+  async _onRender(context: AnyDict, options: AnyDict): Promise<void> {
+    await super._onRender(context, options);
+    const html = $((this as AnyDict).element as HTMLElement)
     this.html = html
 
     // Display the loader only in case of the initial data loading
@@ -983,7 +987,7 @@ export default class MouBrowser extends MouApplication {
     }
   }
 
-  override _onDragStart(event: Event): void {
+  _onDragStart(event: Event): void {
     if(event.currentTarget) {
       const target = $(event.currentTarget) // target can be asset itself or button
       const assetId = target.closest(".asset").data("id")
@@ -1059,7 +1063,7 @@ export default class MouBrowser extends MouApplication {
     await MouApplication.setSettings(SETTINGS_PREVS, prevSettings)
   }
 
-  override async close(options?: Application.CloseOptions): Promise<void> {
+  async close(options?: AnyDict): Promise<void> {
     this._stopLoading()
     this.fastLoad = true
     await this.storePosition()
@@ -1105,7 +1109,7 @@ export default class MouBrowser extends MouApplication {
    * Overrides the render method to disable the search bar and asset click events.
    * This avoids the user from triggering more rendering while the current one is still processing.
    */
-  override render(force?: boolean, options?: Application.RenderOptions<Application.Options> | undefined): this {
+  render(force?: boolean, options?: AnyDict): Promise<this> {
     if(this.html) {
       const parent = this
       //this.html.find(".search-bar .indicator").html('<i class="fa-solid fa-hourglass-start"></i>')

@@ -1,7 +1,8 @@
 import { MODULE_ID } from "../constants";
 import { AnyDict } from "../types";
+import MouApplication from "./application";
 
-export class MoulinetteProgress extends Application {
+export class MoulinetteProgress extends MouApplication {
 
   private html?: JQuery<HTMLElement>
   private progress: number;
@@ -10,34 +11,42 @@ export class MoulinetteProgress extends Application {
   // for some unknown reason, doesn't work if not static
   private static interrupted = false;
 
+  static DEFAULT_OPTIONS = {
+    id: "mou-progress",
+    classes: ["mou"],
+    window: {
+      title: "MOU.progressbar"
+    },
+    position: {
+      width: 600,
+      height: 90
+    }
+  }
+
+  static PARTS = {
+    content: { template: `modules/${MODULE_ID}/templates/progressbar.hbs` }
+  }
+
   constructor(title: string, progress?: number, description?: string) {
-    super({ title: title })
+    super({ window: { title } } as AnyDict);
     this.progress = progress ? progress : 0
     this.description = description ? description : ""
     MoulinetteProgress.interrupted = false;
   }
 
-  static override get defaultOptions() {
-    return (foundry.utils as AnyDict).mergeObject(super.defaultOptions, {
-      id: "mou-progress",
-      classes: ["mou"],
-      title: (game as Game).i18n!.localize("MOU.progressbar"),
-      template: `modules/${MODULE_ID}/templates/progressbar.hbs`,
-      width: 600,
-      height: 90
-    });
-  }
-
-  override async getData() {
+  async _prepareContext(_options: AnyDict) {
     return {
       progress: this.progress,
       description: this.description
     };
   }
 
-  override activateListeners(html: JQuery<HTMLElement>) {
-    super.activateListeners(html);
-    this.html = html
+  /**
+   * V2: activateListeners(html) is replaced by _onRender(context, options).
+   */
+  async _onRender(context: AnyDict, options: AnyDict) {
+    await super._onRender(context, options)
+    this.html = $((this as AnyDict).element as HTMLElement)
   }
 
   /**
@@ -66,14 +75,14 @@ export class MoulinetteProgress extends Application {
     }
     if(description && description != this.description) {
       this.html.find(".description").text(description)
-    } 
+    }
   }
 
-  override async close(options?: Application.CloseOptions): Promise<void> {
+  async close(options?: AnyDict): Promise<void> {
     if(this.progress < 100) {
       MoulinetteProgress.interrupted = true
     }
-    
+
     await super.close(options)
   }
 
