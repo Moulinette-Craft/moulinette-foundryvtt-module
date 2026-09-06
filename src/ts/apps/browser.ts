@@ -300,42 +300,86 @@ export default class MouBrowser extends MouApplication {
     }
 
     this._stopLoading()
-    
+
+    await this._activateListeners(html)
+
+    // give focus back to whatever the user was interacting with before re-rendering
+    const search = html.find(".search-bar input")
+    const focus = this.filters_prefs?.focus.split("#")
+    switch(focus[0]) {
+      case "search":
+        search.trigger("focus");
+        const searchInput = search.get(0) as HTMLInputElement
+        if(focus.length == 1) {
+          searchInput.setSelectionRange(searchInput.value.length, searchInput.value.length)
+        } else {
+          searchInput.setSelectionRange(Number(focus[1]), Number(focus[1]))
+        }
+
+      break
+      case "creator": this.html.find("#creator-select").trigger("focus"); break
+      case "pack": this.html.find("#pack-select").trigger("focus"); break
+      case "collection": this.html.find(`#filterCollections input[id='${focus[1]}']`).trigger("focus"); break
+      case "type": this.html.find(`#filterTypes input[id='${focus[1]}']`).trigger("focus"); break
+      default:
+    }
+
+    this.loadMoreAssets()
+  }
+
+  /**
+   * Binds every UI listener (filters, search, header, advanced settings) onto `html`.
+   *
+   * This used to live inline in `_onRender()`, but FoundryVTT V14's "detach window"
+   * feature (popping the app out into its own browser window) does NOT call
+   * `_onRender()` again - the content re-appears in the new document, but the
+   * listeners we bound against the old nodes are left behind, which is why drag
+   * & drop / search / filters stop responding once detached. This method is
+   * therefore also called from `_onAttach()`/`_onDetach()` so listeners get
+   * rebound against whatever DOM is actually on screen after the window moves.
+   *
+   * All bindings use the `.mouBrowser` namespace and are unbound first, so calling
+   * this multiple times against the same DOM (e.g. a normal render followed by an
+   * attach) never double-binds handlers.
+   */
+  async _activateListeners(html: JQuery<HTMLElement>): Promise<void> {
+    html.off(".mouBrowser")
+
     html.find(".filters h2")
-      .on("click", this._onClickFilterSection.bind(this));
+      .on("click.mouBrowser", this._onClickFilterSection.bind(this));
     html.find(".filters .clear a")
-      .on("click", this._onClearFilters.bind(this));
+      .on("click.mouBrowser", this._onClearFilters.bind(this));
     html.find(".filters-toggle")
-      .on("click", this._onClickFiltersToggle.bind(this));
+      .on("click.mouBrowser", this._onClickFiltersToggle.bind(this));
     html.find(".filters input[name=collection]")
-      .on("click", this._onClickCollection.bind(this));
+      .on("click.mouBrowser", this._onClickCollection.bind(this));
     html.find(".filters input[name=asset_type]")
-      .on("click", this._onClickAssetType.bind(this));
+      .on("click.mouBrowser", this._onClickAssetType.bind(this));
     html.find(".filters select")
-      .on("change", this._onSelectFilters.bind(this))
-      .on("mousedown", this._onDeselectFilters.bind(this));
+      .on("change.mouBrowser", this._onSelectFilters.bind(this))
+      .on("mousedown.mouBrowser", this._onDeselectFilters.bind(this));
     html.find(".content")
-      .on('scroll', this._onScroll.bind(this))
+      .on('scroll.mouBrowser', this._onScroll.bind(this))
     html.find(".filters .action a")
-      .on("click", this._onConfigureCollection.bind(this));
+      .on("click.mouBrowser", this._onConfigureCollection.bind(this));
     html.find(".filters .folders a")
-      .on("click", this._onChooseFolder.bind(this));
+      .on("click.mouBrowser", this._onChooseFolder.bind(this));
     html.find(".filters .folders").scrollTop(this.currentFoldersScroll.top);
     html.find(".filters .folders").scrollLeft(this.currentFoldersScroll.left);
-    
+
     html.find(".filters .pack-select a")
-      .on("click", this._onOpenPackOnWebsite.bind(this));
+      .on("click.mouBrowser", this._onOpenPackOnWebsite.bind(this));
 
     html.find(".filters .collection-config")
-      .on("click", this._onConfigureCollectionVisibility.bind(this));
+      .on("click.mouBrowser", this._onConfigureCollectionVisibility.bind(this));
     html.find(".filters .type-config")
-      .on("click", this._onConfigureTypeVisibility.bind(this));
+      .on("click.mouBrowser", this._onConfigureTypeVisibility.bind(this));
 
     // input triggers searches
     const search = html.find(".search-bar input")
     const AUTO_SEARCH_DEBOUNCE_MS = 750
     let autoSearchTimeout = 0 as unknown as ReturnType<typeof setTimeout>
-  
+
     const performSearch = async () => {
       this.filters.searchTerms = search.val() as string;
       this.filters_prefs!.focus = "search"
@@ -351,66 +395,51 @@ export default class MouBrowser extends MouApplication {
 
     const cancelAutoSearch = () => clearTimeout(autoSearchTimeout)
 
-    search.on('keypress', async (event) => {
+    search.on('keypress.mouBrowser', async (event) => {
       if(event.key === 'Enter') {
         await performSearch()
       }
     })
 
-    search.on('input', async () => {
+    search.on('input.mouBrowser', async () => {
       cancelAutoSearch()
       initAutoSearch()
     })
 
-    search.on('mousedown', this._onClearSearchTerms.bind(this));
-    html.find(".search-bar .reset-button").on('click', () => search.val(''));
-    html.find(".search-bar button.search").on('click', async () => {
+    search.on('mousedown.mouBrowser', this._onClearSearchTerms.bind(this));
+    html.find(".search-bar .reset-button").on('click.mouBrowser', () => search.val(''));
+    html.find(".search-bar button.search").on('click.mouBrowser', async () => {
       cancelAutoSearch()
       performSearch()
     });
 
-    const focus = this.filters_prefs?.focus.split("#")
-    switch(focus[0]) {
-      case "search": 
-        search.trigger("focus"); 
-        const searchInput = search.get(0) as HTMLInputElement
-        if(focus.length == 1) {
-          searchInput.setSelectionRange(searchInput.value.length, searchInput.value.length)
-        } else {
-          searchInput.setSelectionRange(Number(focus[1]), Number(focus[1]))
-        }
-        
-      break
-      case "creator": this.html.find("#creator-select").trigger("focus"); break
-      case "pack": this.html.find("#pack-select").trigger("focus"); break
-      case "collection": this.html.find(`#filterCollections input[id='${focus[1]}']`).trigger("focus"); break
-      case "type": this.html.find(`#filterTypes input[id='${focus[1]}']`).trigger("focus"); break
-      default:
-    }
-
+    // help link : create it if missing, but (re)bind its click every time
+    // regardless, since after a detach/attach the anchor may already exist
+    // in the copied DOM without ever having had its listener rebound here.
     const header = html.closest(".window-app").find(".window-header")
-    const help = header.find(".help")
+    let help = header.find(".help")
     if(help.length == 0) {
       const helpHTML = $(`<a class="help"><i class="fa-solid fa-up-right-from-square"></i> ${(game as Game).i18n!.localize("MOU.help")}</a>`);
       header.find(".close").before(helpHTML)
-      header.find(".help").on("click", () => {
-        window.open("https://assets.moulinette.cloud/docs", "_blank")
-      })
+      help = header.find(".help")
     }
+    help.on("click.mouBrowser", () => {
+      window.open("https://assets.moulinette.cloud/docs", "_blank")
+    })
 
     // header options
-    html.find("header .options i").on("click", this._onToggleBrowserOptions.bind(this))
+    html.find("header .options i").on("click.mouBrowser", this._onToggleBrowserOptions.bind(this))
 
     // show/hide advanced settings
     const adv_settings = MouApplication.getSettings(SETTINGS_ADVANCED) as AnyDict
     if(adv_settings.visible) {
       html.find(".advanced_settings").show()
     }
-    html.find("footer .settings_toggle a").on("click", async (ev) => {
+    html.find("footer .settings_toggle a").on("click.mouBrowser", async (ev) => {
       ev.preventDefault();
       ev.stopPropagation();
       const div = html.find(".advanced_settings").toggle();
-      
+
       adv_settings["visible"] = div.is(":visible")
       await MouApplication.setSettings(SETTINGS_ADVANCED, adv_settings, true)
     });
@@ -419,23 +448,23 @@ export default class MouBrowser extends MouApplication {
     await MouBrowser.initializeAdvSettings(adv_settings, "image", MouConfig.DEF_SETTINGS_IMAGE)
     await MouBrowser.initializeAdvSettings(adv_settings, "audio", MouConfig.DEF_SETTINGS_AUDIO)
 
-    html.find(".advanced_settings select[name=channel]").on("change", async (ev) => {
+    html.find(".advanced_settings select[name=channel]").on("change.mouBrowser", async (ev) => {
       const channel = $(ev.currentTarget).val()
       adv_settings.audio.channel = channel
       await MouApplication.setSettings(SETTINGS_ADVANCED, adv_settings, true)
     });
-    html.find(".advanced_settings input[name=mou-audio-volume]").on("change", async (ev) => {
+    html.find(".advanced_settings input[name=mou-audio-volume]").on("change.mouBrowser", async (ev) => {
       const volumeInput = $(ev.currentTarget).val()
       adv_settings.audio.volume = volumeInput
       await MouApplication.setSettings(SETTINGS_ADVANCED, adv_settings, true)
     });
-    html.find(".advanced_settings input[name=tilesize]").on("change", async (ev) => {
+    html.find(".advanced_settings input[name=tilesize]").on("change.mouBrowser", async (ev) => {
       const tilesize = $(ev.currentTarget).val()
       adv_settings.image.tilesize = tilesize
       await MouApplication.setSettings(SETTINGS_ADVANCED, adv_settings, true)
       html.find(".advanced_settings select[name=tilesize_select]").val("")
     });
-    html.find(".advanced_settings select[name=tilesize_select]").on("change", async (ev) => {
+    html.find(".advanced_settings select[name=tilesize_select]").on("change.mouBrowser", async (ev) => {
       const tilesize = $(ev.currentTarget).val()
       if(tilesize) {
         html.find(".advanced_settings input[name=tilesize]").val("" + tilesize)
@@ -444,7 +473,7 @@ export default class MouBrowser extends MouApplication {
         html.find(".advanced_settings select[name=tilesize_select]").val("")
       }
     });
-    html.find(".advanced_settings .dropas .option").on("click", async (ev) => {
+    html.find(".advanced_settings .dropas .option").on("click.mouBrowser", async (ev) => {
       const drop_as = $(ev.currentTarget).data("id")
       if(drop_as) {
         adv_settings.image.drop_as = drop_as
@@ -459,7 +488,7 @@ export default class MouBrowser extends MouApplication {
     } else {
       html.find(".advanced_settings #bgColor").hide()
     }
-    html.find(".advanced_settings input[type=color]").on("input", async (ev) => {
+    html.find(".advanced_settings input[type=color]").on("input.mouBrowser", async (ev) => {
       const fgColor = $(ev.currentTarget).closest(".settings").find("input[name=fgColor]").val()
       const bgColor = $(ev.currentTarget).closest(".settings").find("input[name=bgColor]").val()
       const bgChecked = html.find(".advanced_settings #bgColorEnabled").is(":checked")
@@ -467,7 +496,7 @@ export default class MouBrowser extends MouApplication {
       adv_settings.image.bgcolor = bgChecked ? bgColor : ""
       await MouApplication.setSettings(SETTINGS_ADVANCED, adv_settings, true)
     });
-    html.find(".advanced_settings #bgColorEnabled").on("change", async (ev) => {
+    html.find(".advanced_settings #bgColorEnabled").on("change.mouBrowser", async (ev) => {
       const checked = $(ev.currentTarget).is(":checked")
       const bgColorField = $(ev.currentTarget).closest(".settings").find("input[name=bgColor]")
       const bgColorTransp = $(ev.currentTarget).closest(".settings").find("#bgColorTransp")
@@ -483,9 +512,45 @@ export default class MouBrowser extends MouApplication {
       }
       await MouApplication.setSettings(SETTINGS_ADVANCED, adv_settings, true)
     })
-    
+  }
 
-    this.loadMoreAssets()
+  /**
+   * FoundryVTT V14's native window detach/attach (popping the app into - or back
+   * out of - its own browser window) reconstructs the app's content in the target
+   * document rather than calling `_onRender()` again, so every listener bound in
+   * `_onRender()`/`loadMoreAssets()` is left on nodes that are no longer the ones
+   * on screen. Rebind against the current `this.element` on both transitions so
+   * interactions (drag & drop, search, filters) keep working in either window.
+   *
+   * `_onAttach`/`_onDetach` aren't declared in `fvtt-types` yet (it predates
+   * FoundryVTT V14), hence calling through `super` with optional chaining rather
+   * than relying on a typed base implementation.
+   */
+  async _onAttach(from: Document, to: Document): Promise<void> {
+    await super._onAttach?.(from, to);
+    await this._reactivateAfterWindowChange();
+  }
+
+  async _onDetach(from: Document, to: Document): Promise<void> {
+    await super._onDetach?.(from, to);
+    await this._reactivateAfterWindowChange();
+  }
+
+  private async _reactivateAfterWindowChange(): Promise<void> {
+    const html = $((this as AnyDict).element as HTMLElement)
+    this.html = html
+
+    // `render()` locks inputs/selects as readonly (and unbinds them) while a
+    // render is in progress, expecting `_onRender()` to hand back fresh,
+    // never-readonly nodes once it completes. Detach/attach reuses the same
+    // nodes without going through `_onRender()`, so that lockdown is never
+    // lifted on its own - clear it explicitly here.
+    this._stopLoading()
+    html.find("input").prop("readonly", false)
+    html.find("select").prop("readonly", false)
+
+    await this._activateListeners(html)
+    this._activateAssetListeners()
   }
 
   showContentLoader (useLoaderBackground: boolean = true) {
@@ -583,7 +648,28 @@ export default class MouBrowser extends MouApplication {
       this.html?.find(".content").append(html)
       Array.prototype.push.apply(this.currentAssets, assets);
     }
-    // activate listeners
+    this._activateAssetListeners()
+
+    // show count
+    let countHTML = ""
+    if(this.currentAssetsCount > 0) {
+      countHTML = (game as Game).i18n!.format("MOU.asset_count", {
+        count: String(MouMediaUtils.prettyNumber(this.currentAssets.length, true)),
+        total: String(MouMediaUtils.prettyNumber(this.currentAssetsCount, true)) })
+    } else {
+      countHTML = (game as Game).i18n!.format("MOU.asset_count_nototal", { count: String(MouMediaUtils.prettyNumber(this.currentAssets.length, true)) })
+    }
+    this.html?.find(".count").text(countHTML)
+  }
+
+  /**
+   * (Re)binds the per-asset listeners (hover menu, drag & drop, creator/pack links)
+   * against whatever `.asset` nodes currently exist under `this.html`. Called after
+   * loading a new page of assets, and also from `_onAttach()`/`_onDetach()` since
+   * FoundryVTT V14's window detach doesn't call `_onRender()`/`loadMoreAssets()`
+   * again - the asset nodes reappear in the new document without their listeners.
+   */
+  _activateAssetListeners(): void {
     this.html?.find(".asset").off()
 
     if(!this.pickerType) {
@@ -596,7 +682,7 @@ export default class MouBrowser extends MouApplication {
     } else {
       this.html?.find(".asset").on("click", this._onSelectAsset.bind(this));
     }
-    this.html?.find(".asset .menu").on("mousedown", (event) => { 
+    this.html?.find(".asset .menu").on("mousedown", (event) => {
       if (event.button == 2) {
         this.disableMenu = true;
         this._onHideMenu(event as any);
@@ -611,17 +697,6 @@ export default class MouBrowser extends MouApplication {
       img.classList.add("fallback-image");
       $(this).closest("video").replaceWith(img);
     });
-
-    // show count
-    let countHTML = ""
-    if(this.currentAssetsCount > 0) {
-      countHTML = (game as Game).i18n!.format("MOU.asset_count", {
-        count: String(MouMediaUtils.prettyNumber(this.currentAssets.length, true)),
-        total: String(MouMediaUtils.prettyNumber(this.currentAssetsCount, true)) })
-    } else {
-      countHTML = (game as Game).i18n!.format("MOU.asset_count_nototal", { count: String(MouMediaUtils.prettyNumber(this.currentAssets.length, true)) })
-    }
-    this.html?.find(".count").text(countHTML)
   }
 
   /** Extend/collapse filter section */
