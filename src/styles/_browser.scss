@@ -1,8 +1,13 @@
 #mou-browser {
-  
-  min-width: 520px;
-  min-height: 450px;
-  
+
+  // ApplicationV2 doesn't set a min-height of its own, so double-clicking the header
+  // to minimize can collapse the window down to just the header - our own min-width/
+  // min-height must not fight that, or the window stays large instead of minimizing.
+  &:not(.minimized) {
+    min-width: 520px;
+    min-height: 450px;
+  }
+
   .window-content {
     padding: 0px;
   }
@@ -168,7 +173,7 @@
         background-position: center;
         background-size: contain;
         background-repeat: no-repeat;
-        background-color: #bbb;
+        background-color: var(--mou-color-background);
         text-align: center;
         color: black;
         font-size: 96px;
@@ -402,7 +407,7 @@
           position: relative;
           border-top-left-radius: 10px;
           border-top-right-radius: 10px;
-          background-color: #bbb;
+          background-color: var(--mou-color-background);
           width: 200px;
           height: 200px;
           display: flex;
@@ -430,9 +435,9 @@
         }
 
         .info {
-          border-left: 1px solid #bbb;
-          border-right: 1px solid #bbb;
-          border-bottom: 1px solid #bbb;
+          border-left: 1px solid var(--mou-color-background);
+          border-right: 1px solid var(--mou-color-background);
+          border-bottom: 1px solid var(--mou-color-background);
           flex-grow: 1; 
         }
 
@@ -440,9 +445,9 @@
           display: flex;
           flex-wrap: wrap;
           justify-content: center;
-          border-left: 1px solid #bbb;
-          border-right: 1px solid #bbb;
-          border-bottom: 1px solid #bbb;
+          border-left: 1px solid var(--mou-color-background);
+          border-right: 1px solid var(--mou-color-background);
+          border-bottom: 1px solid var(--mou-color-background);
           padding: 5px 10px;
           font-size: 12px;
           color: #777;
@@ -564,7 +569,7 @@
         margin: 8px;
         align-items: center;
 
-        border: 1px solid #888;
+        border: 1px solid var(--mou-color-background);
         border-top-left-radius: 10px;
         border-bottom-left-radius: 10px;
 
@@ -582,7 +587,7 @@
           height: 100%;
           border-top-left-radius: 5px;
           border-bottom-left-radius: 5px;
-          background-color: #888;
+          background-color: var(--mou-color-background);
 
           .icon {
             position: absolute;
@@ -592,7 +597,6 @@
           }
 
           .num {
-            color: black;
             z-index: 1;
           }
         }
