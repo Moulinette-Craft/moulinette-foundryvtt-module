@@ -7,7 +7,15 @@
     padding: 0px;
   }
   
-  .browser { 
+  .browser {
+    // V2 renders this template inside its own "content" part wrapper, one level
+    // below .window-content, instead of .browser being window-content's direct
+    // child like in V1 - so it no longer inherits a resolved height from the
+    // core CSS that flexes window-content's direct children to fill the window.
+    // Without an explicit height, the status bar below .container sits right
+    // after the content instead of at the bottom when the window is taller
+    // than its content.
+    height: 100%;
     overflow: hidden; // avoid scrolling
   }
 
