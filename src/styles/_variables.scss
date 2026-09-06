@@ -7,16 +7,9 @@
   --mou-browser-theme-margin: 0px;
 
   --mou-warning-color: darkred;
-  --mou-app-background: url(../../ui/parchment.jpg);
-  // Fallback shown while the image above loads, and if it 404s - FVTT v13 dropped/moved
-  // some of its classic core textures, and ApplicationV2 windows default to a dark
-  // background, so without this fallback a missing texture renders as black instead
-  // of parchment.
-  --mou-app-background-color: #c2a878;
 }
 
 .system-wfrp4e .mou {
   --mou-browser-theme-margin: 20px;
   --mou-app-background: url(/systems/wfrp4e/ui/frames/window-app-background-bookshelf.webp);
-  --mou-app-background-color: #3a2a1a;
 }

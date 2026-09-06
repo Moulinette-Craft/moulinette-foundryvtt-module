@@ -1,6 +1,5 @@
 import * as fsPromises from "fs/promises";
 import copy from "rollup-plugin-copy";
-import scss from "rollup-plugin-scss";
 import { defineConfig, mergeConfig, Plugin } from "vite";
 import { fileURLToPath, URL } from 'node:url'
 import vueAppConfig from './src/vue/vite.config.ts'
@@ -19,19 +18,26 @@ export default mergeConfig(
         input: "src/ts/module.ts",
         // we build a single file with vite
         output: {
-          dir: "dist/scripts",
+          // asset/entry file names below are relative to `dir`, and Rollup
+          // won't allow "../" in them, so `dir` has to be the dist root
+          // (not dist/scripts) for the CSS asset to land at dist/style.css.
+          dir: "dist",
           format: "es",
-          entryFileNames: "module.js"
+          entryFileNames: "scripts/module.js",
+          // Vite handles the "../styles/main.scss" import natively (via the
+          // `sass` package) and emits it as a CSS asset alongside module.js.
+          // rollup-plugin-scss used to be relied on to write dist/style.css
+          // (which module.json references), but Vite's own CSS pipeline runs
+          // first and produces its own hashed asset instead - the plugin's
+          // output was silently going stale. Force the CSS asset's name/path
+          // directly so it lands where module.json expects it.
+          assetFileNames: (assetInfo) =>
+            assetInfo.names?.[0]?.endsWith(".css") ? "style.css" : "scripts/assets/[name]-[hash][extname]",
         },
       },
     },
     plugins: [
       updateModuleManifestPlugin(),
-      scss({
-        output: "dist/style.css",
-        sourceMap: true,
-        watch: ["src/styles/*.scss"],
-      }),
       copy({
         targets: [
           { src: "src/languages", dest: "dist" },

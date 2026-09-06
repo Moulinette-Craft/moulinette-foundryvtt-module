@@ -96,10 +96,7 @@
     justify-content: space-between;
     height: var(--mou-browser-footer-height);
     font-size: 12px;
-    // Fallback color in case this core FVTT texture is missing (see --mou-app-background-color)
-    background-color: #2b2b2b;
-    background-image: url(../../ui/denim075.png);
-    background-repeat: repeat;
+    background: url(../../ui/denim075.png) repeat;
     border-top: 1px solid #000;
     align-items: center;
     padding: 0px 10px;
@@ -337,9 +334,7 @@
         }
 
         &.use-background .loader-content {
-          background-color: var(--mou-app-background-color);
-          background-image: var(--mou-app-background);
-          background-repeat: repeat;
+          background: var(--mou-app-background) repeat;
         }
 
         .loader-content {
@@ -674,9 +669,6 @@
     position: absolute;
     bottom: calc(var(--mou-browser-footer-height) + var(--mou-browser-theme-margin));
     width: calc(100% - var(--mou-browser-theme-margin));
-    background-color: var(--mou-app-background-color);
-    background-image: var(--mou-app-background);
-    background-repeat: repeat;
     z-index: 10;
     padding: 5px;
     border-top: 1px solid #000;
