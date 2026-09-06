@@ -748,6 +748,12 @@
 
 #mou-filters-sources {
 
+  // With many sources, the content can be taller than the window - scroll it
+  // instead of letting it overflow and hide the footer buttons below.
+  .window-content {
+    overflow-y: auto;
+  }
+
   h2 {
     margin: 0px;
     margin-bottom: 5px;
