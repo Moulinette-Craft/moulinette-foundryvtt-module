@@ -352,11 +352,14 @@ export default class MouFoundryUtils {
     data.height = (tex as AnyDict).baseTexture.height * ratio;
     data.texture = { src: imgPath }
 
-    // Validate that the drop position is in-bounds and snap to grid
+    // Validate that the drop position is in-bounds
     if ( !canvas.dimensions.rect.contains(point.x, point.y) ) return false;
-    data.x = point.x - (data.width / 2);
-    data.y = point.y - (data.height / 2);
-    //if ( !event.shiftKey ) mergeObject(data, canvas.grid.getSnappedPosition(data.x, data.y));
+    // `point` is the desired *centre* of the tile. FoundryVTT v14 anchors tiles
+    // by their centre (TileDocument.x/y is the centre), whereas v12/v13 anchor
+    // them by their top-left corner and therefore need a half-size offset.
+    const tileAnchoredByCentre = Number((game as Game).version.split(".")[0]) >= 14
+    data.x = tileAnchoredByCentre ? point.x : point.x - (data.width / 2);
+    data.y = tileAnchoredByCentre ? point.y : point.y - (data.height / 2);
 
     // make sure to always put tiles on top
     let maxZ = 0

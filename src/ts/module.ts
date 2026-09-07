@@ -36,6 +36,65 @@ import { addAssetToCanvas } from "../vue/src/components/quick-search/commonFunct
 let module: MouModule;
 let canvasInstance: Canvas;
 
+// Last known mouse position in screen (client) coordinates. Used to decide
+// where an asset should land when it is added to the canvas without a
+// drag & drop (e.g. picked from the Quick Search "Images" mode).
+let lastPointerScreenPosition: { x: number, y: number } | null = null;
+const onPointerMove = (event: PointerEvent) => {
+  lastPointerScreenPosition = { x: event.clientX, y: event.clientY }
+}
+
+/**
+ * Resolve the world position on which an asset should be centred when it is
+ * added to the canvas without an explicit position:
+ *  1. the point of the map located under the mouse cursor - the Quick Search
+ *     modal floats above the (full-window) canvas, so the spot beneath the
+ *     cursor is still a valid map location and is where the user expects the
+ *     asset to appear;
+ *  2. otherwise the centre of the currently displayed canvas view;
+ *  3. as a last resort, the centre of the whole scene.
+ *
+ * The returned point is the desired *centre* of the asset; the actual
+ * placement helpers (e.g. MouFoundryUtils.createTile) offset it by half the
+ * asset's size so it ends up centred rather than anchored by a corner.
+ */
+const resolveCanvasDropPosition = (): { x: number, y: number } => {
+  const canvas = canvasInstance as AnyDict
+  const sceneRect = canvas?.dimensions?.rect
+
+  // 1. Project the last known cursor position into world coordinates.
+  if (canvas?.stage && lastPointerScreenPosition) {
+    const client = lastPointerScreenPosition
+    const world =
+      typeof canvas.canvasCoordinatesFromClient === "function"
+        ? canvas.canvasCoordinatesFromClient({ x: client.x, y: client.y })
+        : canvas.stage.worldTransform?.applyInverse({ x: client.x, y: client.y })
+    if (world && Number.isFinite(world.x) && Number.isFinite(world.y)) {
+      // Clamp (rather than reject) a cursor that lands slightly outside the
+      // scene: the Quick Search modal sits near the top of the screen, so the
+      // point below it frequently projects just past the scene edge. Clamping
+      // keeps the asset near the cursor and also guarantees the point passes
+      // the in-bounds check performed by the placement helpers.
+      if (!sceneRect) return { x: world.x, y: world.y }
+      return {
+        x: Math.min(Math.max(world.x, sceneRect.x), sceneRect.x + sceneRect.width),
+        y: Math.min(Math.max(world.y, sceneRect.y), sceneRect.y + sceneRect.height),
+      }
+    }
+  }
+
+  // 2. Centre of the currently displayed view (stage.pivot is the world point
+  //    the camera is centred on)
+  const pivot = canvas?.stage?.pivot
+  if (pivot && Number.isFinite(pivot.x) && Number.isFinite(pivot.y)) {
+    return { x: pivot.x, y: pivot.y }
+  }
+
+  // 3. Centre of the scene
+  if (sceneRect) return { x: sceneRect.x + sceneRect.width / 2, y: sceneRect.y + sceneRect.height / 2 }
+  return { x: 0, y: 0 }
+}
+
 Hooks.once("init", () => {
   console.log(`Initializing ${MODULE_ID}`);
 
@@ -131,6 +190,7 @@ Hooks.once("init", () => {
   }
 
   window.addEventListener(ADD_ASSET_TO_CANVAS, onAddAssetToCanvas)
+  window.addEventListener("pointermove", onPointerMove, { passive: true })
 });
 
 const onAddAssetToCanvas = async (payload: CustomEventInit<AddAssetToCanvasPayloadType>) => {
@@ -151,13 +211,16 @@ const onAddAssetToCanvas = async (payload: CustomEventInit<AddAssetToCanvasPaylo
           collectionClass?.executeAction(LocalAssetAction.IMPORT, asset) as Promise<any>,
       },
     ]
+    const dropPosition =
+      position && Number.isFinite(position.x) && Number.isFinite(position.y)
+        ? position
+        : resolveCanvasDropPosition()
     const defaultAction = () =>
       collectionClass?.dropDataCanvas(canvasInstance, asset, {
         moulinette: { asset: asset.id },
         type: MouCollectionAssetTypeEnum[asset.type],
-        // TODO: the default position defining functionality to be reconsidered
-        x: position?.x || canvasInstance.app?.view.width || 0 / 2,
-        y: position?.y || canvasInstance.app?.view.height || 0 / 2,
+        x: dropPosition.x,
+        y: dropPosition.y,
       })
     await (exceptions.find((item) => item.condition)?.action || defaultAction)()
     window.dispatchEvent(new CustomEvent(ADDED_ASSET_TO_CANVAS))
@@ -273,6 +336,9 @@ Hooks.on("closeFilePicker", () => removeQuickSearchModalOuterSubscriber('SELECT_
 Hooks.on('closeApplicationV1', () => {
   removeQuickSearchModalOuterSubscriber('SELECT_INTO_IMAGE_PICKER')
   window.removeEventListener(ADD_ASSET_TO_CANVAS, onAddAssetToCanvas)
+  // Note: `onPointerMove` is intentionally left attached for the lifetime of
+  // the page - it is a cheap passive listener and `closeApplicationV1` fires
+  // for every ApplicationV1 that closes, which would otherwise drop it.
 })
 
 Hooks.on('closeFilePicker', () => {
