@@ -114,8 +114,10 @@ watch(
   pointer-events: auto;
 
   &.default-position {
-    transform: translate(-50%, -50%);
-    top: 50%;
+    // Horizontally centred, but anchored near the top of the screen (with a
+    // small gap) so the results list, which expands downwards, stays visible.
+    transform: translateX(-50%);
+    top: 5rem;
     left: 50%;
   }
 }
