@@ -64,7 +64,6 @@ watch(
       ref="modalRef"
       :style="position"
       :class="[$style['quick-search-modal'], { [$style['default-position']]: !hasSearchedOnce && !hasMoved }]"
-      closedby="any"
       v-show="isModalVisible"
       open
     >
