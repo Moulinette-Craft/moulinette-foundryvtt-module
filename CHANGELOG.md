@@ -4,6 +4,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [14.0.0] - 2026-09-07
+### Added
+- Support for FoundryVTT V13/V14 (migrated UI to the ApplicationV2 framework)
+- Audio preview now plays short sounds (<30 sec) directly for authenticated users, streamed live instead of being hidden
+
+### Changed
+- Quick Search: default position changed to top-center
+- Quick Search: keyboard shortcut now toggles visibility instead of only opening it
+- Dropped assets are now centered on the cursor when dropped onto the canvas
+
+### Fixed
+- CSS not being generated on V12
+- Navigation menu (filters) heading size/spacing and advanced settings background
+- Status bar not staying pinned to the bottom of the window when resized
+- Minimized window mode restoring an unintended minimum size
+- Missing vertical scrollbar in filter/visibility configuration windows
+- Search input text color
+- Detached (pop-out) window breaking drag & drop, search and filters
+- Quick Search modal sometimes not opening at all (native dialog light-dismiss behavior conflicting with FoundryVTT's canvas)
+
 ## [2.4.0] - 2026-04-26
 ### Added
 - Audio preview mode for private cloud
