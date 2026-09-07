@@ -60,6 +60,15 @@ watch(
 
 <template>
   <RegularFadeTransition>
+    <!--
+      Do NOT add `closedby="any"` here. It makes the browser itself
+      "light-dismiss" the dialog on any outside interaction - which is
+      already handled manually below via `onClickOutside`. Combined with
+      FoundryVTT's canvas (PIXI keeps firing pointer events once clicked),
+      the native light-dismiss ended up permanently closing this dialog the
+      moment the canvas was interacted with, with no JS error to show for it
+      since it's a browser-native behavior, not application code.
+    -->
     <dialog
       ref="modalRef"
       :style="position"

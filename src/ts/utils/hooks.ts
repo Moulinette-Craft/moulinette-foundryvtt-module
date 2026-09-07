@@ -1,6 +1,6 @@
 import MouApplication from "../apps/application";
 import "~/vue/src/main"
-import { MODULE_ID, OPEN_QUICK_SEARCH_MODAL, SETTINGS_ENABLE_PLAYERS } from "../constants";
+import { MODULE_ID, TOGGLE_QUICK_SEARCH_MODAL, SETTINGS_ENABLE_PLAYERS } from "../constants";
 import { AnyDict } from "../types";
 
 declare var libWrapper: any;
@@ -203,14 +203,17 @@ export default class MouHooks {
   }
 
   static registerKeybindings () {
+    // Note: FoundryVTT's KeyboardManager ignores every keybinding while a text
+    // input is focused, so this `onDown` only ever fires to OPEN the modal.
+    // Closing it again with the same shortcut is handled in the Vue layer
+    // (see quick-search/search-modal/useDisplay.ts).
     (game as Game).keybindings!.register(MODULE_ID, 'TOGGLE_OPEN', {
       name: "MOU.quick_search",
-      textInput: true,
       editable: [
         { key: "KeyM", modifiers: [KeyboardManager.MODIFIER_KEYS.CONTROL] },
       ],
       onDown: () => {
-        window.dispatchEvent(new CustomEvent(OPEN_QUICK_SEARCH_MODAL))
+        window.dispatchEvent(new CustomEvent(TOGGLE_QUICK_SEARCH_MODAL))
       },
       precedence: CONST.KEYBINDING_PRECEDENCE.NORMAL,
     });

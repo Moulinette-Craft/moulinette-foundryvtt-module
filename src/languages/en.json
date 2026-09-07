@@ -194,7 +194,7 @@
   "MOU.predefined_pf2e_icons": "PF2e Icons",
   "MOU.predefined_pf2e_icons_desc": "The icons provided by PF2e system (actions, equipment, hazards, features, etc.)",
   "MOU.progressbar": "Progressbar",
-  "MOU.quick_search": "Open Moulinette Quick Search",
+  "MOU.quick_search": "Toggle Moulinette Quick Search",
   "MOU.refresh_links": "Refresh Patreon/Discord",
   "MOU.reindex_hint": "Re-index all content in this folder. Regenerates metadata but not thumbnails",
   "MOU.result": "result",
