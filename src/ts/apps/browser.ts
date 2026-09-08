@@ -80,11 +80,15 @@ export default class MouBrowser extends MouApplication {
     const disabled = MouApplication.getSettings(SETTINGS_HIDDEN) as AnyDict
     this.collections = module.collections.filter( col => {
       col.setPickerMode(!!this.pickerType);
+      // collections the user hid in the "sources visibility" dialog stay hidden in every mode,
+      // including picker mode (opened from an actor portrait / item icon)
+      if(disabled[col.getId()]) {
+        return false
+      }
       if(this.pickerType) {
         return col.supportsType(this.pickerType)
-      } else {
-        return !disabled[col.getId()]
       }
+      return true
     })
     if(this.collections.length == 0) {
       throw new Error(`${this.APP_NAME} | No collection available!`);
