@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [14.0.1] - 2026-09-07
+### Changed
+- Moulinette User screen: consistent button styling and sizing, larger section titles
+- Removed internal compatibility code for FoundryVTT V12 and earlier
+
+### Fixed
+- Console warnings about the deprecated `SceneControlTool#onClick` and the global `FilePicker` namespace
+- Media Optimizer staying disabled after a failed download
+- Collection configuration reverting to its default state when the browser is opened from an actor portrait or an item icon (#28)
+- "Copy to clipboard" doing nothing when FoundryVTT is served over plain HTTP or from an unfocused window (#17)
+
+### Security
+- Players could open the browser through the file picker or the quick search shortcut even when Moulinette was not enabled for players (#53)
+
 ## [14.0.0] - 2026-09-07
 ### Added
 - Support for FoundryVTT V13/V14 (migrated UI to the ApplicationV2 framework)
