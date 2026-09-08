@@ -1,5 +1,6 @@
 import { MouCollectionAssetTypeEnum } from "../apps/collection";
 import MouConfig from "../constants";
+import { AnyDict } from "../types";
 
 /**
  * A utility class for working with media files.
@@ -148,29 +149,60 @@ export default class MouMediaUtils {
 
   /**
    * Copies the provided string data to the clipboard.
-   * 
+   *
    * @param data - The string data to be copied to the clipboard.
-   * 
+   *
    * @remarks
-   * This method uses the `navigator.clipboard.writeText` API to copy the text to the clipboard.
-   * If the copy operation is successful, a success notification is displayed.
-   * If the copy operation fails, a warning notification is displayed.
-   * 
+   * Foundry's `game.clipboard.copyPlainText` is used first: unlike `navigator.clipboard.writeText`
+   * it also works when Foundry is served over plain HTTP (insecure context, e.g. a LAN IP) or when
+   * the document is not focused, both of which otherwise make the copy silently fail. A legacy
+   * `execCommand("copy")` fallback is kept for older/edge environments.
+   * A success or warning notification is displayed depending on the outcome.
+   *
    * @example
    * ```typescript
    * const text = "Hello, World!";
    * copyToClipboard(text);
    * ```
    */
-  static copyToClipboard(data: string) {
-    if(data) {
-      navigator.clipboard.writeText(data).then(() => {
-        ui.notifications?.info((game as Game).i18n!.localize("MOU.clipboard_copy_success"))
-      })
-      .catch(() => {
-        ui.notifications?.warn((game as Game).i18n!.localize("MOU.clipboard_copy_failed"))
-      });
+  static async copyToClipboard(data: string) {
+    if(!data) return
+    try {
+      const clipboard = (game as AnyDict).clipboard
+      if(clipboard?.copyPlainText) {
+        await clipboard.copyPlainText(data)
+      } else if(navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(data)
+      } else if(!MouMediaUtils.legacyCopyToClipboard(data)) {
+        throw new Error("No clipboard mechanism available")
+      }
+      ui.notifications?.info((game as Game).i18n!.localize("MOU.clipboard_copy_success"))
+    } catch(e) {
+      console.warn("Moulinette | Unable to copy to clipboard", e)
+      ui.notifications?.warn((game as Game).i18n!.localize("MOU.clipboard_copy_failed"))
     }
+  }
+
+  /**
+   * Legacy clipboard copy using a hidden textarea and `document.execCommand("copy")`.
+   * Returns true if the copy command reported success.
+   */
+  private static legacyCopyToClipboard(data: string): boolean {
+    const textarea = document.createElement("textarea")
+    textarea.value = data
+    textarea.setAttribute("readonly", "")
+    textarea.style.position = "absolute"
+    textarea.style.left = "-9999px"
+    document.body.appendChild(textarea)
+    textarea.select()
+    let success = false
+    try {
+      success = document.execCommand("copy")
+    } catch (e) {
+      success = false
+    }
+    document.body.removeChild(textarea)
+    return success
   }
 
   /**
