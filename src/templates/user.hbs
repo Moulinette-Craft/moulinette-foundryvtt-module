@@ -32,9 +32,9 @@
             <p><button class="loginPatreon"><i class="fab fa-patreon"></i> {{localize "MOU.link_patreon"}}</button></p>
           {{/unless}}
           <p><button class="gift"><i class="fa-solid fa-gift"></i> {{localize "MOU.claim_gift"}}</button></p>
-          <p><a href="https://assets.moulinette.cloud/marketplace/creators"><button class="creators"><i class="fa-solid fa-users"></i> {{localize "MOU.available_creators"}}</button></a></p>
+          <p><button class="creators" data-href="https://assets.moulinette.cloud/marketplace/creators"><i class="fa-solid fa-users"></i> {{localize "MOU.available_creators"}}</button></p>
           {{#unless user.patron}}
-            <p><a href="https://www.patreon.com/moulinette" target="_blank"><button><i class="fab fa-patreon"></i> {{localize "MOU.support_moulinette"}}</button></a></p>
+            <p><button class="support" data-href="https://www.patreon.com/moulinette"><i class="fab fa-patreon"></i> {{localize "MOU.support_moulinette"}}</button></p>
           {{/unless}}
           {{#if refreshed}}
             <p><button class="refreshed" disabled><i class="fa-solid fa-circle-check"></i> {{localize "MOU.user_data_refreshed"}}</button></p>

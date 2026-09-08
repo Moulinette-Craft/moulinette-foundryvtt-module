@@ -80,7 +80,11 @@ export default class MouUser extends MouApplication {
     event.preventDefault();
     if(!event.currentTarget) return
     const source = $(event.currentTarget)
-    if(source.hasClass("refresh")) {
+    const href = source.attr("data-href")
+    if(href) {
+      window.open(href, '_blank');
+    }
+    else if(source.hasClass("refresh")) {
       this.html?.find(".login button").prop('disabled', true);
       this.forceRefresh = true
       this.render()

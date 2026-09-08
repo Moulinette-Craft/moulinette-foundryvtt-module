@@ -12,10 +12,22 @@
 
     .login {
       min-width: 220px;
+
+      p {
+        margin: 4px 0;
+      }
+
+      button {
+        width: 100%;
+      }
     }
   }
 
   .user-details {
     flex-grow: 1;
+
+    h3 {
+      font-size: 1.5em;
+    }
   }
 }
