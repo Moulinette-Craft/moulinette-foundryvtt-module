@@ -67,9 +67,8 @@ export default class MouHooks {
         name: "select", 
         icon: "fa-solid fa-expand mou-hidden", 
         title: (game as Game).i18n!.localize("MOU.select"),
-        button: false, 
+        button: false,
         onChange: () => {},
-        onClick: () => {},
         order: order++,
       }
 
@@ -79,9 +78,8 @@ export default class MouHooks {
         name: "search", 
         icon: "fa-solid fa-magnifying-glass", 
         title: (game as Game).i18n!.localize("MOU.browser"),
-        button: true, 
-        onChange: () => {},
-        onClick: () => { module.browser.render(true) },
+        button: true,
+        onChange: () => { module.browser.render(true) },
         order: order++,
       }
 
@@ -94,8 +92,7 @@ export default class MouHooks {
           icon: "fa-solid fa-user",
           title: (game as Game).i18n!.localize("MOU.user_authenticated"),
           button: true,
-          onChange: () => {},
-          onClick: () => { module.user.render(true) },
+          onChange: () => { module.user.render(true) },
           order: order++,
         });
 
