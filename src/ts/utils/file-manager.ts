@@ -219,60 +219,62 @@ export default class MouFileManager {
    */
   static async downloadFile(uri: string, packPath: string, folder: string, force=false): Promise<FilePicker.UploadReturn | false> {
 
-    // disable Ripper's Media Optimizer (conflicting)
+    // disable Ripper's Media Optimizer while downloading: it renames uploaded files, which conflicts.
+    // Re-enabled in the finally block below so it is always restored, even if an error is thrown.
     const mediaOptimizerEnabled = ((game as Game).settings as AnyDict).settings.has("media-optimizer.slugifyFileNames") && ((game as Game).settings as AnyDict).get("media-optimizer", "slugifyFileNames");
     if(mediaOptimizerEnabled) {
       await MouFileManager.toggleMediaOptimizer(false)
     }
 
-    folder = MouMediaUtils.getCleanURI(folder)
-    const filepath = MouMediaUtils.getCleanURI(uri.split("?")[0])
-    const filename  = filepath.substring(filepath.lastIndexOf("/")+1)  // Broken Tower_2.webm (from above example)
-    const relFolder = filepath.substring(0, filepath.lastIndexOf("/")) // animated (from above example)
-    const targetFolder = folder + (folder.endsWith("/") ? "" : "/") + relFolder 
-    const url = packPath.length > 0 ? `${packPath}/${uri}` : uri
+    try {
+      folder = MouMediaUtils.getCleanURI(folder)
+      const filepath = MouMediaUtils.getCleanURI(uri.split("?")[0])
+      const filename  = filepath.substring(filepath.lastIndexOf("/")+1)  // Broken Tower_2.webm (from above example)
+      const relFolder = filepath.substring(0, filepath.lastIndexOf("/")) // animated (from above example)
+      const targetFolder = folder + (folder.endsWith("/") ? "" : "/") + relFolder
+      const url = packPath.length > 0 ? `${packPath}/${uri}` : uri
 
-    // check if file already downloaded
-    await MouFileManager.createFolderRecursive(targetFolder)
-    const browse = await MouFileManager.getFilePicker().browse(MouFileManager.getSource(), targetFolder);
-    const files = browse.files.map(f => MouMediaUtils.getCleanURI(f))
-    const path = `${targetFolder}/${filename}`
-    if(!force && files.includes(path)) {
-      MouApplication.logInfo(MouFileManager.APP_NAME, `File ${path} already exists. Download skipped!`)
-      if(mediaOptimizerEnabled) { await MouFileManager.toggleMediaOptimizer(true) }
-      return { status: "success", path: path, message: "File already exists" };
-    }
-
-    let triesCount = 0
-    const infoURL = url.split("?")[0]
-    while(triesCount <= MouFileManager.RETRIES) {
-      if(triesCount > 0) {
-        MouApplication.logInfo(MouFileManager.APP_NAME, `${triesCount}# retry of downloading ${infoURL}`)
+      // check if file already downloaded
+      await MouFileManager.createFolderRecursive(targetFolder)
+      const browse = await MouFileManager.getFilePicker().browse(MouFileManager.getSource(), targetFolder);
+      const files = browse.files.map(f => MouMediaUtils.getCleanURI(f))
+      const path = `${targetFolder}/${filename}`
+      if(!force && files.includes(path)) {
+        MouApplication.logInfo(MouFileManager.APP_NAME, `File ${path} already exists. Download skipped!`)
+        return { status: "success", path: path, message: "File already exists" };
       }
-      try {
-        let res = await fetch(url)
-        if(res && res.status == 200) {
-          const blob = await res.blob()
-          const uploadResult = await MouFileManager.uploadFile(new File([blob], filename, { type: blob.type, lastModified: new Date().getTime() }), filename, targetFolder, force)
-          if(uploadResult && uploadResult.status == "success") {
-            uploadResult.path = decodeURI(uploadResult.path)
-            if(mediaOptimizerEnabled) { await MouFileManager.toggleMediaOptimizer(true) }
-            return uploadResult
+
+      let triesCount = 0
+      const infoURL = url.split("?")[0]
+      while(triesCount <= MouFileManager.RETRIES) {
+        if(triesCount > 0) {
+          MouApplication.logInfo(MouFileManager.APP_NAME, `${triesCount}# retry of downloading ${infoURL}`)
+        }
+        try {
+          let res = await fetch(url)
+          if(res && res.status == 200) {
+            const blob = await res.blob()
+            const uploadResult = await MouFileManager.uploadFile(new File([blob], filename, { type: blob.type, lastModified: new Date().getTime() }), filename, targetFolder, force)
+            if(uploadResult && uploadResult.status == "success") {
+              uploadResult.path = decodeURI(uploadResult.path)
+              return uploadResult
+            }
+            else {
+              MouApplication.logWarn(MouFileManager.APP_NAME, `MTTERR003 Download succeeded but upload failed for ${infoURL}: ${uploadResult}`)
+            }
           }
           else {
-            MouApplication.logWarn(MouFileManager.APP_NAME, `MTTERR003 Download succeeded but upload failed for ${infoURL}: ${uploadResult}`)
+            MouApplication.logWarn(MouFileManager.APP_NAME, `MTTERR001 Download failed for ${infoURL}: ${res}`)
           }
+        } catch(e) {
+          MouApplication.logError(MouFileManager.APP_NAME, `MTTERR001 Download failed for ${infoURL}`, e)
         }
-        else {
-          MouApplication.logWarn(MouFileManager.APP_NAME, `MTTERR001 Download failed for ${infoURL}: ${res}`)
-        }
-      } catch(e) {
-        MouApplication.logError(MouFileManager.APP_NAME, `MTTERR001 Download failed for ${infoURL}`, e)
+        triesCount++
       }
-      triesCount++
+      return false
+    } finally {
+      if(mediaOptimizerEnabled) { await MouFileManager.toggleMediaOptimizer(true) }
     }
-    if(mediaOptimizerEnabled) { await MouFileManager.toggleMediaOptimizer(true) }
-    return false
   }
 
 
