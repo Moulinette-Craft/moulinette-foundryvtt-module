@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+### Added
+- Documents imported from an asset (scenes, journals, playlists, actors, items and macros) now record which asset they came from, in a `flags.moulinette.asset` flag holding the asset id, its pack and its filepath
+
 ## [14.0.1] - 2026-09-07
 ### Changed
 - Moulinette User screen: consistent button styling and sizing, larger section titles

@@ -56,3 +56,16 @@ export interface MouModule {
 export interface AnyDict {
   [key: string]: any;
 }
+
+/**
+ * Identifies the Moulinette asset a document was created from.
+ * Stored on every document Moulinette imports (see MouFoundryUtils.PROVENANCE_FLAG).
+ */
+export interface MouAssetProvenance {
+  /** asset identifier, as accepted by /asset/<id> */
+  id: string;
+  /** identifier of the pack the asset belongs to */
+  pack_ref: number;
+  /** path of the asset within its pack */
+  filepath: string;
+}
