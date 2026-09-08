@@ -223,11 +223,19 @@ export default class MouCollectionCloudBase {
    * Identifies the asset a document is about to be created from, so that the document
    * still says where it came from once it is in the world.
    *
+   * `folder` is where this download put the asset's files, so that the paths the document
+   * refers to can be traced back to the pack even after the creator renames it.
+   *
    * @param assetId - identifier of the selected asset
    * @param asset - the asset details returned by /asset/<id>
    */
   protected getProvenance(assetId: string, asset: AnyDict): MouAssetProvenance {
-    return { id: assetId, pack_ref: asset.pack_ref, filepath: asset.filepath }
+    return {
+      id: assetId,
+      pack_ref: asset.pack_ref,
+      filepath: asset.filepath,
+      folder: MouApplication.getModule().cloudclient.getDefaultDownloadFolder(asset.base_url)
+    }
   }
 
   supportsType(type: MouCollectionAssetTypeEnum): boolean {

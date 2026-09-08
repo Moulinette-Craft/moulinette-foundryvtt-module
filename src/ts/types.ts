@@ -68,4 +68,6 @@ export interface MouAssetProvenance {
   pack_ref: number;
   /** path of the asset within its pack */
   filepath: string;
+  /** folder the asset's files were downloaded into, relative to the data storage */
+  folder: string;
 }

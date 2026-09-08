@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- Documents imported from an asset (scenes, journals, playlists, actors, items and macros) now record which asset they came from, in a `flags.moulinette.asset` flag holding the asset id, its pack and its filepath
+- Documents imported from an asset (scenes, journals, playlists, actors, items and macros) now record which asset they came from, in a `flags.moulinette.asset` flag holding the asset id, its pack, its filepath and the folder its files were downloaded into
 
 ## [14.0.1] - 2026-09-07
 ### Changed
