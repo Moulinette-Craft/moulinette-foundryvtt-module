@@ -48,6 +48,15 @@ export default class MouFileManager {
   }
 
   /**
+   * Returns the FilePicker implementation.
+   * Since Foundry v13 the global `FilePicker` is deprecated in favor of
+   * `foundry.applications.apps.FilePicker.implementation`.
+   */
+  private static getFilePicker(): typeof FilePicker {
+    return (foundry as AnyDict).applications?.apps?.FilePicker?.implementation ?? FilePicker;
+  }
+
+  /**
    * Returns the base URL of FVTT hosting server
    */
   static async getBaseURL(source? : string): Promise<string | null> {
@@ -60,13 +69,13 @@ export default class MouFileManager {
         return MouFileManager._cachedS3BaseURL
       }
 
-      let root = await FilePicker.browse(MouFileManager.getSource(), "", MouFileManager.getOptions());
+      let root = await MouFileManager.getFilePicker().browse(MouFileManager.getSource(), "", MouFileManager.getOptions());
       let baseURL = null
       
       // Workaround - Moulinette requires 1 file to fetch base URL of S3 storage
       if(root.files.length == 0) {
-        await FilePicker.upload("s3", "", new File(["Do NOT delete. Required by Moulinette"], "mtte.txt"), MouFileManager.getOptions())
-        root = await FilePicker.browse(MouFileManager.getSource(), "", MouFileManager.getOptions());
+        await MouFileManager.getFilePicker().upload("s3", "", new File(["Do NOT delete. Required by Moulinette"], "mtte.txt"), MouFileManager.getOptions())
+        root = await MouFileManager.getFilePicker().browse(MouFileManager.getSource(), "", MouFileManager.getOptions());
       }
       if(root.files.length > 0) {
         const file = root.files[0]
@@ -105,13 +114,13 @@ export default class MouFileManager {
     let curFolder = ""
     for( const f of folders ) {
       if(f.length == 0) continue
-      const parentFolder = await FilePicker.browse(source, curFolder, MouFileManager.getOptions());
+      const parentFolder = await MouFileManager.getFilePicker().browse(source, curFolder, MouFileManager.getOptions());
       curFolder += (curFolder.length > 0 ? "/" : "" ) + f
       const dirs = parentFolder.dirs.map(d => MouMediaUtils.getCleanURI(d))
       if (!dirs.includes(MouMediaUtils.getCleanURI(curFolder))) {
         try {
           MouApplication.logInfo(MouFileManager.APP_NAME, `Create folder ${curFolder}`)
-          await FilePicker.createDirectory(source, curFolder, MouFileManager.getOptions());
+          await MouFileManager.getFilePicker().createDirectory(source, curFolder, MouFileManager.getOptions());
         } catch(exc) {
           MouApplication.logError(MouFileManager.APP_NAME, `Not able to create ${curFolder}`, exc)
         }
@@ -128,7 +137,7 @@ export default class MouFileManager {
     
     // check if file already exist
     //const baseURL = await MoulinetteFileUtil.getBaseURL();
-    let base = await FilePicker.browse(source, folderPath, MouFileManager.getOptions());
+    let base = await MouFileManager.getFilePicker().browse(source, folderPath, MouFileManager.getOptions());
     let exist = base.files.filter(f => MouMediaUtils.getCleanURI(f) == `${folderPath}/${filename}`)
     //if(exist.length > 0 && !overwrite) return { path: `${baseURL}${folderPath}/${filename}` };
     if(exist.length > 0 && !overwrite) {
@@ -146,7 +155,7 @@ export default class MouFileManager {
           MouApplication.logWarn(MouFileManager.APP_NAME, "ForgeVTT_FilePicker not found. Uploading with default FilePicker");
         }
         // @ts-ignore: ignore notify being a string (error in TLD)
-        return await FilePicker.upload(source, folderPath, file, MouFileManager.getOptions(), {notify: false});
+        return await MouFileManager.getFilePicker().upload(source, folderPath, file, MouFileManager.getOptions(), {notify: false});
       }
     } catch (e) {
       MouApplication.logError(MouFileManager.APP_NAME, `Not able to upload file ${filename}`, e)
@@ -190,7 +199,7 @@ export default class MouFileManager {
       files = MouFileManager._cachedLastFolderFiles.files
     } else {
       try {
-        const browse = await FilePicker.browse(MouFileManager.getSource(), folder);
+        const browse = await MouFileManager.getFilePicker().browse(MouFileManager.getSource(), folder);
         files = browse.files.map(f => MouMediaUtils.getCleanURI(f))  
       } catch(e) { }
       MouFileManager._cachedLastFolderFiles = {
@@ -225,7 +234,7 @@ export default class MouFileManager {
 
     // check if file already downloaded
     await MouFileManager.createFolderRecursive(targetFolder)
-    const browse = await FilePicker.browse(MouFileManager.getSource(), targetFolder);
+    const browse = await MouFileManager.getFilePicker().browse(MouFileManager.getSource(), targetFolder);
     const files = browse.files.map(f => MouMediaUtils.getCleanURI(f))
     const path = `${targetFolder}/${filename}`
     if(!force && files.includes(path)) {
@@ -279,7 +288,7 @@ export default class MouFileManager {
     if(debug) MouApplication.logInfo(MouFileManager.APP_NAME, `Assets: scanning ${path} ...`)
     const options = MouFileManager.getOptions() as AnyDict
     options.recursive = true
-    const base = await FilePicker.browse(source, path, options);
+    const base = await MouFileManager.getFilePicker().browse(source, path, options);
 
     // for S3 source, check that bucket is configured
     if(source == "s3" && !options.bucket) {

@@ -355,8 +355,8 @@ export default class MouFoundryUtils {
     // Validate that the drop position is in-bounds
     if ( !canvas.dimensions.rect.contains(point.x, point.y) ) return false;
     // `point` is the desired *centre* of the tile. FoundryVTT v14 anchors tiles
-    // by their centre (TileDocument.x/y is the centre), whereas v12/v13 anchor
-    // them by their top-left corner and therefore need a half-size offset.
+    // by their centre (TileDocument.x/y is the centre), whereas v13 anchors
+    // them by their top-left corner and therefore needs a half-size offset.
     const tileAnchoredByCentre = Number((game as Game).version.split(".")[0]) >= 14
     data.x = tileAnchoredByCentre ? point.x : point.x - (data.width / 2);
     data.y = tileAnchoredByCentre ? point.y : point.y - (data.height / 2);
@@ -374,14 +374,8 @@ export default class MouFoundryUtils {
 
     // Create the Tile
     let tile : AnyDict;
-    if((game as Game).version.startsWith("12.")) {
-      // @ts-ignore
-      data.overhead = ui.controls.controls.find(c => c.layer === "tiles").foreground ?? false;
-    }
-    else {
-      // @ts-ignore
-      data.overhead = ui.controls.controls.tiles.tools.foreground?.active ?? false;
-    }
+    // @ts-ignore
+    data.overhead = ui.controls.controls.tiles.tools.foreground?.active ?? false;
     // @ts-ignore
     tile = (await canvas.scene.createEmbeddedDocuments(Tile.embeddedName, [data], { parent: canvas.scene }))[0]
     tile = tile._object

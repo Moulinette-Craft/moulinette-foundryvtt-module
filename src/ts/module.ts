@@ -247,15 +247,8 @@ Hooks.once("ready", () => {
   const pickerEnabled = ((game as Game).settings as AnyDict).get(MODULE_ID, SETTINGS_PICKER_ENABLED) as boolean
 
   if(pickerEnabled) {
-    const v12 = (game as Game).version.startsWith("12.")
-    if(v12) {
-      // @ts-ignore
-      FilePicker = MoulinetteFilePicker
-    } else {
-      (CONFIG as any).ux.FilePicker = MoulinetteFilePicker;
-    }
+    (CONFIG as any).ux.FilePicker = MoulinetteFilePicker;
     console.warn(`Moulinette: FilePicker is enabled and replacing default FoundryVTT one. You can change it in your the module's configuration.`)
-    
   }
   
 });

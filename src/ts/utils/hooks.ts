@@ -9,30 +9,18 @@ declare var libWrapper: any;
  * Moulinette hooks
  */
 export default class MouHooks {
-  
-  static compatibilityModeAdd(dictOrArray: AnyDict | AnyDict[], key: string, value: any) {
-    // Version 12
-    if(Array.isArray(dictOrArray)) {
-      dictOrArray.push(value)
-    } 
-    // Version 13+
-    else {
-      dictOrArray[key] = value
-    }
-  }
-
 
   /**
    * Adds custom Moulinette controls to the scene controls.
-   * 
-   * @param {SceneControls.Control[]} buttons - The array of scene control buttons to which the Moulinette controls will be added.
-   * 
+   *
+   * @param {AnyDict} buttons - The record of scene control buttons to which the Moulinette controls will be added.
+   *
    * This method checks if the current user is a GM (Game Master). If so, it creates a new control tool for Moulinette,
-   * including an icon, layer, name, title, and tools. The tools include an action to open the Moulinette browser and 
-   * an authentication status indicator. The authentication status tool's icon changes based on whether the user is 
+   * including an icon, layer, name, title, and tools. The tools include an action to open the Moulinette browser and
+   * an authentication status indicator. The authentication status tool's icon changes based on whether the user is
    * authenticated.
    */
-  static addMoulinetteControls(buttons: SceneControls.Control[] | AnyDict) {
+  static addMoulinetteControls(buttons: AnyDict) {
     const module = MouApplication.getModule()
     if(!module) return
 
@@ -44,11 +32,11 @@ export default class MouHooks {
       const moulinetteTool = {
         icon: "mou-icon mou-logo",
         layer: "moulayer",
-        name: (game as Game).version.startsWith("12.") ? "moucontrols" : "moulinette",
+        name: "moulinette",
         title: "Moulinette Media Search",
-        onChange: (event : any, active: boolean) => { 
+        onChange: (event : any, active: boolean) => {
           event;
-          if(active) { 
+          if(active) {
             // @ts-ignore
             canvas.tiles.deactivate(); // UNKNOWN FIX : when switching from tiles to mou layer, exception is thrown
             // @ts-ignore
@@ -56,49 +44,49 @@ export default class MouHooks {
           }
         },
         onToolChange: () => {},
-        tools: (game as Game).version.startsWith("12.") ? [] as AnyDict[] : {} as AnyDict,
+        tools: {} as AnyDict,
         activeTool: "select",
         visible: true
       } as AnyDict
 
-      MouHooks.compatibilityModeAdd(buttons, "moulinette", moulinetteTool)
+      buttons["moulinette"] = moulinetteTool
 
-      const select = { 
-        name: "select", 
-        icon: "fa-solid fa-expand mou-hidden", 
+      const select = {
+        name: "select",
+        icon: "fa-solid fa-expand mou-hidden",
         title: (game as Game).i18n!.localize("MOU.select"),
         button: false,
         onChange: () => {},
         order: order++,
       }
 
-      MouHooks.compatibilityModeAdd(moulinetteTool.tools, "select", select)
-      
-      const search = { 
-        name: "search", 
-        icon: "fa-solid fa-magnifying-glass", 
+      moulinetteTool.tools["select"] = select
+
+      const search = {
+        name: "search",
+        icon: "fa-solid fa-magnifying-glass",
         title: (game as Game).i18n!.localize("MOU.browser"),
         button: true,
         onChange: () => { module.browser.render(true) },
         order: order++,
       }
 
-      MouHooks.compatibilityModeAdd(moulinetteTool.tools, "search", search)
-      
-      
+      moulinetteTool.tools["search"] = search
+
+
       if(isGM) {
-        MouHooks.compatibilityModeAdd(moulinetteTool.tools, "authenticated", {
+        moulinetteTool.tools["authenticated"] = {
           name: "authenticated",
           icon: "fa-solid fa-user",
           title: (game as Game).i18n!.localize("MOU.user_authenticated"),
           button: true,
           onChange: () => { module.user.render(true) },
           order: order++,
-        });
+        };
 
         if(module.tools) {
           for(const tool of module.tools) {
-            MouHooks.compatibilityModeAdd(moulinetteTool.tools, tool.name, tool)
+            moulinetteTool.tools[tool.name] = tool
           }
         }
       }

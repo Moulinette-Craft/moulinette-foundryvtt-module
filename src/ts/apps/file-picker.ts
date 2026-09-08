@@ -3,7 +3,9 @@ import MouApplication from "./application";
 import MouBrowser from "./browser";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const FilePickerBase: any = FilePicker;
+// Since Foundry v13 the global `FilePicker` is deprecated in favor of
+// `foundry.applications.apps.FilePicker.implementation`.
+const FilePickerBase: any = (foundry as any).applications?.apps?.FilePicker?.implementation ?? FilePicker;
 
 export class MoulinetteFilePicker extends FilePickerBase {
 
@@ -14,8 +16,7 @@ export class MoulinetteFilePicker extends FilePickerBase {
   async browse(target: string, options={} as AnyDict): Promise<any> {
     if ( (game as Game).world && !(game as Game).user!.can("FILES_BROWSE") ) return this;
 
-    const v12 = (game as Game).version.startsWith("12.")
-    const kbManager = v12 ? KeyboardManager : (foundry as any).helpers.interaction.KeyboardManager;
+    const kbManager = (foundry as any).helpers.interaction.KeyboardManager;
     const shiftKeyDown = (game as Game).keyboard!.isModifierActive(kbManager.MODIFIER_KEYS.SHIFT)
     const forceDefault = shiftKeyDown || MouApplication.getModule().cache.forceDefaultPicker;
 
