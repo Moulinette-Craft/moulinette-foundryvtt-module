@@ -245,8 +245,9 @@ Hooks.once("ready", () => {
   MouHooks.replaceFromDropData();
   // replace FilePicker with MoulinetteFilePicker
   const pickerEnabled = ((game as Game).settings as AnyDict).get(MODULE_ID, SETTINGS_PICKER_ENABLED) as boolean
+  const playersEnabled = ((game as Game).settings as AnyDict).get(MODULE_ID, SETTINGS_ENABLE_PLAYERS) as boolean
 
-  if(pickerEnabled) {
+  if(pickerEnabled && ((game as Game).user?.isGM || playersEnabled)) {
     (CONFIG as any).ux.FilePicker = MoulinetteFilePicker;
     console.warn(`Moulinette: FilePicker is enabled and replacing default FoundryVTT one. You can change it in your the module's configuration.`)
   }

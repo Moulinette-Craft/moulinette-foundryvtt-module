@@ -198,6 +198,9 @@ export default class MouHooks {
         { key: "KeyM", modifiers: [KeyboardManager.MODIFIER_KEYS.CONTROL] },
       ],
       onDown: () => {
+        // players only get the quick search when the GM enabled Moulinette for players
+        const playersEnabled = ((game as Game).settings as AnyDict).get(MODULE_ID, SETTINGS_ENABLE_PLAYERS)
+        if(!(game as Game).user?.isGM && !playersEnabled) return
         window.dispatchEvent(new CustomEvent(TOGGLE_QUICK_SEARCH_MODAL))
       },
       precedence: CONST.KEYBINDING_PRECEDENCE.NORMAL,
