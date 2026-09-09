@@ -5,7 +5,7 @@ import MouMediaUtils from "../utils/media-utils";
 
 import { MouCollectionAction, MouCollectionActionHint, MouCollectionAsset, MouCollectionAssetMeta, MouCollectionAssetTypeEnum, MouCollectionDragData } from "../apps/collection";
 import { MOU_STORAGE, MOU_STORAGE_PUB, SETTINGS_SESSION_ID } from "../constants";
-import { AnyDict } from "../types";
+import { AnyDict, MouAssetProvenance } from "../types";
 import MouFoundryUtils from "../utils/foundry-utils";
 import MouPreview from "../apps/preview";
 
@@ -219,6 +219,25 @@ export default class MouCollectionCloudBase {
     }
   }
 
+  /**
+   * Identifies the asset a document is about to be created from, so that the document
+   * still says where it came from once it is in the world.
+   *
+   * `folder` is where this download put the asset's files, so that the paths the document
+   * refers to can be traced back to the pack even after the creator renames it.
+   *
+   * @param assetId - identifier of the selected asset
+   * @param asset - the asset details returned by /asset/<id>
+   */
+  protected getProvenance(assetId: string, asset: AnyDict): MouAssetProvenance {
+    return {
+      id: assetId,
+      pack_ref: asset.pack_ref,
+      filepath: asset.filepath,
+      folder: MouApplication.getModule().cloudclient.getDefaultDownloadFolder(asset.base_url)
+    }
+  }
+
   supportsType(type: MouCollectionAssetTypeEnum): boolean {
     return this.getSupportedTypes().includes(type)
   }
@@ -407,6 +426,7 @@ export default class MouCollectionCloudBase {
   async executeAction(actionId: number, selAsset: MouCollectionAsset): Promise<void> {
     const asset = await MouCloudClient.apiGET(`/asset/${selAsset.id}`, { session: MouApplication.getSettings(SETTINGS_SESSION_ID) })
     const folderPath = `Moulinette/${asset.creator}/${asset.pack}`
+    const provenance = this.getProvenance(selAsset.id, asset)
     switch(actionId) {
       case CloudAssetAction.DRAG:
         ui.notifications?.info((game as Game).i18n!.localize("MOU.dragdrop_instructions"))
@@ -416,13 +436,13 @@ export default class MouCollectionCloudBase {
         const resultImport = await this.downloadAsset(asset)
         if(resultImport) {
           switch(asset.type) {
-            case MouCollectionAssetTypeEnum.Map: MouFoundryUtils.importSceneFromMap(resultImport.path, folderPath); break
-            case MouCollectionAssetTypeEnum.Scene: MouFoundryUtils.importSceneFromJSON(resultImport.message, folderPath, actionId == CloudAssetAction.FORCE_IMPORT); break
-            case MouCollectionAssetTypeEnum.Item: MouFoundryUtils.importItem(JSON.parse(resultImport.message), folderPath); break
-            case MouCollectionAssetTypeEnum.Actor: MouFoundryUtils.importActor(JSON.parse(resultImport.message), folderPath); break
+            case MouCollectionAssetTypeEnum.Map: MouFoundryUtils.importSceneFromMap(resultImport.path, folderPath, provenance); break
+            case MouCollectionAssetTypeEnum.Scene: MouFoundryUtils.importSceneFromJSON(resultImport.message, folderPath, actionId == CloudAssetAction.FORCE_IMPORT, provenance); break
+            case MouCollectionAssetTypeEnum.Item: MouFoundryUtils.importItem(JSON.parse(resultImport.message), folderPath, provenance); break
+            case MouCollectionAssetTypeEnum.Actor: MouFoundryUtils.importActor(JSON.parse(resultImport.message), folderPath, false, provenance); break
             case MouCollectionAssetTypeEnum.Audio: MouFoundryUtils.playStopSound(resultImport.path, MouCollectionCloudBase.PLAYLIST_NAME); break
-            case MouCollectionAssetTypeEnum.Playlist: MouFoundryUtils.importPlaylist(JSON.parse(resultImport.message), folderPath); break
-            case MouCollectionAssetTypeEnum.JournalEntry: MouFoundryUtils.importJournalEntryFromJSON(resultImport.message, folderPath); break
+            case MouCollectionAssetTypeEnum.Playlist: MouFoundryUtils.importPlaylist(JSON.parse(resultImport.message), folderPath, provenance); break
+            case MouCollectionAssetTypeEnum.JournalEntry: MouFoundryUtils.importJournalEntryFromJSON(resultImport.message, folderPath, provenance); break
             case MouCollectionAssetTypeEnum.ScenePacker: 
               // retrieve SceneID from selected asset
               const data = JSON.parse(resultImport.message)
@@ -555,13 +575,14 @@ export default class MouCollectionCloudBase {
     console.log("fromDropData", assetId, data)
     const asset = await MouCloudClient.apiGET(`/asset/${assetId}`, { session: MouApplication.getSettings(SETTINGS_SESSION_ID) })    
     const folderPath = `Moulinette/${asset.creator}/${asset.pack}`
+    const provenance = this.getProvenance(assetId, asset)
     if(asset) {
       MouApplication.logDebug(this.APP_NAME, `fromDropData for asset ${assetId}`, data)
       switch(asset.type) {
         case MouCollectionAssetTypeEnum.Actor: 
           const resultActor = await this.downloadAsset(asset)
           if(resultActor) {
-            const actor = await MouFoundryUtils.importActor(JSON.parse(resultActor.message), folderPath, false) as AnyDict;
+            const actor = await MouFoundryUtils.importActor(JSON.parse(resultActor.message), folderPath, false, provenance) as AnyDict;
             if(actor) {
               data.uuid = actor.uuid
             }
@@ -571,7 +592,10 @@ export default class MouCollectionCloudBase {
         case MouCollectionAssetTypeEnum.Item: 
           const result = await this.downloadAsset(asset)  
           if(result) {
-            data.data = JSON.parse(result.message) as AnyDict
+            const itemData = JSON.parse(result.message) as AnyDict;
+            // FVTT creates the document from this data, so the flag has to travel in it
+            (foundry.utils as AnyDict).setProperty(itemData, MouFoundryUtils.PROVENANCE_FLAG, provenance)
+            data.data = itemData
           }
           break
       }

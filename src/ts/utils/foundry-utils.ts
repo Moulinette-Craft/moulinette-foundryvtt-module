@@ -1,7 +1,7 @@
 import MouApplication from "../apps/application";
 import MouBrowserTokenSelector from "../apps/browser-token-selector";
 import MouConfig, { MODULE_ID, SETTINGS_ADVANCED, SETTINGS_USE_FOLDERS } from "../constants";
-import { AnyDict } from "../types";
+import { AnyDict, MouAssetProvenance } from "../types";
 import MouMediaUtils from "./media-utils";
 import MouCompatUtils from "./compat-utils";
 import MouLayer from "../layers/mou-layer";
@@ -14,6 +14,22 @@ export default class MouFoundryUtils {
 
   static FOLDER_MAX_LEVELS = 3
   static AUDIO_DEFAULT_RADIUS = 10
+
+  /** Document flag recording which Moulinette asset the document was created from */
+  static PROVENANCE_FLAG = `flags.${MODULE_ID}.asset`
+
+  /**
+   * Update data stamping a document with the asset it was imported from.
+   *
+   * Kept as a module flag rather than `_stats.compendiumSource`: the asset is not a
+   * compendium document, and `_stats` is dropped on import for compatibility reasons.
+   *
+   * @param provenance - the asset the document came from, if known
+   * @returns update data to merge into the document's update call (empty when unknown)
+   */
+  static provenanceFlags(provenance?: MouAssetProvenance): AnyDict {
+    return provenance ? { [MouFoundryUtils.PROVENANCE_FLAG]: provenance } : {}
+  }
 
   
   /**
@@ -124,18 +140,18 @@ export default class MouFoundryUtils {
   /**
    * Creates a new scene from a map image (provided as path)
    */
-  static async importSceneFromMap(path: string, folder: string) {
+  static async importSceneFromMap(path: string, folder: string, provenance?: MouAssetProvenance) {
     if (!(game as Game).user?.isGM) return;
     const sceneName = MouMediaUtils.prettyMediaName(path)
     // @ts-ignore
     const json_text = await MouCompatUtils.renderTemplate(`modules/${MODULE_ID}/templates/json/scene.hbs`, { path: path, name: sceneName })
-    await MouFoundryUtils.importScene(JSON.parse(json_text), folder)
+    await MouFoundryUtils.importScene(JSON.parse(json_text), folder, provenance)
   }
 
   /**
    * Creates a new scene from the given data
    */
-  static async importScene(sceneData: AnyDict, folder:string) {
+  static async importScene(sceneData: AnyDict, folder:string, provenance?: MouAssetProvenance) {
     if (!(game as Game).user?.isGM) return;
     let needsDims = !("width" in sceneData)
     delete sceneData._stats // causes sometimes incompatibilites
@@ -146,7 +162,7 @@ export default class MouFoundryUtils {
       const folderObj = await MouFoundryUtils.getOrCreateFolder("Scene", folder)
       let tData = await newScene.createThumbnail({img: newScene["background.src"] ?? newScene.background.src});
       // reset width/height
-      let tUpdate = { thumb: tData.thumb, folder: folderObj ? folderObj.id : null } as AnyDict
+      let tUpdate = { thumb: tData.thumb, folder: folderObj ? folderObj.id : null, ...MouFoundryUtils.provenanceFlags(provenance) } as AnyDict
       if ( needsDims && tData.width && tData.height ) {
         const img = await loadTexture(newScene["background.src"] ?? newScene.background.src);
         if (img) {
@@ -163,7 +179,7 @@ export default class MouFoundryUtils {
   /**
    * Creates a new scene from the given data
    */
-  static async importSceneFromJSON(sceneData: string, folder:string, forceImport = false) {
+  static async importSceneFromJSON(sceneData: string, folder:string, forceImport = false, provenance?: MouAssetProvenance) {
     if (!(game as Game).user?.isGM) return;
     // @ts-ignore
     const sc = await CONFIG.Scene.documentClass.create({name: "Imported Scene"})
@@ -181,7 +197,7 @@ export default class MouFoundryUtils {
       const folderObj = await MouFoundryUtils.getOrCreateFolder("Scene", folder)
       let tData = await newScene.createThumbnail({img: newScene["background.src"] ?? newScene.background.src});
       // reset width/height
-      let tUpdate = { thumb: tData.thumb, folder: folderObj ? folderObj.id : null } as AnyDict
+      let tUpdate = { thumb: tData.thumb, folder: folderObj ? folderObj.id : null, ...MouFoundryUtils.provenanceFlags(provenance) } as AnyDict
       if ( needsDims && tData.width && tData.height ) {
         tUpdate.width = tData.width;
         tUpdate.height = tData.height;
@@ -195,14 +211,14 @@ export default class MouFoundryUtils {
   /**
    * Creates a new item from the given data
    */
-  static async importItem(itemData: AnyDict, folder:string) {
+  static async importItem(itemData: AnyDict, folder:string, provenance?: MouAssetProvenance) {
     if (!(game as Game).user?.isGM) return;
     // @ts-ignore
     const doc = await Item.fromImport(itemData)
     const newItem = await Item.create(doc)
     if(newItem) {
       const folderObj = await MouFoundryUtils.getOrCreateFolder("Item", folder)
-      let tUpdate = { folder: folderObj ? folderObj.id : null } as AnyDict
+      let tUpdate = { folder: folderObj ? folderObj.id : null, ...MouFoundryUtils.provenanceFlags(provenance) } as AnyDict
       await newItem.update(tUpdate);
       ui.items?.activate()
       newItem?.sheet?.render(true)
@@ -212,14 +228,14 @@ export default class MouFoundryUtils {
   /**
    * Creates a new actor from the given data
    */
-  static async importActor(actorData: AnyDict, folder:string, renderSheet = false) {
+  static async importActor(actorData: AnyDict, folder:string, renderSheet = false, provenance?: MouAssetProvenance) {
     if (!(game as Game).user?.isGM) return;
     // @ts-ignore
     const doc = await Actor.fromImport(actorData)
     const newActor = await Actor.create(doc)
     if(newActor) {
       const folderObj = await MouFoundryUtils.getOrCreateFolder("Actor", folder)
-      let tUpdate = { folder: folderObj ? folderObj.id : null } as AnyDict
+      let tUpdate = { folder: folderObj ? folderObj.id : null, ...MouFoundryUtils.provenanceFlags(provenance) } as AnyDict
       await newActor.update(tUpdate);
       ui.actors?.activate()
       if(renderSheet) {
@@ -232,7 +248,7 @@ export default class MouFoundryUtils {
   /**
    * Creates a new playlist from the given data
    */
-  static async importPlaylist(plistData: AnyDict, folder:string) {
+  static async importPlaylist(plistData: AnyDict, folder:string, provenance?: MouAssetProvenance) {
     if (!(game as Game).user?.isGM) return;
     // @ts-ignore
     const doc = await Playlist.fromImport(plistData)
@@ -240,7 +256,7 @@ export default class MouFoundryUtils {
     if(newPlaylist) {
       const folderObj = await MouFoundryUtils.getOrCreateFolder("Playlist", folder)
       // reset folder
-      let tUpdate = { folder: folderObj ? folderObj.id : null } as AnyDict
+      let tUpdate = { folder: folderObj ? folderObj.id : null, ...MouFoundryUtils.provenanceFlags(provenance) } as AnyDict
       await newPlaylist.update(tUpdate);
       ui.playlists?.activate()
     }
@@ -249,7 +265,7 @@ export default class MouFoundryUtils {
   /**
    * Creates a new journal entry from the given data
    */
-  static async importJournalEntryFromJSON(journalData: string, folder:string) {
+  static async importJournalEntryFromJSON(journalData: string, folder:string, provenance?: MouAssetProvenance) {
     if (!(game as Game).user?.isGM) return;
     
     // compatibility with older versions (not having pages)
@@ -268,7 +284,7 @@ export default class MouFoundryUtils {
     if(newJournalEntry) {
       const folderObj = await MouFoundryUtils.getOrCreateFolder("JournalEntry", folder)
       // reset folder
-      let tUpdate = { folder: folderObj ? folderObj.id : null } as AnyDict
+      let tUpdate = { folder: folderObj ? folderObj.id : null, ...MouFoundryUtils.provenanceFlags(provenance) } as AnyDict
       await newJournalEntry.update(tUpdate);
       ui.journal?.activate()
       newJournalEntry?.sheet?.render(true)
